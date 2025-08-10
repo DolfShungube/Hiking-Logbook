@@ -1,11 +1,12 @@
 import React from "react";
+import SignInImage from '../assets/SignIn3.jpg';
 import { Link } from "react-router-dom";
 
 const SignIn = () => {
   return (
     <div
       className="min-h-screen bg-cover bg-center flex justify-between items-start text-black px-10"
-      style={{ backgroundImage: "url('/src/assets/SignIn3.jpg')" }}
+      style={{ backgroundImage: "url(${SignInImage})" }}
     >
       {/* Logo on top-left */}
       <div className="pt-5">
