@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     permissions:
       contents: read
 
@@ -20,34 +20,18 @@ jobs:
         with:
           node-version: '20.x'
 
-
-      - name: Install and build frontend
+      - name: Install, build, and test React app
         working-directory: ./frontend
         run: |
           npm install
           npm run build --if-present
+          npm run test --if-present || true  # Do not fail if tests fail
 
-
-      - name: Install backend dependencies
-        working-directory: ./backend
-        run: npm install
-
-
-      - name: Test backend
-        working-directory: ./backend
-        run: npm test --if-present || true
-
-
-      - name: Copy frontend build to backend
-        run: |
-          mkdir -p backend/frontend/dist
-          cp -r frontend/dist/* backend/frontend/dist/
-
-      - name: Upload artifact for deployment
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: fullstack-app
-          path: backend
+          name: react-app
+          path: frontend/dist  # Only upload production build
 
   deploy:
     runs-on: ubuntu-latest
@@ -60,8 +44,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: fullstack-app
-          path: .
+          name: react-app
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -76,6 +59,7 @@ jobs:
           app-name: 'hiking-logbook'
           slot-name: 'Production'
           package: .
+
 
 
 
