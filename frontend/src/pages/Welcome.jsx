@@ -8,10 +8,10 @@ import trophy from '/src/assets/trophy.png';
 import hiking from '/src/assets/hiking.jpg';
 
 // Trails - Table Mountain
-import T1 from '/src/assets/trails/T1.avif';
+import T1 from '/src/assets/trails/T1.png';
 import T2 from '/src/assets/trails/T2.jpg';
 import T3 from '/src/assets/trails/T3.jpg';
-import T4 from '/src/assets/trails/T4.avif';
+import T4 from '/src/assets/trails/T4.png';
 import T5 from '/src/assets/trails/T5.jpg';
 import T6 from '/src/assets/trails/T6.jpg';
 
@@ -27,9 +27,9 @@ import Whale6 from '/src/assets/trails/Whale6.jpg';
 import Dr1 from '/src/assets/trails/Dr1.jpg';
 import Dr2 from '/src/assets/trails/Dr2.jpg';
 import Dr3 from '/src/assets/trails/Dr3.jpg';
-import Dr4 from '/src/assets/trails/Dr4.webp';
-import Dr5 from '/src/assets/trails/Dr5.webp';
-import Dr6 from '/src/assets/trails/Dr6.webp';
+import Dr4 from '/src/assets/trails/Dr4.png';
+import Dr5 from '/src/assets/trails/Dr5.png';
+import Dr6 from '/src/assets/trails/Dr6.png';
 
 // Trails - Rim of Africa
 import Africa1 from '/src/assets/trails/Africa1.jpg';
