@@ -1,11 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import image from '/src/assets/SignUp1.jpg'
 
 const SignUp = () => {
   return (
     <div
       className="min-h-screen bg-cover bg-center relative text-black"
-      style={{ backgroundImage: "url('/src/assets/SignUp1.jpg')" }}
+      style={{ backgroundImage: `url(${image})` }}
     >
       {/* Logo at top-left */}
       <div className="absolute top-6 left-8">

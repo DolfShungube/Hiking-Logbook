@@ -5,6 +5,37 @@ import map from '/src/assets/map.png';
 import mountain from '/src/assets/mountain.png';
 import location from '/src/assets/location.png';
 import trophy from '/src/assets/trophy.png';
+import hiking from '/src/assets/hiking.jpg';
+
+// Trails - Table Mountain
+import T1 from '/src/assets/trails/T1.avif';
+import T2 from '/src/assets/trails/T2.jpg';
+import T3 from '/src/assets/trails/T3.jpg';
+import T4 from '/src/assets/trails/T4.avif';
+import T5 from '/src/assets/trails/T5.jpg';
+import T6 from '/src/assets/trails/T6.jpg';
+
+// Trails - Whale
+import Whale1 from '/src/assets/trails/Whale1.jpg';
+import Whale2 from '/src/assets/trails/Whale2.jpg';
+import Whale3 from '/src/assets/trails/Whale3.jpg';
+import Whale4 from '/src/assets/trails/Whale4.jpg';
+import Whale5 from '/src/assets/trails/Whale5.jpg';
+import Whale6 from '/src/assets/trails/Whale6.jpg';
+
+// Trails - Drakensberg
+import Dr1 from '/src/assets/trails/Dr1.jpg';
+import Dr2 from '/src/assets/trails/Dr2.jpg';
+import Dr3 from '/src/assets/trails/Dr3.jpg';
+import Dr4 from '/src/assets/trails/Dr4.webp';
+import Dr5 from '/src/assets/trails/Dr5.webp';
+import Dr6 from '/src/assets/trails/Dr6.webp';
+
+// Trails - Rim of Africa
+import Africa1 from '/src/assets/trails/Africa1.jpg';
+import Africa2 from '/src/assets/trails/Africa2.jpg';
+import Africa3 from '/src/assets/trails/Africa3.jpg';
+
 import useScrollAnimation from '/src/components/useScrollAnimation.jsx';
 import {Link} from "react-router-dom";
 
@@ -42,7 +73,7 @@ const Welcome = () => {
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('/src/assets/hiking.jpg')" }}
+          style={{ backgroundImage: `url(${hiking})`  }}
         ></div>
 
         {/* Overlay to dim the image */}
@@ -176,33 +207,33 @@ const Welcome = () => {
             {/* Table Mountain Images Group 1 */}
             <div ref={refTable1} className={animClasses(visibleTable1) + ' grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4'}>
                <img
-                src="/src/assets/trails/T1.avif"
+                src={T1}
                 alt="Table Mountain"
                 className="w-full h-80 rounded-lg shadow-md"
               />
                <img
-                src="/src/assets/trails/T2.jpg"
+                src={T2}
                 alt="Table Mountain"
                 className="w-full h-80 rounded-lg shadow-md"
               />
                <img
-                src="/src/assets/trails/T3.jpg"
+                src={T3}
                 alt="Table Mountain"
                 className="w-full h-80 rounded-lg shadow-md"
               />
 
               <img
-                src="/src/assets/trails/T4.avif"
+                src={T4}
                 alt="Table Mountain"
                 className="w-full h-80 rounded-lg shadow-md"
               />
               <img
-                src="/src/assets/trails/T5.jpg"
+                src={T5}
                 alt="Table Mountain"
                 className="w-full h-80 rounded-lg shadow-md"
               />
               <img
-                src="/src/assets/trails/T6.jpg"
+                src={T6}
                 alt="Table Mountain"
                 className="w-full h-80 rounded-lg shadow-md mb-15"
               />
@@ -219,17 +250,17 @@ const Welcome = () => {
             {/* The Whale Images Group */}
             <div ref={refWhale1} className={animClasses(visibleWhale1) + ' grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6'}>
               <img
-                src="/src/assets/trails/Whale1.jpg"
+                src={Whale1}
                 alt="The Whale"
                 className="w-full h-80 rounded-lg shadow-md"
               />
               <img
-                src="/src/assets/trails/Whale2.jpg"
+                src={Whale2}
                 alt="The Whale"
                 className="w-full h-80 rounded-lg shadow-md"
               />
               <img
-                src="/src/assets/trails/Whale3.jpg"
+                src={Whale3}
                 alt="The Whale"
                 className="w-full h-80 rounded-lg shadow-md"
               />
@@ -237,17 +268,17 @@ const Welcome = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
               <img
-                src="/src/assets/trails/Whale4.jpg"
+                src={Whale4}
                 alt="The Whale"
                 className={`w-full h-80 rounded-lg shadow-md ${visibleWhale1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} transition-transform duration-700 ease-out`}
               />
               <img
-                src="/src/assets/trails/Whale5.jpg"
+                src={Whale5}
                 alt="The Whale"
                 className={`w-full h-80 rounded-lg shadow-md ${visibleWhale1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} transition-transform duration-700 ease-out`}
               />
               <img
-                src="/src/assets/trails/Whale6.jpg"
+                src={Whale6}
                 alt="The Whale"
                 className={`w-full h-80 rounded-lg shadow-md mb-15 ${visibleWhale1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} transition-transform duration-700 ease-out`}
               />
@@ -262,17 +293,17 @@ const Welcome = () => {
             {/* Drakensberg Images Group */}
             <div ref={refDrakensberg1} className={animClasses(visibleDrakensberg1) + ' grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6'}>
               <img
-                src="/src/assets/trails/Dr1.jpg"
+                src={Dr1}
                 alt="Drakensberg Mountain"
                 className="w-full h-80 rounded-lg shadow-md"
               />
               <img
-                src="/src/assets/trails/Dr2.jpg"
+                src={Dr2}
                 alt="Drakensberg Mountain"
                 className="w-full h-80 rounded-lg shadow-md"
               />
               <img
-                src="/src/assets/trails/Dr3.jpg"
+                src={Dr3}
                 alt="Drakensberg Mountain"
                 className="w-full h-80 rounded-lg shadow-md"
               />
@@ -280,17 +311,17 @@ const Welcome = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
               <img
-                src="/src/assets/trails/Dr4.webp"
+                src={Dr4}
                 alt="Drakensberg Mountain"
                 className={`w-full h-80 rounded-lg shadow-md ${visibleDrakensberg1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} transition-transform duration-700 ease-out`}
               />
               <img
-                src="/src/assets/trails/Dr5.webp"
+                src={Dr5}
                 alt="Drakensberg Mountain"
                 className={`w-full h-80 rounded-lg shadow-md ${visibleDrakensberg1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} transition-transform duration-700 ease-out`}
               />
               <img
-                src="/src/assets/trails/Dr6.webp"
+                src={Dr6}
                 alt="Drakensberg Mountain"
                 className={`w-full h-80 rounded-lg shadow-md mb-15 ${visibleDrakensberg1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} transition-transform duration-700 ease-out`}
               />
@@ -305,17 +336,17 @@ const Welcome = () => {
             {/* Rim of Africa Images Group */}
             <div ref={refAfrica1} className={animClasses(visibleAfrica1) + ' grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6'}>
               <img
-                src="/src/assets/trails/Africa1.jpg"
+                src={Africa1}
                 alt="Rim of Africa"
                 className="w-full h-80 rounded-lg shadow-md"
               />
               <img
-                src="/src/assets/trails/Africa2.jpg"
+                src={Africa2}
                 alt="Rim of Africa"
                 className="w-full h-80 rounded-lg shadow-md"
               />
               <img
-                src="/src/assets/trails/Africa3.jpg"
+                src={Africa3}
                 alt="Rim of Africa"
                 className="w-full h-80 rounded-lg shadow-md"
               />
