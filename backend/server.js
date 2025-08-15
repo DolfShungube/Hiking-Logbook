@@ -2,11 +2,15 @@ const express= require("express");
 const path = require("path");
 const dotenv= require('dotenv/config');
 const { createClient } = require("@supabase/supabase-js");
-
+const cors = require('cors');
 
 const app=express()
 const port= process.env.PORT||8080
 app.use(express.json());
+
+
+
+app.use(cors({ origin: true, credentials: true }));
 
 app.get("/", (req, res) => {
   res.send("Server is running..");
@@ -72,7 +76,8 @@ app.post("/signin", async (req, res) => {
 
   res.status(200).json({
     message: "Login successful",
-    user: data.user
+    user: data.user,
+    session: data.session    
   });
 }); 
 
