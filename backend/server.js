@@ -81,6 +81,25 @@ app.post("/signin", async (req, res) => {
   });
 }); 
 
+app.post("/googlesignin", async (req, res) => { 
+
+   const { frontendBaseUrl } = req.body;
+   const redirectTo = `${frontendBaseUrl}/dashboard`;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo }
+    });
+
+  if (error) {
+    return res.status(401).json({ error: error.message });
+  }
+
+  return res.json({ url: data.url });
+
+
+}); 
+
 
 app.post("/newHike",async (req,res)=>{
 

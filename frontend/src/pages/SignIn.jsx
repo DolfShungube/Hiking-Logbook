@@ -14,7 +14,7 @@ const [loading,setLoading]=useState("")
 const [showModal,setShowModal]= useState(false)
 
 
-const {session,signInUser,signOutUser}= UserAuth()
+const {session,signInUser,signOutUser,GooglesignInUser}= UserAuth()
 const navigate=useNavigate()
 //console.log(session)
 
@@ -37,7 +37,7 @@ const handleSignIn= async (e)=>{
         // console.log("we have res")
         // console.log("result.data.error:", result.data);
 
-        if(result.data && result.data.erro){
+        if(result.data && result.data.error){
           
                   setError(result.data.error)
                   setShowModal(true)
@@ -60,6 +60,18 @@ const handleSignIn= async (e)=>{
     }finally{
       setLoading(false)
     }
+
+}
+
+
+const handleGooglesignInUser= async()=>{
+
+  results= await GooglesignInUser()
+
+  if(results.error){
+      setError(results.error)
+      setShowModal(true)
+  }
 
 }
 
@@ -98,6 +110,14 @@ const handleSignIn= async (e)=>{
             >
               SignIn
             </button>
+
+            <button
+              type="button"
+              onClick={handleGooglesignInUser}
+              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 mb-6 mt-6 flex items-center justify-center gap-3">
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"alt="Google icon"width={20}height={20}/>
+              <span>Sign In with Google</span>
+            </button>            
             <p className="mt-6 text-center text-sm">
                 Don't have an account?{" "}
                 <Link to="/signup" className="text-blue-600 hover:underline">
