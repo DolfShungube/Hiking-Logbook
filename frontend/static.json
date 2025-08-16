@@ -1,0 +1,10 @@
+{
+  "root": "dist",
+  "clean_urls": true,
+  "routes": [
+    {
+      "path": "/*",
+      "rewrite": "/index.html"
+    }
+  ]
+}
