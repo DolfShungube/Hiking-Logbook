@@ -56,6 +56,8 @@ const signUpNewUser = async (firstName,lastName,email,password ) => {
 };
 
 
+
+
 const signInUser = async (email, password) => {
    console.log("fetching")
   try {
@@ -95,6 +97,24 @@ const signInUser = async (email, password) => {
 };
 
 
+const GooglesignInUser = async () => {
+  try {
+    const res = await fetch("https://hiking-logbook-api.onrender.com/googlesignin", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ frontendBaseUrl: window.location.origin }),
+});
+
+    const { url } = await res.json();
+    window.location.href = url;
+  } catch (err) {
+
+    return {error:err};
+
+  }
+};
+
+
 const signOutUser= async()=>{
     const {error}= await supabase.auth.signOut() // to use in the dashboard
 
@@ -126,7 +146,7 @@ useEffect(()=>{
 },[])
 
     return (
-        <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser}}>
+        <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser,GooglesignInUser}}>
             {children}
         </AuthContext.Provider>
     )
