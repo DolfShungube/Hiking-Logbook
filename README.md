@@ -5,9 +5,9 @@ This project aims to create a web app to be used in recording hiking information
 ## documentation site:
 [Notion External Documentation]("our notion link")
 
-## print planning site:
+### print planning site:
 [tagia](https://tree.taiga.io/project/noblewolf-hiking-logbook)
-
+### code coverage:
 [![codecov](https://codecov.io/gh/DolfShungube/Hiking-Logbook/branch/master/graph/badge.svg)](https://codecov.io/gh/DolfShungube/Hiking-Logbook)
 
 
@@ -45,13 +45,13 @@ cd ..
 ```bash
 cd frontend
 ```
-#  .create a .env file ,(you will need the supabase url and anon key used for the project)
+.create a .env file ,(you will need the supabase url and anon key used for the project)
 
-#  ..install dependencies
+..install dependencies
 ```bash
 npm install
 ```
-#  ... start server
+ start server
 ```bash
 npm run dev
 ```
