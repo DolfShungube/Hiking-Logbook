@@ -3,7 +3,7 @@
 This project aims to create a web app to be used in recording hiking information.
 
 ## documentation site:
-[Notion External Documentation]("our notion link")
+[Notion External Documentation](https://www.notion.so/Trailo-The-Hiking-Logbook-24e82a87628580018b33f673950c9f5c)
 
 ### print planning site:
 [tagia](https://tree.taiga.io/project/noblewolf-hiking-logbook)
