@@ -108,7 +108,7 @@ const Welcome = () => {
 
             <Link to ="/login">
             <button className="bg-white hover:bg-white border-2 border-white text-black font-bold py-3 px-25 rounded transform transition-transform duration-200 hover:scale-110">
-              SignIn
+              Sign In
             </button>
             </Link>
             

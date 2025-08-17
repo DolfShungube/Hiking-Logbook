@@ -1,15 +1,17 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.jsx'
 import { RouterProvider } from 'react-router-dom'
 import router from './routers/router.jsx'
 import { AuthContextProvider } from './context/AuthContext.jsx'
+import { ThemeProvider } from "/src/context/theme-context.jsx";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthContextProvider>
-     <RouterProvider router={router} />
+      <ThemeProvider storageKey="theme">
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </AuthContextProvider>
   </StrictMode>,
 )
