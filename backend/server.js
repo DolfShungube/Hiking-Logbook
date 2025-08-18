@@ -151,3 +151,20 @@ const { data, error } = await supabase
 app.listen(port, "0.0.0.0", () => {
 
 });
+
+app.get("/hikes", async (req, res) =>{
+  const {data, error } = await supabase
+  .from("HikeData")
+  .select("*")
+    .order("startdate",  { ascending: false});
+  
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(200).json({
+    message: "Fetched all hikes",
+    hikes: data
+  });
+  });
+
