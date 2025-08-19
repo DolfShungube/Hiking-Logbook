@@ -3,9 +3,23 @@ import logo from '/src/assets/mountains.png';
 import { cn } from '/src/utils/cn.js';
 import { navbarLinks } from '../components/index.jsx';
 import PropTypes from 'prop-types';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LogOut } from "lucide-react";
+import { UserAuth } from '../context/AuthContext';
 
 const Sidebar = forwardRef(({ collapsed }, ref) => {
+  const { signOutUser } = UserAuth();
+  const navigate = useNavigate();
+
+  const handleGooglesignInUser = async () => {
+    try {
+      await signOutUser();
+      navigate("/login"); // make sure it matches your router path
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <aside
       ref={ref}
@@ -15,6 +29,7 @@ const Sidebar = forwardRef(({ collapsed }, ref) => {
         collapsed ? "max-md:-left-full" : "max-md:left-0"
       )}
     >
+      {/* Logo */}
       <div className="p-3 flex items-start">
         <img src={logo} alt="Logo" className="w-10 h-10" />
         {!collapsed && (
@@ -24,48 +39,50 @@ const Sidebar = forwardRef(({ collapsed }, ref) => {
         )}
       </div>
 
+      {/* Sidebar links */}
       <div className="flex w-full flex-col gap-y-4 overflow-y-auto overflow-hidden p-3 [scrollbar-width:_thin]">
         {navbarLinks.map((navbarLink) => (
           <nav
             key={navbarLink.title}
             className={cn("sidebar-group", collapsed && "md:items-center")}
           >
-            <p
-              className={cn(
-                "sidebar-group-title",
-                collapsed && "md:w-[45px]"
-              )}
-            >
+            <p className={cn("sidebar-group-title", collapsed && "md:w-[45px]")}>
               {navbarLink.title}
             </p>
 
             {navbarLink.links.map((link) => {
-              // Make the root dashboard link exact so it doesn't stay active on subroutes
-              const makeExact =
-                link.path === "/dashboard" || link.path === "/";
-
+              const makeExact = link.path === "/dashboard" || link.path === "/";
               return (
                 <NavLink
                   key={link.label}
                   to={link.path}
-                  end={makeExact}               // <-- exact match for root link(s)
+                  end={makeExact}
                   className={({ isActive }) =>
                     cn(
                       "sidebar-item",
                       collapsed && "md:w-[45px]",
-                      isActive && "active"       // <-- only the active one gets blue
+                      isActive && "active"
                     )
                   }
                 >
                   <link.icon size={22} className="flex-shrink-0" />
-                  {!collapsed && (
-                    <p className="whitespace-nowrap">{link.label}</p>
-                  )}
+                  {!collapsed && <p className="whitespace-nowrap">{link.label}</p>}
                 </NavLink>
               );
             })}
           </nav>
         ))}
+      </div>
+
+      {/* Logout button at bottom */}
+      <div className="mt-auto p-3">
+        <button
+          onClick={handleGooglesignInUser}
+          className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition w-full"
+        >
+          <LogOut size={20} />
+          {!collapsed && <span>Logout</span>}
+        </button>
       </div>
     </aside>
   );

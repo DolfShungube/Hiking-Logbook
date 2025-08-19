@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { MapPinned } from "lucide-react";
+import { MapPinned, ChevronRight } from "lucide-react";
 import { useTheme } from "../hooks/use-theme.jsx";
 import mountain from "../assets/map-world.png";
-
 
 const friends = [
   { id: 1, name: "Albert Flores", status: "Online", time: "10:15", avatar: "https://i.pravatar.cc/100?img=11" },
@@ -27,11 +26,13 @@ const DashboardPage = () => {
   const [showAllRecs, setShowAllRecs] = useState(false);
 
   return (
-    <div className="p-6 flex flex-col gap-6">
-      <h1 className="title ">Hi, Dolf 👋</h1>
-      <h2 className="text-base font-medium text-slate-500 dark:text-slate-400">Welcome back! , Let's go on a Hike</h2>
+    <div className="p-6 flex flex-col gap-6 min-h-screen">
+      <h1 className="title">Hi, Dolf 👋</h1>
+      <h2 className="text-base font-medium text-slate-500 dark:text-slate-400">
+        Welcome back! Let's go on a Hike
+      </h2>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 flex-grow">
         {/* MOST VISITED PLACE */}
         <div className="card lg:col-span-8">
           <div className="card-header flex items-center justify-between">
@@ -55,7 +56,7 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* FRIENDLIST */}
+            {/* FRIENDLIST */}
         <div className="card lg:col-span-4">
           <div className="card-header flex items-center justify-between">
             <p className="card-title">Friendlist</p>
@@ -63,7 +64,7 @@ const DashboardPage = () => {
               className="text-sm text-blue-500 dark:text-blue-600"
               onClick={() => setShowAllFriends(!showAllFriends)}
             >
-              {showAllFriends ? "Show Less" : "View All"}
+              {showAllFriends ? "Show Less" : "View All"} <ChevronRight size={16} />
             </button>
           </div>
 
@@ -85,7 +86,7 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* RECOMMENDATIONS FOR YOU  */}
+        {/* RECOMMENDATIONS FOR YOU */}
         <div className="card lg:col-span-12">
           <div className="card-header flex items-center justify-between">
             <p className="card-title">Recommendation For You 🌈</p>
@@ -93,13 +94,16 @@ const DashboardPage = () => {
               className="text-blue-500 dark:text-blue-600"
               onClick={() => setShowAllRecs(!showAllRecs)}
             >
-              {showAllRecs ? "Show Less" : "View All"}
+              {showAllRecs ? "Show Less" : "View All"} <ChevronRight size={16} />
             </button>
           </div>
 
           <div className="card-body flex flex-col gap-4">
             {(showAllRecs ? recommendations : recommendations.slice(0, 3)).map((r) => (
-              <div key={r.id} className="flex items-center justify-between rounded-lg bg-slate-50 p-4 dark:bg-slate-900">
+              <div
+                key={r.id}
+                className="flex items-center justify-between rounded-lg bg-slate-50 p-4 dark:bg-slate-900"
+              >
                 <div className="flex flex-col">
                   <p className="font-semibold text-slate-900 dark:text-slate-50">{r.title}</p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
