@@ -2,34 +2,6 @@ import React, { useState } from "react";
 import { MapPinned, ChevronRight } from "lucide-react";
 import { useTheme } from "../hooks/use-theme.jsx";
 import mountain from "../assets/map-world.png";
-import { UserAuth } from "../context/AuthContext";
-
-const {session,signOutUser,getCurrentUser}= UserAuth()
-
-
-
-const getUserData= async()=>{
-
-  try {
-    const res= await getCurrentUser()
-    //const name=res.user_metadata.name
-    return res
-    
-  } catch (error) {
-    console.log(error)
-  }
-
-
-
-}
-
-let User= getUserData()
-
-let name= User.user_metadata.name
-
-if(name==undefined){
-  name=User.user_metadata.name.firstname
-}
 
 const friends = [
   { id: 1, name: "Albert Flores", status: "Online", time: "10:15", avatar: "https://i.pravatar.cc/100?img=11" },
@@ -55,7 +27,7 @@ const DashboardPage = () => {
 
   return (
     <div className="p-6 flex flex-col gap-6 min-h-screen">
-      <h1 className="title">Hi, {name} 👋</h1>
+      <h1 className="title">Hi, Dolf 👋</h1>
       <h2 className="text-base font-medium text-slate-500 dark:text-slate-400">
         Welcome back! Let's go on a Hike
       </h2>

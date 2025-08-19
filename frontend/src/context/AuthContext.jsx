@@ -123,16 +123,7 @@ const signOutUser= async()=>{
     }
 }
 
-const getCurrentUser= async()=> {
-  const { data: { user }, error } = await supabase.auth.getUser();
 
-
-  if (error) {
-    console.error('Error fetching user:', error.message);
-    return null;
-  }
-  return user
-}
 
 
 useEffect(()=>{
@@ -155,7 +146,7 @@ useEffect(()=>{
 },[])
 
     return (
-        <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser,GooglesignInUser,getCurrentUser}}>
+        <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser,GooglesignInUser}}>
             {children}
         </AuthContext.Provider>
     )
