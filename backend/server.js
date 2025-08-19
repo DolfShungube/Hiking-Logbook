@@ -154,7 +154,7 @@ app.listen(port, "0.0.0.0", () => {
 
 app.get("/hikes", async (req, res) =>{
   const {data, error } = await supabase
-  .from("HikeData")
+  .from("hikingStats")
   .select("*")
     .order("startdate",  { ascending: false});
   
