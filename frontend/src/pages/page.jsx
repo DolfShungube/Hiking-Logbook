@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { MapPinned, ChevronRight } from "lucide-react";
 import { useTheme } from "../hooks/use-theme.jsx";
+import mountain from "../assets/map-world.png";
 
 const friends = [
   { id: 1, name: "Albert Flores", status: "Online", time: "10:15", avatar: "https://i.pravatar.cc/100?img=11" },
@@ -48,7 +49,7 @@ const DashboardPage = () => {
 
           <div className="card-body bg-slate-100 dark:bg-slate-950">
             <img
-              src="src/assets/map-world.png"
+              src={mountain}
               alt="Most Visited Place"
               className="w-full h-64 object-cover rounded-lg"
             />
