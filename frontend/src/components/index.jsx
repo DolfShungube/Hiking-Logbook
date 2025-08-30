@@ -29,7 +29,7 @@ export const navbarLinks = [
             {
                 label: "View Current Hike",
                 icon:MapPin,
-                path: "/dashboard/View_Hike",
+                path: "/myhikes",
             },
 
 

@@ -4,6 +4,8 @@ import { useTheme } from "../hooks/use-theme.jsx";
 import mountain from "../assets/map-world.png";
 
 import RouteTracker from "../components/map.jsx"
+import { UserAuth } from "../context/AuthContext.jsx";
+
 
 let mydata=null
 
@@ -46,10 +48,11 @@ const DashboardPage = () => {
   const { theme } = useTheme();
   const [showAllFriends, setShowAllFriends] = useState(false);
   const [showAllRecs, setShowAllRecs] = useState(false);
+  const {session,currentUser}= UserAuth()
 
   return (
     <div className="p-6 flex flex-col gap-6 min-h-screen">
-      <h1 className="title">Hi, Dolf 👋</h1>
+      {currentUser?.userName ? (<h1 className="title">Hi, {currentUser.userName}</h1>) : (<p className="title">Loading...</p>)}
       <h2 className="text-base font-medium text-slate-500 dark:text-slate-400">
         Welcome back! Let's go on a Hike
       </h2>

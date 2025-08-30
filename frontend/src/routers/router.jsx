@@ -6,6 +6,7 @@ import SignUp from "../pages/SignUp"
 import PrivateRoute from "./PrivateRoute";
 import Layout from "./layout.jsx"; // Dashboard layout with sidebar
 import DashboardPage from "../pages/page";
+import PlanHikeDefault from "../pages/HikeCollectionPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -31,7 +32,12 @@ const router = createBrowserRouter([
         {
              path:"/profile",
             element: <h1>User Profile</h1>,
+        }, 
+        {
+             path:"/myhikes",
+            element: <PlanHikeDefault/>,
         }        
+        
     ]
   },
   // Separate route for dashboard with sidebar layout

@@ -18,6 +18,7 @@ export const AuthContextProvider=({children})=>{
 
 
     const [session,setSession]= useState(undefined)
+    const [currentUser,setCurrentUser]= useState()
 const signUpNewUser = async (firstName,lastName,email,password ) => {
   try {
 
@@ -126,27 +127,41 @@ const signOutUser= async()=>{
 
 
 
-useEffect(()=>{
+useEffect(() => {
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setSession(session);
 
-    supabase.auth.getSession().then(({data:{session}})=>{
-        setSession(session);
+    if (session?.user) {
+      const meta = session.user.user_metadata;
+      const displayName = meta?.name ?? meta?.firstName ?? null;
+      setCurrentUser({ ...session.user, displayName });
+    } else {
+      setCurrentUser(null);
+    }
+  });
 
-    });
+  const { data: authListener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setSession(session);
 
-    supabase.auth.onAuthStateChange((_event, session)=>{
-        setSession(session)
-    })
+      if (session?.user) {
+        const meta = session.user.user_metadata;
+        const userName = meta?.name ?? meta?.firstName ?? null;
+        const id= session.user.id
+        setCurrentUser({ ...session.user, userName,id });
+      } else {
+        setCurrentUser(null);
+      }
+    }
+  );
 
-    // return ()=>{
-    //     authListener.subscription.unsubscribe();
-    // }
-
-
-
-},[])
+  return () => {
+    authListener.subscription.unsubscribe();
+  };
+}, []);
 
     return (
-        <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser,GooglesignInUser}}>
+        <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser,GooglesignInUser,currentUser}}>
             {children}
         </AuthContext.Provider>
     )
