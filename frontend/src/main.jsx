@@ -8,14 +8,17 @@ import { ThemeProvider } from "/src/context/theme-context.jsx";
 
 import SignInPage from "./pages/SignIn.jsx";
 import App from "./App.jsx";
+import {HikeDataContextProvider} from './context/hikeDataContext.jsx'
 
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthContextProvider>
+      <HikeDataContextProvider>
       <ThemeProvider storageKey="theme">
         <RouterProvider router={router} />
       </ThemeProvider>
+      </HikeDataContextProvider>
     </AuthContextProvider>
   </StrictMode>,
 )
