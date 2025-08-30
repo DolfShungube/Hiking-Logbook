@@ -8,6 +8,10 @@ const app=express()
 const port= process.env.PORT||8080
 app.use(express.json());
 
+const {inviteFriend,acceptInvite,rejectInvite,getFriends} = require("./friends/friends.controller")
+const {signIn,signInWithGoogle,signUp} = require("./auth/auth.controller")
+const {fetchCompletedHikes,fetchCurrentHike}= require("./hikeData/hikes.controller")
+
 
 
 app.use(cors({ origin: true, credentials: true }));
@@ -20,8 +24,6 @@ app.get("/", (req, res) => {
 const supabaseUrl=process.env.VITE_SUPABASE_URL
 const supabasekey=process.env.VITE_SUPABASE_ANON_KEY
 
-
-
 const supabase= createClient(supabaseUrl,supabasekey,{
         auth: {
         persistSession: true,
@@ -30,75 +32,18 @@ const supabase= createClient(supabaseUrl,supabasekey,{
 });
 
 
+app.post("/invite-friend",inviteFriend)
+app.post("/accept-invite",acceptInvite)
+app.post("/reject-invite",rejectInvite)
+app.get("/get-friends",getFriends)  // check the controller for this !!!
 
 
-app.post("/signup", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+app.post("/signup", signUp);
+app.post("/signin", signIn); 
+app.post("/googlesignin",signInWithGoogle); 
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        firstname: firstName,
-        lastname: lastName,
-      },
-    },
-  });
-
-  if (error) {
-    return res.status(400).json({ error: error.message });
-  }
-
-  res.status(200).json({ user: data.user });
-});
-
-
-
-app.post("/signin", async (req, res) => {
-  const { email, password } = req.body;
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return res.status(401).json({ error: error.message });
-  }
-
-  res.cookie("sb-access-token", data.session.access_token, {
-    httpOnly: true, 
-   // secure: true,  
-    sameSite: "Strict",
-    maxAge: 60*60*1000
-  });
-
-  res.status(200).json({
-    message: "Login successful",
-    user: data.user,
-    session: data.session    
-  });
-}); 
-
-app.post("/googlesignin", async (req, res) => { 
-
-   const { frontendBaseUrl } = req.body;
-   const redirectTo = `${frontendBaseUrl}/dashboard`;
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo }
-    });
-
-  if (error) {
-    return res.status(401).json({ error: error.message });
-  }
-
-  return res.json({ url: data.url });
-
-
-}); 
+app.get("/completed-hikes",fetchCompletedHikes);
+app.get("/current-hike",fetchCurrentHike)
 
 
 app.post("/newHike",async (req,res)=>{
