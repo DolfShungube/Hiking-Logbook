@@ -20,7 +20,7 @@ const GoalDataContext= createContext(null);
             }
 
            
-            return data.data[0].goals.goals ;
+            return data?.data[0]?.goals?.goals || [];
             
             
         } catch (err) {
