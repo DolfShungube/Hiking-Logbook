@@ -107,7 +107,7 @@ const getFriends= async (req,res)=>{
     const {data,error:statusError}= await supabase
     .from("friends")
     .select("*")
-    .eq("userid",userid)
+    .eq("hikeid",userid)
     .single()
 
     if(statusError){
