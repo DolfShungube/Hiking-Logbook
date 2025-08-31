@@ -39,7 +39,7 @@ const PlanHikeDefault = () => {
   });
 
   // Base URL for your API - adjust this to match your server
-  const API_BASE_URL = 'http://localhost:8080';
+  const API_BASE_URL = 'https://hiking-logbook-api.onrender.com';
 
   // Fetch planned hikes
   const fetchPlannedHikes = async () => {
