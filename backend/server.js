@@ -8,14 +8,11 @@ const port= process.env.PORT||8080
 app.use(express.json());
 const {inviteFriend,acceptInvite,rejectInvite,getFriends} = require("./friends/friends.controller")
 const {signIn,signInWithGoogle,signUp} = require("./auth/auth.controller")
-const {fetchCompletedHikes,fetchCurrentHike, fetchHike}= require("./hikeData/hikes.controller");
+const {fetchCompletedHikes,fetchCurrentHike, fetchHike, fetchPlannedHikes,editPlannedHike, deletePlannedHike}= require("./hikeData/hikes.controller");
 const { fetchUser } = require("./users/users.controller");
 const { getNotes } = require("./notes/notes.controller");
 const { getGoals } = require("./goals/goals.controller");
 
-
-
-const {fetchCompletedHikes,fetchCurrentHike,fetchPlannedHikes,editPlannedHike,deletePlannedHike}= require("./hikeData/hikes.controller")
 app.use(cors({ origin: true, credentials: true }));
 app.get("/", (req, res) => {
 res.send("Server is running..");
