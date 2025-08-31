@@ -7,6 +7,8 @@ import PrivateRoute from "./PrivateRoute";
 import Layout from "./layout.jsx"; // Dashboard layout with sidebar
 import DashboardPage from "../pages/page";
 import PlanHikeDefault from "../pages/HikeCollectionPage.jsx";
+import HikeLogbookPage from "../pages/logBook.jsx";
+
 
 const router = createBrowserRouter([
   {
@@ -36,6 +38,10 @@ const router = createBrowserRouter([
         {
              path:"/myhikes",
             element: <PlanHikeDefault/>,
+        }, 
+        {
+             path:"/logentry/:hikeid",
+            element: <HikeLogbookPage/>,
         }        
         
     ]

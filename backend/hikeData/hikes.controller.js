@@ -60,6 +60,31 @@ const fetchCurrentHike= async (req,res)=>{
 }
 
 
+
+const fetchHike= async (req,res)=>{
+
+  const {hikeid}= req.query;
+  try {
+
+    const { data: sentData, error: sentError } = await supabase
+        .from("HikeData")
+        .select("*")
+        .eq("hikeid",hikeid)
+        
+    if (sentError) {
+      console.error("Error while fetching the hike:", sentError);
+      return res.status(500).json({ error: sentError.message });
+    }
+
+    return res.status(200).json({ message: "current hike fetched successfully", data: sentData });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+
+}
+
+
 module.exports={
-    fetchCompletedHikes,fetchCurrentHike
+    fetchCompletedHikes,fetchCurrentHike,fetchHike
 }
