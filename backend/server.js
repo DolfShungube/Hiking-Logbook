@@ -10,7 +10,10 @@ app.use(express.json());
 
 const {inviteFriend,acceptInvite,rejectInvite,getFriends} = require("./friends/friends.controller")
 const {signIn,signInWithGoogle,signUp} = require("./auth/auth.controller")
-const {fetchCompletedHikes,fetchCurrentHike}= require("./hikeData/hikes.controller")
+const {fetchCompletedHikes,fetchCurrentHike, fetchHike}= require("./hikeData/hikes.controller");
+const { fetchUser } = require("./users/users.controller");
+const { getNotes } = require("./notes/notes.controller");
+const { getGoals } = require("./goals/goals.controller");
 
 
 
@@ -32,10 +35,14 @@ const supabase= createClient(supabaseUrl,supabasekey,{
 });
 
 
+app.get("/get-user",fetchUser);
+
+
+
 app.post("/invite-friend",inviteFriend)
 app.post("/accept-invite",acceptInvite)
 app.post("/reject-invite",rejectInvite)
-app.get("/get-friends",getFriends)  // check the controller for this !!!
+app.get("/get-friends",getFriends)  // check the controller for this needs t !!!
 
 
 app.post("/signup", signUp);
@@ -44,6 +51,11 @@ app.post("/googlesignin",signInWithGoogle);
 
 app.get("/completed-hikes",fetchCompletedHikes);
 app.get("/current-hike",fetchCurrentHike)
+app.get("/get-hike",fetchHike)
+
+app.get("/get-notes",getNotes)
+
+app.get("/get-goals",getGoals)
 
 
 app.post("/newHike",async (req,res)=>{

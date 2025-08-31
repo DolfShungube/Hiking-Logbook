@@ -3,6 +3,7 @@ import { hikeDataCollection } from '../context/hikeDataContext'
 import { useContext } from 'react'
 import { UserAuth } from '../context/AuthContext'
 import HikeItem from './hikeItem'
+import { useNavigate } from "react-router-dom";
 
 
  const HikeCollection=({type})=> {
@@ -12,6 +13,7 @@ import HikeItem from './hikeItem'
   const { currentUser } = UserAuth();
   const [loading, setLoading] = useState(true);
   const table= type=="current"? currentHike:completedHikes
+  const navigate = useNavigate();
 
   const HandleCompletedHikes = async (id) => {
     try {
@@ -55,7 +57,7 @@ const handleClick=(type, hike)=>{
     if(type=="current"){
         console.log("it is complete1")
     }else if(type=="complete"){
-        console.log("it is complete")
+    navigate(`/logentry/${hike.hikeid}`);
     }
 
 }

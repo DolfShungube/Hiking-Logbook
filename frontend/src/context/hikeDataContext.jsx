@@ -59,12 +59,37 @@ const HikeDataContext= createContext(null);
     }
 
 
+    const getHike= async(hike_id)=>{
+
+        try {
+            const res= await fetch(
+                `https://hiking-logbook-api.onrender.com/get-hike?hikeid=${encodeURIComponent(hike_id)}`,{
+                method:"GET",
+            })
+
+            const data = await res.json();
+
+            if(!res.ok){
+                console.error("Error fetching hike:", data.error);
+                throw new Error(data.error || "Failed to fetch  hike");
+            }
+
+            return data.data;
+            
+        } catch (err) {
+        console.error("fetching error:", err);
+            throw err;            
+        }
+
+    }    
+
+
 
 
 
 
     return (
-        <HikeDataContext.Provider value={{getCompletedHikesData,getCurrentHikeData}}>
+        <HikeDataContext.Provider value={{getCompletedHikesData,getCurrentHikeData,getHike}}>
             {children}
         </HikeDataContext.Provider>
     )
