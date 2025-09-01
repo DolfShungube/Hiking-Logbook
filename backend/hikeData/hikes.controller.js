@@ -40,7 +40,7 @@ const fetchCurrentHike = async (req, res) => {
     const { data: sentData, error: sentError } = await supabase
       .from("HikeData")
       .select("*")
-      .eq("userid", userid) // ✅ Correct: Get hikes by user ID
+      .eq("userid", userid)
       .eq("status", "in progress");
 
     if (sentError) {
@@ -64,7 +64,7 @@ const fetchPlannedHikes = async (req, res) => {
     const { data: sentData, error: sentError } = await supabase
       .from("HikeData")
       .select("*")
-      .eq("userid", userid) // ✅ Correct: Get hikes by user ID
+      .eq("userid", userid)
       .eq("status", "planned")
       .order("startdate", { ascending: true });
 
@@ -112,7 +112,6 @@ const editPlannedHike = async (req, res) => {
   const updateData = req.body;
 
   try {
-    // Check if the hike exists
     const { data: existingHike, error: fetchError } = await supabase
       .from("HikeData")
       .select("*")
@@ -125,7 +124,6 @@ const editPlannedHike = async (req, res) => {
       });
     }
 
-    // Update the hike
     const { data: updatedData, error: updateError } = await supabase
       .from("HikeData")
       .update(updateData)
@@ -148,10 +146,9 @@ const editPlannedHike = async (req, res) => {
 };
 
 const deletePlannedHike = async (req, res) => {
-  const { hikeId } = req.params; // This is the hikeid (primary key)
+  const { hikeId } = req.params;
 
   try {
-    // Check if the hike exists
     const { data: existingHike, error: fetchError } = await supabase
       .from("HikeData")
       .select("*")
@@ -164,11 +161,11 @@ const deletePlannedHike = async (req, res) => {
       });
     }
 
-    // Delete the hike
     const { error: deleteError } = await supabase
       .from("HikeData")
       .delete()
       .eq("hikeid", hikeId);
+
     if (deleteError) {
       console.error("Error while deleting hike:", deleteError);
       return res.status(500).json({ error: deleteError.message });

@@ -2,13 +2,15 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Welcome from "../pages/Welcome";
 import SignIn from "../pages/SignIn";
-import SignUp from "../pages/SignUp"
+import SignUp from "../pages/SignUp";
 import PrivateRoute from "./PrivateRoute";
 import Layout from "./layout.jsx"; // Dashboard layout with sidebar
 import DashboardPage from "../pages/page";
 import PlanHikeDefault from "../pages/HikeCollectionPage.jsx";
+import PlanHike  from "../pages/PlanHike.jsx";
+import CreateHike from "../pages/CreateHike.jsx";
+import HikeCreatedPage from "../pages/HikeCreated.jsx";
 import HikeLogbookPage from "../pages/logBook.jsx";
-
 
 const router = createBrowserRouter([
   {
@@ -43,18 +45,12 @@ const router = createBrowserRouter([
              path:"/logentry/:hikeid",
             element: <HikeLogbookPage/>,
         }        
-        
     ]
   },
   // Separate route for dashboard with sidebar layout
   {
     path: "/dashboard",
-    element: (
-       
-        <Layout />
-     
-     
-    ),
+    element: <Layout />,
     children: [
       {
         index: true,
@@ -62,7 +58,15 @@ const router = createBrowserRouter([
       },
       {
         path: "Calendar",
-        element: <h1 className="title">Calendar</h1>,
+        element:<PlanHike />,
+      },
+      {
+          path: "CreateHike",
+          element: <CreateHike />
+      },
+      {
+          path: "HikeCreated",
+          element: <HikeCreatedPage />
       },
       {
         path:  "Bookings",
