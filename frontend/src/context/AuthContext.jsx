@@ -133,7 +133,7 @@ useEffect(() => {
 
     if (session?.user) {
       const meta = session.user.user_metadata;
-      const displayName = meta?.name ?? meta?.firstName ?? null;
+      const displayName = meta?.name ?? meta?.firstname ?? null;
       setCurrentUser({ ...session.user, displayName });
     } else {
       setCurrentUser(null);

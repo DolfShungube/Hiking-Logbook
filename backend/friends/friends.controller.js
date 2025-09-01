@@ -102,12 +102,12 @@ const rejectInvite= async (req, res) => {
 
 
 const getFriends= async (req,res)=>{
-  const {userid}= req.body
+  const {userid}= req.query
   try {
     const {data,error:statusError}= await supabase
     .from("friends")
     .select("*")
-    .eq("userid",userid)
+    .eq("hikeid",userid)
     .single()
 
     if(statusError){
