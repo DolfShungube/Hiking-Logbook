@@ -11,7 +11,7 @@ app.use(express.json());
 const {inviteFriend,acceptInvite,rejectInvite,getFriends} = require("./friends/friends.controller")
 const {signIn,signInWithGoogle,signUp} = require("./auth/auth.controller")
 const {fetchCompletedHikes,fetchCurrentHike}= require("./hikeData/hikes.controller")
-
+const {CreateNewHike} =  require("./hikeData/CreateNewHike")
 
 
 app.use(cors({ origin: true, credentials: true }));
@@ -41,54 +41,16 @@ app.get("/get-friends",getFriends)  // check the controller for this !!!
 app.post("/signup", signUp);
 app.post("/signin", signIn); 
 app.post("/googlesignin",signInWithGoogle); 
+//Creating new hike
+app.post("/newHike", CreateNewHike)
 
 app.get("/completed-hikes",fetchCompletedHikes);
 app.get("/current-hike",fetchCurrentHike)
 
 
-app.post("/newHike",async (req,res)=>{
 
-  const{userid,   
-        startdate,           
-        location,
-        weather,
-        elevation,                  
-        route,
-        status,             
-        distance,                    
-        hikinggroup,
-        difficulty}= req.body
 
-const { data, error } = await supabase
-    .from("HikeData")
-    .insert([
-      {
-        userid: userid,              
-        startdate: startdate,           
-        location: location,
-        weather: weather,
-        elevation: elevation,                   // in m
-        route: route,
-        status: status,               //Planned / In Progress / Completed
-        distance: distance,                     // in m
-        hikinggroup: hikinggroup,
-        difficulty: difficulty
-      }
-    ])
 
-    .select();
-
-  if (error) {
-    return res.status(401).json({ error: error.message });
-  }
-
-  res.status(200).json({
-    message: "successfully created new hike",
-    hike:data[0]
-
-  });  
-
-})
 
 
 

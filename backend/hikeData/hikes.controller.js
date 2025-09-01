@@ -60,6 +60,7 @@ const fetchCurrentHike= async (req,res)=>{
 }
 
 
+
 module.exports={
     fetchCompletedHikes,fetchCurrentHike
 }
