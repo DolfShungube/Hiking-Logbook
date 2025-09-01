@@ -125,6 +125,33 @@ const signOutUser= async()=>{
 }
 
 
+//use render when we are ready to implement and deploy
+
+//localtesting1
+const updateHikeStatus= async(hikeId,status)=>{
+    try{
+        const res= await fetch(`${import.meta.env.VITE_BACKEND_URL}/HikeStatus`,{ 
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({hikeId,status})
+        })}catch(err){
+            console.log(err)
+        }
+};
+
+//localtesting2
+const getHikeID = async (userId)=>{
+    try{
+        const res= await fetch(`${import.meta.env.VITE_BACKEND_URL}/userHikeId/${userId}`)
+        const data= await res.json();
+        return data
+    }catch(err){
+        console.log(err)
+    } 
+};
+
+
+
 
 
 useEffect(() => {
