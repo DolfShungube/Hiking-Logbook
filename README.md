@@ -1,6 +1,17 @@
 # Hiking-logbook
 
-This project aims to create a web app to be used in recording hiking information.
+Tracking completed hikes was historically done with a physical logbook. **Hiking Log** serves the same role, but is available on the web. Track your hikes, their location, distance, and thoughts from anywhere.
+
+![Hiking Log Screenshot](frontend/src/assets/hiking.jpg)
+
+## Features
+- Add and view hikes
+- Record location, distance, and notes
+- Accessible anywhere on the web
+
+## Tech Stack
+- Frontend: React / Vite / etc.
+- Backend: Node.js / Supabase / etc.
 
 ## documentation site:
 [Notion External Documentation](https://www.notion.so/Hiking-logbook-2528687957a4803eb460fec9b6d35ae2)
