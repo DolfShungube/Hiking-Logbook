@@ -51,7 +51,7 @@ const HikeCollection = ({ type }) => {
 
   const handleClick = (type, hike) => {
     if (type === "current") {
-      navigate("/current"); // Navigate to Current Hike page
+      navigate(`/current/${hike.hikeid}`); // Navigate to Current Hike page
     } else if (type === "complete") {
       navigate(`/logentry/${hike.hikeid}`);
     }
