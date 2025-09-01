@@ -7,6 +7,7 @@ const app = express();
 const port = process.env.PORT || 8080;
 app.use(express.json());
 
+const weatherRouter = require("./endpoints/weatherAPI.js");
 const { inviteFriend, acceptInvite, rejectInvite, getFriends } = require("./friends/friends.controller");
 const { signIn, signInWithGoogle, signUp } = require("./auth/auth.controller");
 const { fetchCompletedHikes, fetchCurrentHike } = require("./hikeData/hikes.controller");
@@ -74,3 +75,48 @@ app.get("/hikes", async (req, res) => {
     hikes: data
   });
 });
+
+
+//API to handle hikesStatus update
+app.put("/HikeStatus", async (req, res) => {
+  const { hikeId, status } = req.body;
+  const { data, error } = await supabase
+    .from("HikeData")
+    .update({ status: status })
+    .eq("hikeid", hikeId)
+    .select();
+
+    if (error) {
+    return res.status(400).json({ error: error.message });
+  }else{
+    res.status(200).json({
+      message: "Hike status updated",
+      hike: data[0]
+    });
+  }
+});
+
+app.use("/api/weather",weatherRouter);
+
+module.exports = app;
+
+
+//API to get all hikeId for a specific user to update the status later
+app.get("/userHikeId/:userid", async (req, res) =>{
+  const { userid } = req.params;
+  const {data, error } = await supabase
+  .from("HikeData")
+  .select("hikeid")
+  .eq("userid", userid)
+  .is("status", null);
+  
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  //console.log("Query result:", data);
+  res.status(200).json({
+    message: "Fetched all hikes for user",
+    hikes:data,
+  });
+  });
+

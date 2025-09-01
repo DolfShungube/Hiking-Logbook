@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getWeather } from "../../apiCalls/getWeather.js";
 
 // Mock ImageWithFallback component
 const ImageWithFallback = ({ src, alt, className }) => (
@@ -40,6 +41,10 @@ const PlanHike = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
   const {session, currentUser} = UserAuth();
+
+  const [error, setError] = useState("");
+  const [coords, setCoords] = useState(null);
+
   const navigate = useNavigate();
 
   // Mock friends list(this is how the friends should be)
@@ -286,6 +291,14 @@ const PlanHike = () => {
     setWeather(null);
     setSubmitMessage('');
   };
+
+/// My component
+
+  const handleDateChange = (e) => {
+    setDate(e.target.value);
+  };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">

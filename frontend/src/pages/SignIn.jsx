@@ -87,7 +87,7 @@ const handleGooglesignInUser= async()=>{
       </div>
 
       {/* Form on right-center */}
-      <div className="absolute top-50 right-50">
+      <div className="absolute top-25 right-50">
         <div className="bg-white p-10 rounded-2xl shadow-2xl max-w-md w-full bg-opacity-90">
           <h2 className="text-3xl font-semibold text-center mb-15">LogIn</h2>
           { showModal && <Modal heading="ERROR" message={error} setShowModal={setShowModal}/>}
