@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPinned, NotebookPen, Flag, Users, ArrowRight, Clock, Map, Activity, X } from 'lucide-react';
+import { MapPinned, NotebookPen, Flag, Users, ArrowRight, Clock, Map, Activity, Calendar, X, Eye } from 'lucide-react';
 import RouteTracker from '../components/map.jsx';
 import HikeCollection from '../components/hikeCollection.jsx';
 
@@ -13,6 +13,34 @@ const PlanHikeDefault = () => {
   const friends = [
     { id: 1, name: "Albert Flores", status: "Online", avatar: "https://i.pravatar.cc/100?img=11" },
     { id: 2, name: "Sofia Carter", status: "Online", avatar: "https://i.pravatar.cc/100?img=16" },
+  ];
+
+  // Example completed hikes
+  const completedHikes = [
+    {
+      id: 1,
+      trail: "Blue Mountain",
+      distance: "10 km",
+      duration: "2h 45m",
+      difficulty: "Moderate",
+      date: "2025-08-20"
+    },
+    {
+      id: 2,
+      trail: "Sunrise Peak",
+      distance: "12 km",
+      duration: "3h 10m",
+      difficulty: "Hard",
+      date: "2025-08-15"
+    },
+    {
+      id: 3,
+      trail: "Lakeview Trail",
+      distance: "8 km",
+      duration: "2h 0m",
+      difficulty: "Easy",
+      date: "2025-08-10"
+    }
   ];
 
   const addGoal = (goal) => {
@@ -107,8 +135,38 @@ const PlanHikeDefault = () => {
               View All <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-          <HikeCollection type={"complete"} />
+
+          {/* List of Completed Hikes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {completedHikes.map(hike => (
+              <div key={hike.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg hover:shadow-xl transition">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">{hike.trail}</h3>
+                <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+                  <li className="flex items-center gap-2">
+                    <Map size={18} className="text-blue-500 dark:text-blue-400" />
+                    {hike.distance}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Clock size={18} className="text-green-500 dark:text-green-400" />
+                    {hike.duration}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Activity size={18} className="text-red-500 dark:text-red-400" />
+                    {hike.difficulty}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Calendar size={18} className="text-purple-500 dark:text-purple-400" />
+                    {hike.date}
+                  </li>
+                </ul>
+                <button className="mt-4 flex items-center gap-1 text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-medium">
+                  <Eye size={16} /> View Details
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
+
       </div>
 
       {/* Notes Modal */}
@@ -136,8 +194,6 @@ const PlanHikeDefault = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Your Goals</h3>
-            
-            {/* Current Goals List */}
             <ul className="space-y-2 text-gray-700 dark:text-gray-300 mb-4">
               {goals.map((goal, idx) => (
                 <li key={idx} className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
@@ -148,8 +204,6 @@ const PlanHikeDefault = () => {
                 </li>
               ))}
             </ul>
-
-            {/* Add New Goal */}
             <textarea
               className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
               rows="2"
@@ -162,7 +216,6 @@ const PlanHikeDefault = () => {
                 }
               }}
             />
-
             <div className="mt-4 flex justify-end gap-2">
               <button onClick={() => setShowGoals(false)} className="px-4 py-2 bg-blue-500 text-white rounded">Close</button>
             </div>
