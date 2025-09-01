@@ -6,7 +6,7 @@ import SignUp from "../pages/SignUp";
 import PrivateRoute from "./PrivateRoute";
 import Layout from "./layout.jsx"; // Dashboard layout with sidebar
 import DashboardPage from "../pages/page";
-import PlanHikeDefault from "../pages/HikeCollectionPage.jsx";
+import HikeCollectionPage from "../pages/HikeCollectionPage.jsx";
 import PlanHike from "../pages/PlanHike.jsx";
 import CreateHike from "../pages/CreateHike.jsx";
 import HikeCreatedPage from "../pages/HikeCreated.jsx";
@@ -41,7 +41,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/myhikes",
-        element: <PlanHikeDefault />,
+        element: <HikeCollectionPage />,
       },
       {
         path: "/current/:hikeid",
@@ -83,7 +83,7 @@ const router = createBrowserRouter([
       },
       {
         path: "View_Hike",
-        element: <HikeCreatedPage/>,
+        element: <HikeCollectionPage/>,
       },
       {
         path: "Settings",
