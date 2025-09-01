@@ -12,6 +12,7 @@ import {HikeDataContextProvider} from './context/hikeDataContext.jsx'
 import { GoalDataCollection, GoalDataContextProvider } from './context/GoalsContext.jsx'
 import { NotesDataContextProvider } from './context/NotesContext.jsx'
 import { UserDataContextProvider } from './context/UsersContext.jsx'
+import { RouteDataContextProvider } from './context/MapRoutesContext.jsx'
 
 
 createRoot(document.getElementById('root')).render(
@@ -22,9 +23,11 @@ createRoot(document.getElementById('root')).render(
       <NotesDataContextProvider>
       <GoalDataContextProvider>
       <HikeDataContextProvider>
+      <RouteDataContextProvider>
       <ThemeProvider storageKey="theme">
         <RouterProvider router={router} />
       </ThemeProvider>
+      </RouteDataContextProvider>
       </HikeDataContextProvider>
       </GoalDataContextProvider>
       </NotesDataContextProvider>
