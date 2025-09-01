@@ -18,7 +18,7 @@ import {
 import HikeCollection from '../components/hikeCollection';
 
 
-const PlanHikeDefault = () => {
+const HikeCollectionPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -61,4 +61,4 @@ const PlanHikeDefault = () => {
   );
 };
 
-export default PlanHikeDefault;
+export default HikeCollectionPage;
