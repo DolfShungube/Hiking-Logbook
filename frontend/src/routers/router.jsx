@@ -13,6 +13,7 @@ import HikeCreatedPage from "../pages/HikeCreated.jsx";
 import HikeLogbookPage from "../pages/logBook.jsx";
 import Current from "../pages/current.jsx";//Make sure the filename matches exactly
 
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -43,7 +44,7 @@ const router = createBrowserRouter([
         element: <PlanHikeDefault />,
       },
       {
-        path: "/current",
+        path: "/current/:hikeid",
         element: <Current />, // Fixed capitalization
       },
       {
@@ -82,7 +83,7 @@ const router = createBrowserRouter([
       },
       {
         path: "View_Hike",
-        element: <h1 className="title">View Current Hike</h1>,
+        element: <HikeCreatedPage/>,
       },
       {
         path: "Settings",
