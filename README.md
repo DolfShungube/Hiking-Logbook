@@ -10,8 +10,8 @@ Tracking completed hikes was historically done with a physical logbook. **Hiking
 - Accessible anywhere on the web
 
 ## Tech Stack
-- Frontend: React / Vite / etc.
-- Backend: Node.js / Supabase / etc.
+- Frontend: React / Vite 
+- Backend: Node.js / Supabase 
 
 ## documentation site:
 [Notion External Documentation](https://www.notion.so/Hiking-logbook-2528687957a4803eb460fec9b6d35ae2)
