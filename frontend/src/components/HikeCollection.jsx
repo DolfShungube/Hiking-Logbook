@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import { hikeDataCollection } from '../context/hikeDataContext'
-import { useContext } from 'react'
-import { UserAuth } from '../context/AuthContext'
-import HikeItem from './hikeItem'
+import React, { useEffect, useState } from 'react';
+import { hikeDataCollection } from '../context/hikeDataContext';
+import { UserAuth } from '../context/AuthContext';
+import HikeItem from './hikeItem';
 import { useNavigate } from "react-router-dom";
 
-
- const HikeCollection=({type})=> {
+const HikeCollection = ({ type }) => {
   const [completedHikes, setCompletedHikes] = useState([]);
   const [currentHike, setCurrentHike] = useState([]);
   const { getCompletedHikesData, getCurrentHikeData } = hikeDataCollection();
   const { currentUser } = UserAuth();
   const [loading, setLoading] = useState(true);
-  const table= type=="current"? currentHike:completedHikes
+  const table = type === "current" ? currentHike : completedHikes;
   const navigate = useNavigate();
 
   const HandleCompletedHikes = async (id) => {
@@ -32,46 +30,40 @@ import { useNavigate } from "react-router-dom";
       console.error("Unexpected error (current hike):", err);
     }
   };
-  
+
   useEffect(() => {
     if (currentUser?.id) {  
-      setLoading(true)
-      if(type=="current"){
-      HandleCurrentHike(currentUser.id);}
-      else{
-      HandleCompletedHikes(currentUser.id);}
-      setLoading(false)
+      setLoading(true);
+      if (type === "current") {
+        HandleCurrentHike(currentUser.id);
+      } else {
+        HandleCompletedHikes(currentUser.id);
+      }
+      setLoading(false);
     }
-  }, [currentUser,type]);
+  }, [currentUser, type]);
 
+  if (loading) {
+    return <p className="text-gray-500 dark:text-gray-400">Loading hikes...</p>;
+  } else if (!loading && table && table.length === 0) {
+    return <p className="text-gray-500 dark:text-gray-400">You have not started any hike yet.</p>;
+  }
 
-if (loading){
-  return <p className="text-gray-500 dark:text-gray-400">Loading hikes...</p>;
-}
-else if (!loading && table && table.length === 0) {
-  return <p className="text-gray-500 dark:text-gray-400">You have not started any hike yet.</p>;
-}
-
-const handleClick=(type, hike)=>{
-
-    if(type=="current"){
-        console.log("it is complete1")
-    }else if(type=="complete"){
-    navigate(`/logentry/${hike.hikeid}`);
+  const handleClick = (type, hike) => {
+    if (type === "current") {
+      navigate("/current"); // Navigate to Current Hike page
+    } else if (type === "complete") {
+      navigate(`/logentry/${hike.hikeid}`);
     }
-
-}
+  };
 
   return (
-
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {table.map((hike) => (
-            <HikeItem key={hike.hikeid} data={hike} onClick={() => handleClick(type, hike)}/>
-        ))}
+      {table.map((hike) => (
+        <HikeItem key={hike.hikeid} data={hike} onClick={() => handleClick(type, hike)} />
+      ))}
     </div>
-
-
   );
-}
+};
 
 export default HikeCollection;
