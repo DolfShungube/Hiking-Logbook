@@ -7,6 +7,9 @@ jobs:
   test:
     name: Run tests and collect coverage
     runs-on: ubuntu-latest
+    env:  
+      VITE_SUPABASE_URL: "http://localhost:54321"
+      VITE_SUPABASE_ANON_KEY: "dummy-key"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
