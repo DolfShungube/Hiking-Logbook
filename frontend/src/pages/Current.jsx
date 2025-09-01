@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapPinned, NotebookPen, Flag, Users, Clock, Map, Activity, X } from 'lucide-react';
 import RouteTracker from '../components/map.jsx';
+import { useParams } from 'react-router-dom';
+import { hikeDataCollection } from '../context/hikeDataContext.jsx';
+import route from 'color-convert/route.js';
+import { RouteDataCollection } from '../context/MapRoutesContext.jsx';
 
 const Current = () => {
   const [showNotes, setShowNotes] = useState(false);
@@ -8,6 +12,13 @@ const Current = () => {
   const [showFriends, setShowFriends] = useState(false);
   const [notes, setNotes] = useState("");
   const [goals, setGoals] = useState(["Reach summit", "Take photos at viewpoint"]);
+  const [mapData,setMapData]=useState(null)
+
+  const { hikeid } = useParams();
+  const {getHike} = hikeDataCollection()
+  const {getRouteJson}= RouteDataCollection()
+ 
+ 
 
   const friends = [
     { id: 1, name: "Albert Flores", status: "Online", avatar: "https://i.pravatar.cc/100?img=11" },
@@ -22,6 +33,39 @@ const Current = () => {
     setGoals(goals.filter((_, i) => i !== idx));
   };
 
+
+  const handleMap= async(hike_id)=>{
+  let res = await getHike(hike_id);
+  const routeid=res[0]?.route || null
+
+  if(routeid){
+
+    let data= await getRouteJson(routeid)
+    if(data[0]){
+      console.log(data[0])
+    setMapData(data[0]?.path || null)
+  }
+    
+
+  }
+
+
+  }
+
+
+  useEffect(()=>{
+
+    if(!mapData){
+      handleMap(hikeid);
+
+    }
+
+
+  },[hikeid])
+
+
+
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-6xl mx-auto px-6 py-8">
@@ -32,7 +76,8 @@ const Current = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Map */}
           <div className="lg:col-span-8 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden shadow-lg">
-            <RouteTracker className="w-full h-[420px]" />
+            {mapData?(
+            <RouteTracker routeGeoJSON={mapData} className="w-full h-[420px]" />):(<p className="text-center text-gray-500">Loading map...</p>)}
           </div>
 
           {/* Trail Info + Action Buttons */}

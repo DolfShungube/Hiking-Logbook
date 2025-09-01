@@ -16,6 +16,7 @@ const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = req
 const { fetchUser } = require("./users/users.controller");
 const { getNotes } = require("./notes/notes.controller");
 const { getGoals } = require("./goals/goals.controller");
+const { getRoute } = require("./routes/routes.controller");
 
 app.use(cors({ origin: true, credentials: true }));
 app.get("/", (req, res) => {
@@ -53,6 +54,8 @@ app.get("/get-goals", getGoals);
 app.get("/planned-hikes", fetchPlannedHikes);
 app.put("/planned-hikes/:hikeId", editPlannedHike);
 app.delete("/planned-hikes/:hikeId", deletePlannedHike);
+
+app.get("/get-route",getRoute);
 
 app.listen(port, "0.0.0.0", () => {
 });
