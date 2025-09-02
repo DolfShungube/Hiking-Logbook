@@ -20,6 +20,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getWeather } from "../../apiCalls/getWeather.js";
 
+
 // Mock ImageWithFallback component
 const ImageWithFallback = ({ src, alt, className }) => (
   <img src={src} alt={alt} className={className} />
@@ -224,7 +225,7 @@ const PlanHike = () => {
       const hikingGroup = {
         members: invitedFriends.map(friend => friend.id)
       };
-      //  use this when running locally, http://localhost:8080/newHike
+      //  use this when running locally,   http://localhost:8080/newHike
       const response = await fetch('https://hiking-logbook-api.onrender.com/newHike', {
         method: 'POST',
         credentials: 'include',
