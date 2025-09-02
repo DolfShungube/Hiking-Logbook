@@ -109,7 +109,7 @@ const fetchPlannedHikes = async (req, res) => {
     });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Fail" });
   }
 };
 
@@ -156,7 +156,7 @@ const fetchAllHikes = async (req, res) => {
     });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Fail" });
   }
 };
 
@@ -181,7 +181,7 @@ const fetchCompletedHikes = async (req, res) => {
     });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Fail" });
   }
 };
 
@@ -205,7 +205,7 @@ const fetchCurrentHike = async (req, res) => {
     });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Fail" });
   }
 };
 
@@ -228,7 +228,7 @@ const fetchHike = async (req, res) => {
     });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Fail" });
   }
 };
 
@@ -266,7 +266,7 @@ const editPlannedHike = async (req, res) => {
     });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Fail" });
   }
 };
 
@@ -302,7 +302,7 @@ const deletePlannedHike = async (req, res) => {
     });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Fail" });
   }
 };
 
