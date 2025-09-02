@@ -39,41 +39,49 @@ describe("Hike Controller", () => {
   });
 
   // ------------------ fetchCompletedHikes ------------------
-  describe("fetchCompletedHikes", () => {
-    it("should fetch completed hikes successfully", async () => {
-      mockFrom.mockReturnValue({
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        then: jest.fn(cb => cb({ data: [{ hikeid: 1 }], error: null })),
-      });
-
-      const req = mockRequest({ userid: 1 });
-      const res = mockResponse();
-
-      await fetchCompletedHikes(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "completed hikes fetched successfully",
-        data: [{ hikeid: 1 }],
-      });
+describe("fetchPlannedHikes", () => {
+  it("should fetch planned hikes successfully", async () => {
+    mockFrom.mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn().mockResolvedValue({
+        data: [{ hikeid: 3, startdate: "2025-09-15T09:00:00Z" }],
+        error: null,
+      }),
     });
 
-    it("should handle Supabase error", async () => {
-      mockFrom.mockReturnValue({
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        then: jest.fn(cb => cb({ data: null, error: { message: "Failed" } })),
-      });
+    const req = mockRequest({ userid: 3 });
+    const res = mockResponse();
 
-      const req = mockRequest({ userid: 1 });
-      const res = mockResponse();
+    await fetchPlannedHikes(req, res);
 
-      await fetchCompletedHikes(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Failed" });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "planned hikes fetched successfully",
+      data: expect.any(Array), // since you transform the hikes
     });
+  });
+
+  it("should handle Supabase error", async () => {
+    mockFrom.mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn().mockResolvedValue({
+        data: null,
+        error: { message: "Fail" },
+      }),
+    });
+
+    const req = mockRequest({ userid: 3 });
+    const res = mockResponse();
+
+    await fetchPlannedHikes(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Fail" });
+  });
 
     it("should handle unexpected errors (catch block)", async () => {
       mockFrom.mockImplementation(() => { throw new Error("Unexpected"); });
