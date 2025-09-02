@@ -13,7 +13,7 @@ const { signIn, signInWithGoogle, signUp } = require("./auth/auth.controller");
 const { fetchCompletedHikes, fetchCurrentHike } = require("./hikeData/hikes.controller");
 const { CreateNewHike } = require("./hikeData/CreateNewHike");
 
-const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/hikes.controller");
+const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/plannedHikes_details.js");
 const { fetchUser } = require("./users/users.controller");
 const { getNotes } = require("./notes/notes.controller");
 const { getGoals } = require("./goals/goals.controller");

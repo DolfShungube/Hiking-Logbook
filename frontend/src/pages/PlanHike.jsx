@@ -193,7 +193,7 @@ const PlanHikeDefault = () => {
   const handleSaveEdit = async () => {
     try {
       setSavingEdit(true);
-      // when running locally http://localhost:8080/planned-hikes/${editingHike.id}
+      // when running locally:  http://localhost:8080/planned-hikes/${editingHike.id}
       const response = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes/${editingHike.id}`, {
         method: 'PUT',
         credentials: 'include',
