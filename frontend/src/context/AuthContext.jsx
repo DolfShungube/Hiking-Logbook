@@ -130,7 +130,7 @@ const signOutUser= async()=>{
 //localtesting1
 const updateHikeStatus= async(hikeId,status)=>{
     try{
-        const res= await fetch(`${import.meta.env.VITE_BACKEND_URL}/HikeStatus`,{ 
+        const res= await fetch('https://hiking-logbook-api.onrender.com/HikeStatus',{ 
         method:"PUT",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({hikeId,status})
@@ -142,7 +142,7 @@ const updateHikeStatus= async(hikeId,status)=>{
 //localtesting2
 const getHikeID = async (userId)=>{
     try{
-        const res= await fetch(`${import.meta.env.VITE_BACKEND_URL}/userHikeId/${userId}`)
+        const res= await fetch(`https://hiking-logbook-api.onrender.com/userHikeId/${userId}`)
         const data= await res.json();
         return data
     }catch(err){

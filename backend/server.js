@@ -108,7 +108,7 @@ app.get("/userHikeId/:userid", async (req, res) =>{
   .from("HikeData")
   .select("hikeid")
   .eq("userid", userid)
-  .is("status", null);
+  .is("status", "in progress");
   
   if (error) {
     return res.status(500).json({ error: error.message });
