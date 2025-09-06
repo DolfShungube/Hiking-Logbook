@@ -83,13 +83,40 @@ const HikeDataContext= createContext(null);
 
     }    
 
+    // this is just a function I will use in my frontend to get the coordinates of the route for the current hike
+    
+    const getCoordinates= async(userid)=>{
+
+        try {
+            const res= await fetch(`http://localhost:8080/coordinates/${userid}`);
+            const data = await res.json();
+            if(!res.ok){
+                console.error("Error coordinates data:", data.error);
+                throw new Error(data.error || "Failed to fetch  coordinates data");
+            }
+            
+            return data;
+
+            //this return the start and end coordinates
+            //{message: 'Fetched start coordinates successfully', start: [Array], end: [Array]}
+            
+        } catch (err) {
+        console.error("fetching error:", err);
+            throw err;            
+        }
+
+    } 
+
+
+    
+
 
 
 
 
 
     return (
-        <HikeDataContext.Provider value={{getCompletedHikesData,getCurrentHikeData,getHike}}>
+        <HikeDataContext.Provider value={{getCompletedHikesData,getCurrentHikeData,getHike,getCoordinates}}>
             {children}
         </HikeDataContext.Provider>
     )

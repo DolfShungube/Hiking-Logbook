@@ -127,7 +127,7 @@ const signOutUser= async()=>{
 
 //use render when we are ready to implement and deploy
 
-//localtesting1
+
 const updateHikeStatus= async(hikeId,status)=>{
     try{
         const res= await fetch('https://hiking-logbook-api.onrender.com/HikeStatus',{ 
@@ -139,7 +139,7 @@ const updateHikeStatus= async(hikeId,status)=>{
         }
 };
 
-//localtesting2
+
 const getHikeID = async (userId)=>{
     try{
         const res= await fetch(`https://hiking-logbook-api.onrender.com/userHikeId/${userId}`)

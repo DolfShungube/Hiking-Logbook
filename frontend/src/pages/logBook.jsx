@@ -12,6 +12,7 @@ import { UserDataCollection } from "../context/UsersContext";
 
 
 
+
 export default function HikeLogbookPage() {
 
   const { hikeid } = useParams();
@@ -26,6 +27,7 @@ export default function HikeLogbookPage() {
   const {getNotes}= NotesDataCollection()
   const {getGoals}= GoalDataCollection()
   const {getUser}= UserDataCollection()
+  const {getCoordinates}= hikeDataCollection()
 
 
 
