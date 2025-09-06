@@ -3,7 +3,6 @@ import { MapPinned, Clock, Activity, Map } from "lucide-react";
 import RouteTracker from "../components/map.jsx";
 import { useParams } from "react-router-dom";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
-import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
 import { createClient } from "@supabase/supabase-js";
 import "mapbox-gl/dist/mapbox-gl.css"; // Mapbox CSS
 
@@ -14,20 +13,18 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 });
 
 const Current = () => {
-  const [mapData, setMapData] = useState(null);
   const [coords, setCoords] = useState(null);
   const [currentCoords, setCurrentCoords] = useState(null);
-  const [prevCoords, setPrevCoords] = useState(null);
-  const [realTimeDistance, setRealTimeDistance] = useState(0); // cumulative
+  const [realTimeDistance, setRealTimeDistance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
+  const [pathCoords, setPathCoords] = useState([]);
 
   const { hikeid } = useParams();
-  const { getHike, getCoordinates } = hikeDataCollection();
-  const { getRouteJson } = RouteDataCollection();
+  const { getCoordinates } = hikeDataCollection();
 
-  // Get current user
+  // Get current user ID
   const getCurrentUserId = async () => {
     try {
       const {
@@ -41,15 +38,15 @@ const Current = () => {
     }
   };
 
-  // Fetch starting coordinates
+  // Fetch start coordinates and path
   const fetchStartCoordinates = async () => {
     try {
       const userId = await getCurrentUserId();
       if (!userId) return;
 
       const coordsData = await getCoordinates(userId);
-      if (!coordsData || !coordsData.start) {
-        setError("No start coordinates found");
+      if (!coordsData || !coordsData.start || !coordsData.path) {
+        setError("No start coordinates or path found");
         return;
       }
 
@@ -57,19 +54,20 @@ const Current = () => {
         lat: coordsData.start[1],
         lon: coordsData.start[0],
       };
-
       setCoords(startCoords);
-      setPrevCoords(startCoords); // set initial previous position
       setDifficulty(coordsData.difficulty || "Unknown");
+
+      const path = coordsData.path.map(([lat, lon]) => ({ lat, lon }));
+      setPathCoords(path);
     } catch (err) {
-      console.error("Error fetching start coordinates:", err);
+      console.error("Error fetching coordinates:", err);
       setError("Error fetching start coordinates");
     } finally {
       setLoading(false);
     }
   };
 
-  // Haversine formula for distance between two coordinates
+  // Haversine formula
   const getDistanceFromLatLonInMeters = (lat1, lon1, lat2, lon2) => {
     const R = 6371000; // meters
     const phi1 = (lat1 * Math.PI) / 180;
@@ -85,27 +83,9 @@ const Current = () => {
     return R * c;
   };
 
-  // Fetch hike route
-  const fetchMapData = async () => {
-    try {
-      if (!hikeid) return;
-      const hike = await getHike(hikeid);
-      const routeId = hike?.[0]?.route;
-      if (!routeId) return;
-
-      const routeData = await getRouteJson(routeId);
-      if (routeData?.[0]?.path) {
-        setMapData(routeData[0].path);
-      }
-    } catch (err) {
-      console.error("Error fetching map data:", err);
-      setError("Error fetching map data");
-    }
-  };
-
-  // Track live user position and calculate cumulative distance
+  // Track live user position and calculate distance along path
   useEffect(() => {
-    if (!coords) return;
+    if (!coords || pathCoords.length === 0) return;
 
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -115,17 +95,33 @@ const Current = () => {
         };
         setCurrentCoords(newCoords);
 
-        if (prevCoords) {
-          const distance = getDistanceFromLatLonInMeters(
-            prevCoords.lat,
-            prevCoords.lon,
+        // Find closest point on path
+        let closestIndex = 0;
+        let minDist = Infinity;
+        pathCoords.forEach((point, idx) => {
+          const d = getDistanceFromLatLonInMeters(
+            point.lat,
+            point.lon,
             newCoords.lat,
             newCoords.lon
           );
-          setRealTimeDistance((prev) => prev + distance);
-        }
+          if (d < minDist) {
+            minDist = d;
+            closestIndex = idx;
+          }
+        });
 
-        setPrevCoords(newCoords);
+        // Sum distances along path up to closestIndex
+        let walkedDistance = 0;
+        for (let i = 1; i <= closestIndex; i++) {
+          walkedDistance += getDistanceFromLatLonInMeters(
+            pathCoords[i - 1].lat,
+            pathCoords[i - 1].lon,
+            pathCoords[i].lat,
+            pathCoords[i].lon
+          );
+        }
+        setRealTimeDistance(walkedDistance);
       },
       (err) => {
         console.error("Geolocation error:", err);
@@ -133,16 +129,14 @@ const Current = () => {
           "Could not get current location. Please allow location access."
         );
       },
-      { enableHighAccuracy: false, maximumAge: 5000, timeout: 60000 }
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 60000 }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [coords, prevCoords]);
+  }, [coords, pathCoords]);
 
-  // Initial data fetch
   useEffect(() => {
     fetchStartCoordinates();
-    fetchMapData();
   }, []);
 
   if (loading) return <p className="text-center mt-10">Loading hike info...</p>;
@@ -158,8 +152,12 @@ const Current = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Map */}
           <div className="lg:col-span-8 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden shadow-lg">
-            {mapData ? (
-              <RouteTracker routeGeoJSON={mapData} className="w-full h-[420px]" />
+            {pathCoords.length > 0 ? (
+              <RouteTracker
+                routeGeoJSON={pathCoords}
+                className="w-full h-[420px]"
+                currentPosition={currentCoords}
+              />
             ) : (
               <p className="text-center text-gray-500">Loading map...</p>
             )}
@@ -176,32 +174,21 @@ const Current = () => {
                   <Map size={20} className="text-blue-500 dark:text-blue-400" />
                   <span className="font-medium">Distance:</span>
                   <span className="ml-auto">
-                    {realTimeDistance
-                      ? (realTimeDistance / 1000).toFixed(2) + " km"
-                      : "Calculating..."}
+                    {(realTimeDistance / 1000).toFixed(2)} km
                   </span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Clock
-                    size={20}
-                    className="text-green-500 dark:text-green-400"
-                  />
+                  <Clock size={20} className="text-green-500 dark:text-green-400" />
                   <span className="font-medium">Time:</span>
                   <span className="ml-auto">3 hrs</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Activity
-                    size={20}
-                    className="text-red-500 dark:text-red-400"
-                  />
+                  <Activity size={20} className="text-red-500 dark:text-red-400" />
                   <span className="font-medium">Difficulty:</span>
                   <span className="ml-auto">{difficulty || "Loading..."}</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <MapPinned
-                    size={20}
-                    className="text-purple-500 dark:text-purple-400"
-                  />
+                  <MapPinned size={20} className="text-purple-500 dark:text-purple-400" />
                   <span className="font-medium">Duration:</span>
                   <span className="ml-auto">2 hrs left</span>
                 </li>
