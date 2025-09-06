@@ -62,6 +62,7 @@ const coordinates = async (req, res) => {
       coordinates = coordinates.flat();
     }
 
+    coordinates = coordinates.map(coord => coord.slice(0, 2));
     const StartCoordinates = coordinates[0].slice(0, 2);
     const EndCoordinates = coordinates[coordinates.length - 1].slice(0, 2);
 
@@ -69,7 +70,8 @@ const coordinates = async (req, res) => {
       message: "Fetched start coordinates successfully",
       start: StartCoordinates,
       end: EndCoordinates,
-      difficulty: pathRow.difficulty || "Unknown", // add difficulty here
+      difficulty: pathRow.difficulty || "Unknown",
+      path: coordinates, // send all points along the route 
     });
 
   } catch (err) {
