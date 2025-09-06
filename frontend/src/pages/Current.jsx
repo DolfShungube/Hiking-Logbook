@@ -19,6 +19,7 @@ const Current = () => {
   const [realTimeDistance, setRealTimeDistance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [difficulty,setDifficulty] = useState(null);
 
   const { hikeid } = useParams();
   const { getHike, getCoordinates } = hikeDataCollection();
@@ -57,6 +58,12 @@ const Current = () => {
       };
       console.log("Start coordinates:", startCoords);
       setCoords(startCoords);
+
+     
+     
+      setDifficulty(coordsData.difficulty);
+
+
     } catch (err) {
       console.error("Error fetching start coordinates:", err);
       setError("Error fetching start coordinates");
@@ -169,7 +176,7 @@ const Current = () => {
                 <li className="flex items-center gap-3">
                   <Activity size={20} className="text-red-500 dark:text-red-400" />
                   <span className="font-medium">Difficulty:</span>
-                  <span className="ml-auto">Moderate</span>
+                  <span className="ml-auto">{difficulty || "Loading..."}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <MapPinned size={20} className="text-purple-500 dark:text-purple-400" />
