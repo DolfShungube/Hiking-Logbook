@@ -47,7 +47,7 @@ const coordinates = async (req, res) => {
 
     const { data: pathRow, error } = await supabase
       .from("routes")
-      .select("path")
+      .select("path,difficulty")
       .eq("routeid", routeId)
       .single();
 
@@ -69,6 +69,7 @@ const coordinates = async (req, res) => {
       message: "Fetched start coordinates successfully",
       start: StartCoordinates,
       end: EndCoordinates,
+      difficulty: pathRow.difficulty || "Unknown", // add difficulty here
     });
 
   } catch (err) {
@@ -76,6 +77,9 @@ const coordinates = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+
 
 
 
