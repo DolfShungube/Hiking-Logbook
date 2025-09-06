@@ -1,38 +1,36 @@
 const request = require("supertest");
-const app = require("../server.js"); // your Express app
+const app = require("../server.js"); // Your Express app
 
-// Mock the Supabase client
-jest.mock("@supabase/supabase-js", () => ({
-  createClient: jest.fn(() => ({
+// Mock the supabase client
+jest.mock("../supabaseClient", () => ({
+  supabase: {
     from: jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn((column, value) => {
-          // column = 'userid', value = req.params.userid
-          return {
-            is: jest.fn(() => {
-              // Simulate database scenarios
-              if (value === "1") {
-                // User 1 has hikes
-                return {
-                  data: [{ hikeid: "H12345" }, { hikeid: "H67890" }],
-                  error: null,
-                };
-              } else if (value === "9999") {
-                // User 9999 has no hikes
-                return { data: [], error: null };
-              } else if (value === "error") {
-                // Simulate DB error
-                return { data: null, error: { message: "Database error!" } };
-              } else {
-                // Default empty
-                return { data: [], error: null };
-              }
-            }),
-          };
+          // Simulate database behavior based on userid
+          if (value === "1") {
+            // User 1 has hikes
+            return Promise.resolve({
+              data: [{ hikeid: "H12345" }, { hikeid: "H67890" }],
+              error: null,
+            });
+          } else if (value === "9999") {
+            // User 9999 has no hikes
+            return Promise.resolve({ data: [], error: null });
+          } else if (value === "error") {
+            // Simulate DB error
+            return Promise.resolve({
+              data: null,
+              error: { message: "Database error!" },
+            });
+          } else {
+            // Default case
+            return Promise.resolve({ data: [], error: null });
+          }
         }),
       })),
     })),
-  })),
+  },
 }));
 
 describe("GET /userHikeId/:userid", () => {

@@ -75,6 +75,75 @@ const PlanHike = () => {
     { id: 8, name: 'Ryan Connor', email: 'ryan.oc@email.com', avatar: 'RC' }
   ];
 // Hoping that the Api for the trails would be like this
+ const trails = [
+    {
+      id: 1,
+      name: 'Half Dome Trail',
+      location: 'Yosemite National Park, CA',
+      distance: '16.4 miles',
+      elevation: '4,800 ft',
+      duration: '10-14 hours',
+      difficulty: 'Expert',
+      image: 'https://images.unsplash.com/photo-1688602905494-5feda601966d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3NlbWl0ZSUyMGhhbGYlMjBkb21lJTIwdHJhaWx8ZW58MXx8fHwxNzU2MzI3MDg4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      description: 'Iconic granite dome with cables section and panoramic views'
+    },
+    {
+      id: 2,
+      name: 'Angels Landing',
+      location: 'Zion National Park, UT',
+      distance: '5.4 miles',
+      elevation: '1,488 ft',
+      duration: '4-6 hours',
+      difficulty: 'Hard',
+      image: 'https://images.unsplash.com/photo-1686347858432-c385c54f9dff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhbmdlbHMlMjBsYW5kaW5nJTIwemlvbiUyMHRyYWlsfGVufDF8fHx8MTc1NjMyNzA5MXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      description: 'Narrow ridge with chains and breathtaking canyon views'
+    },
+    {
+      id: 3,
+      name: 'Bright Angel Trail',
+      location: 'Grand Canyon National Park, AZ',
+      distance: '9.5 miles',
+      elevation: '3,020 ft',
+      duration: '6-9 hours',
+      difficulty: 'Hard',
+      image: 'https://images.unsplash.com/photo-1649786037057-8b1f92bdde95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxncmFuZCUyMGNhbnlvbiUyMGJyaWdodCUyMGFuZ2VsJTIwdHJhaWx8ZW58MXx8fHwxNzU2MzI3MDk1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      description: 'Well-maintained trail descending into the Grand Canyon'
+    },
+    {
+      id: 4,
+      name: 'Mount Washington',
+      location: 'White Mountains, NH',
+      distance: '8.5 miles',
+      elevation: '4,300 ft',
+      duration: '6-8 hours',
+      difficulty: 'Hard',
+      image: 'https://images.unsplash.com/photo-1558483754-4618fc25fe5e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxhcHBhbGFjaGlhbiUyMHRyYWlsJTIwbW91bnRhaW5zfGVufDF8fHx8MTc1NjMyNzA5OHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      description: 'Highest peak in the Northeast with extreme weather conditions'
+    },
+    {
+      id: 5,
+      name: 'Wonderland Trail',
+      location: 'Mount Rainier National Park, WA',
+      distance: '93 miles',
+      elevation: '22,000 ft',
+      duration: '10-14 days',
+      difficulty: 'Expert',
+      image: 'https://images.unsplash.com/photo-1572573022597-3da22e56ff39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtb3VudCUyMHJhaW5pZXIlMjB3b25kZXJsYW5kJTIwdHJhaWx8ZW58MXx8fHwxNzU2MzI3MTAxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      description: 'Epic circumnavigation of Mount Rainier through diverse landscapes'
+    },
+    {
+      id: 6,
+      name: 'Mount Denali Base Camp',
+      location: 'Denali National Park, AK',
+      distance: '12.2 miles',
+      elevation: '3,200 ft',
+      duration: '8-10 hours',
+      difficulty: 'Moderate',
+      image: 'https://images.unsplash.com/photo-1648804536048-0a7d8b103bbe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtb3VudGFpbiUyMGhpa2luZyUyMHRyYWlsJTIwc2NlbmljfGVufDF8fHx8MTc1NjIxNjU5Nnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      description: 'Scenic approach to North Americas highest peak'
+    }
+  ];
+
 
   //get coordinates that I will use in the get weather function
   const getCurrentUser = async()=>{
