@@ -89,7 +89,7 @@ const HikeDataContext= createContext(null);
     const getCoordinates= async(userid)=>{
 
         try {
-            const res= await fetch(`http://localhost:8080/coordinates/${userid}`);
+            const res= await fetch(`https://hiking-logbook-api.onrender.com/coordinates/${userid}`);
             const data = await res.json();
             if(!res.ok){
                 console.error("Error coordinates data:", data.error);
