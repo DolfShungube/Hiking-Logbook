@@ -3,6 +3,7 @@ import { createContext, useContext, useState } from "react";
 const HikeDataContext= createContext(null);
 
  export const HikeDataContextProvider=({children})=>{
+    
 
 
     const [hikeData,setHikeData]= useState()

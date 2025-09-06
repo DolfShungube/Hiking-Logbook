@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { HikeDataContextProvider } from './context/hikeDataContext.jsx';
 import './App.css'
 
 
@@ -7,9 +8,12 @@ function App() {
 
   return (
     <>
-      <main>
-        <Outlet/>
-      </main>
+     <HikeDataContextProvider>
+        <main>
+          <Outlet/>
+        </main>
+     </HikeDataContextProvider>
+     
       
     </>
   )

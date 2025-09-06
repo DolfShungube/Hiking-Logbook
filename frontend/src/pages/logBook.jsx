@@ -1,12 +1,3 @@
-import { createContext,useContext } from "react";
-const supabaseUrl=import.meta.env.VITE_SUPABASE_URL;
-const supabasekey=import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase= createClient(supabaseUrl,supabasekey,{
-        auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-         }
-});
 
 import { Users, Calendar, Clock, Mountain, Ruler, Sun, Star, CheckSquare } from "lucide-react";
 import {extractDate } from '../utils/hikeDates'
@@ -16,7 +7,7 @@ import { hikeDataCollection } from "../context/hikeDataContext";
 import { NotesDataCollection } from "../context/NotesContext";
 import { GoalDataCollection } from "../context/GoalsContext";
 import { UserDataCollection } from "../context/UsersContext";
-import { hikeDataCollection } from "../context/hikeDataContext";
+
 
 
 
@@ -40,7 +31,7 @@ export default function HikeLogbookPage() {
   const {getNotes}= NotesDataCollection()
   const {getGoals}= GoalDataCollection()
   const {getUser}= UserDataCollection()
-  const {getCoordinates}= hikeDataCollection()
+  //const {getCoordinates}= hikeDataCollection()
 
 
 
