@@ -1,4 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { createClient } from "@supabase/supabase-js";
+import { createContext,useContext } from "react";
+const supabaseUrl=import.meta.env.VITE_SUPABASE_URL;
+const supabasekey=import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase= createClient(supabaseUrl,supabasekey,{
+        auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+         }
+});
+
 import { 
   Search, 
   Calendar, 
@@ -19,6 +30,9 @@ import {
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getWeather } from "../../apiCalls/getWeather.js";
+import { hikeDataCollection } from '../context/hikeDataContext.jsx';
+
+
 
 
 // Mock ImageWithFallback component
@@ -47,6 +61,7 @@ const PlanHike = () => {
   const [coords, setCoords] = useState(null);
 
   const navigate = useNavigate();
+  const { getCoordinates } = hikeDataCollection();
 
   // Mock friends list(this is how the friends should be)
   const friendsList = [
@@ -60,8 +75,7 @@ const PlanHike = () => {
     { id: 8, name: 'Ryan Connor', email: 'ryan.oc@email.com', avatar: 'RC' }
   ];
 // Hoping that the Api for the trails would be like this
-
-  const trails = [
+ const trails = [
     {
       id: 1,
       name: 'Half Dome Trail',
@@ -130,28 +144,46 @@ const PlanHike = () => {
     }
   ];
 
+
+  //get coordinates that I will use in the get weather function
+  const getCurrentUser = async()=>{
+    const {data:{user},error} = await supabase.auth.getUser();
+    if(user){
+      return user.id;
+    }
+    if(error){
+      console.log("User with such id not found")
+    }
+  }
+
   // Mock weather data based on location
-  const getWeatherForLocation = (location) => {
-    const weatherData = {
-      'Yosemite National Park, CA': 
-      {description: 'Sunny', temperature: 85, windSpeed: 5, humidity: 30 },
+  const getWeatherForLocation = async() => {
+    try{
+     const userid= await getCurrentUser();
+     const coordsData = await getCoordinates(userid);
+     if(coordsData && coordsData.length > 0){
+
+      const startCoords = {
+        lat: coordsData.start[1],
+        lon: coordsData.start[0]
+      };
+
+      // Saving to state so I can use it in my getWeather function
+      setCoords(startCoords);
+       // Now I can call getWeather using these coordinates
+      const weatherData = await getWeather(startCoords.lat, startCoords.lon);
+      setWeather(weatherData);
       
-      'Zion National Park, UT':  
-      { description: 'Sunny', temperature: 55, windSpeed: 8, humidity: 25 },
-       
-      'Grand Canyon National Park, AZ': 
-      { description: 'Rainy', temperature: 23, windSpeed: 12, humidity: 85 },
-       
-      'White Mountains, NH': 
-      { description: 'Rainy', temperature: 15, windSpeed: 15, humidity: 90 },
-       
-      'Mount Rainier National Park, WA': 
-      { description: 'Light Rain', temperature: 5, windSpeed: 10, humidity: 95 },
-      
-      'Denali National Park, AK': 
-      { description: 'Cloudy', temperature: 12, windSpeed: 20, humidity: 60 },
-    };
-    return weatherData[location] || null;
+     }else{
+      setError("No coordinates found for this user");
+     }
+
+    }catch(e){
+      setError("Error fetching coordinates")
+      console.log(e);
+
+    }
+ 
   };
 
   // Weather icon helper function

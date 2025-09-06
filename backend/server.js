@@ -12,6 +12,8 @@ const { inviteFriend, acceptInvite, rejectInvite, getFriends } = require("./frie
 const { signIn, signInWithGoogle, signUp } = require("./auth/auth.controller");
 const { fetchCompletedHikes, fetchCurrentHike } = require("./hikeData/hikes.controller");
 const { CreateNewHike } = require("./hikeData/CreateNewHike");
+const { coordinates } = require("./hikeData/distance.controller.js");
+const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
 
 const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/plannedHikes_details.js");
 const { fetchUser } = require("./users/users.controller");
@@ -45,6 +47,7 @@ app.post("/googlesignin", signInWithGoogle);
 // Creating new hike
 app.post("/newHike", CreateNewHike);
 
+
 app.get("/completed-hikes", fetchCompletedHikes);
 app.get("/current-hike", fetchCurrentHike);
 app.get("/get-hike", fetchHike);
@@ -60,6 +63,10 @@ app.get("/get-route",getRoute);
 
 app.listen(port, "0.0.0.0", () => {
 });
+
+
+
+app.get("/coordinates/:userid", coordinates);
 
 app.get("/hikes", async (req, res) => {
   const { data, error } = await supabase
@@ -103,15 +110,17 @@ module.exports = app;
 
 //API to get all hikeId for a specific user to update the status later
 app.get("/userHikeId/:userid", async (req, res) =>{
-  const { userid } = req.params;
+  let { userid } = req.params;
+  userid = userid.trim();
   const {data, error } = await supabase
   .from("HikeData")
   .select("hikeid")
   .eq("userid", userid)
-  .is("status", "in progress");
+  .eq("status", "in progress");
   
   if (error) {
     return res.status(500).json({ error: error.message });
+    
   }
   //console.log("Query result:", data);
   res.status(200).json({
@@ -119,4 +128,28 @@ app.get("/userHikeId/:userid", async (req, res) =>{
     hikes:data,
   });
   });
+
+
+  //TEST
+
+  // Test endpoint to fetch user's route
+/*app.get("/test-fetch-route/:userid", async (req, res) => {
+  const { userid } = req.params;
+  
+
+  try {
+    const routeData = await fetchUserRoutes(userid);
+    
+    if (!routeData || routeData.length === 0) {
+      return res.status(404).json({ error: "No route found for this user" });
+    }
+
+    res.status(200).json({
+      message: "Fetched user route successfully",
+      data: routeData
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});*/
 
