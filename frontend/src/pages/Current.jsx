@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapPinned, NotebookPen, Flag, Users, Clock, Map, Activity, X } from 'lucide-react';
+import { MapPinned, Clock, Activity, Map } from 'lucide-react';
 import RouteTracker from '../components/map.jsx';
 import { useParams } from 'react-router-dom';
 import { hikeDataCollection } from '../context/hikeDataContext.jsx';
@@ -13,70 +13,60 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 });
 
 const Current = () => {
-  const [showNotes, setShowNotes] = useState(false);
-  const [showGoals, setShowGoals] = useState(false);
-  const [showFriends, setShowFriends] = useState(false);
-  const [notes, setNotes] = useState("");
-  const [goals, setGoals] = useState(["Reach summit", "Take photos at viewpoint"]);
   const [mapData, setMapData] = useState(null);
-
-  const [coords, setCoords] = useState(null);             // Hike start coordinates
-  const [currentCoords, setCurrentCoords] = useState(null); // User's live coordinates
+  const [coords, setCoords] = useState(null);
+  const [currentCoords, setCurrentCoords] = useState(null);
   const [realTimeDistance, setRealTimeDistance] = useState(0);
-
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const { hikeid } = useParams();
-  const { getHike } = hikeDataCollection();
+  const { getHike, getCoordinates } = hikeDataCollection();
   const { getRouteJson } = RouteDataCollection();
 
-  const friends = [
-    { id: 1, name: "Albert Flores", status: "Online", avatar: "https://i.pravatar.cc/100?img=11" },
-    { id: 2, name: "Sofia Carter", status: "Online", avatar: "https://i.pravatar.cc/100?img=16" },
-  ];
-
-  const addGoal = (goal) => {
-    if (goal.trim() !== "") setGoals([...goals, goal.trim()]);
-  };
-
-  const removeGoal = (idx) => setGoals(goals.filter((_, i) => i !== idx));
-
-  const handleMap = async (hike_id) => {
-    const res = await getHike(hike_id);
-    const routeid = res[0]?.route || null;
-    if (routeid) {
-      const data = await getRouteJson(routeid);
-      if (data[0]) setMapData(data[0]?.path || null);
+  // Fetch current user ID from Supabase
+  const getCurrentUserId = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user?.id;
+    } catch (err) {
+      console.error("Error getting user:", err);
+      setError("Could not get current user");
+      return null;
     }
   };
 
-  const getCurrentUser = async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (user) return user.id;
-    if (error) console.log("User not found");
-  };
-
+  // Fetch start coordinates from backend
   const fetchStartCoordinates = async () => {
     try {
-      const userid = await getCurrentUser();
-      // Replace getCoordinates with your actual function to fetch user's hike start
-      const coordsData = await getCoordinates(userid); 
-      if (coordsData && coordsData.start) {
-        const startCoords = {
-          lat: coordsData.start[1],
-          lon: coordsData.start[0],
-        };
-        console.log("Start coordinates:", startCoords);
-        setCoords(startCoords);
-      } else {
-        console.log("No start coordinates found");
+      const userid = await getCurrentUserId();
+      if (!userid) return;
+
+      console.log("Fetching coordinates for user:", userid);
+
+      const coordsData = await getCoordinates(userid);
+      if (!coordsData || !coordsData.start) {
+        console.warn("No start coordinates found");
+        setError("No start coordinates found");
+        return;
       }
+
+      const startCoords = {
+        lat: coordsData.start[1],
+        lon: coordsData.start[0],
+      };
+      console.log("Start coordinates:", startCoords);
+      setCoords(startCoords);
     } catch (err) {
-      console.log("Error fetching start coordinates:", err);
+      console.error("Error fetching start coordinates:", err);
+      setError("Error fetching start coordinates");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Calculate distance in meters
-  function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+  // Calculate distance in meters between two coordinates
+  const getDistanceFromLatLonInMeters = (lat1, lon1, lat2, lon2) => {
     const R = 6371000; // Earth radius in meters
     const phi1 = lat1 * Math.PI / 180;
     const phi2 = lat2 * Math.PI / 180;
@@ -86,17 +76,29 @@ const Current = () => {
     const a = Math.sin(deltaPhi / 2) ** 2 +
       Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
     return R * c;
-  }
+  };
 
-  // Fetch start coordinates when component mounts
-  useEffect(() => {
-    fetchStartCoordinates();
-  }, []);
+  // Fetch map route
+  const fetchMapData = async () => {
+    try {
+      if (!hikeid) return;
+      const hike = await getHike(hikeid);
+      const routeId = hike?.[0]?.route;
+      if (!routeId) return;
 
-  // Watch the user's location in real-time
+      const routeData = await getRouteJson(routeId);
+      if (routeData?.[0]?.path) setMapData(routeData[0].path);
+    } catch (err) {
+      console.error("Error fetching map data:", err);
+      setError("Error fetching map data");
+    }
+  };
+
+  // Watch user position in real-time
   useEffect(() => {
-    if (!coords) return; // wait until start coordinates are ready
+    if (!coords) return;
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -105,28 +107,33 @@ const Current = () => {
           lon: position.coords.longitude,
         };
         setCurrentCoords(newCoords);
-        console.log("Current coordinates:", newCoords);
 
-        // Calculate distance
         const distance = getDistanceFromLatLonInMeters(
           coords.lat,
           coords.lon,
           newCoords.lat,
           newCoords.lon
         );
-        console.log("Distance in meters:", distance);
         setRealTimeDistance(distance);
       },
-      (err) => console.log(err),
-      { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+      (err) => {
+        console.error("Geolocation error:", err);
+        setError("Could not get current location");
+      },
+      { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000  }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [coords]);
 
+  // Fetch start coordinates when component mounts
   useEffect(() => {
-    if (!mapData) handleMap(hikeid);
-  }, [hikeid]);
+    fetchStartCoordinates();
+    fetchMapData();
+  }, []);
+
+  if (loading) return <p className="text-center mt-10">Loading hike info...</p>;
+  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

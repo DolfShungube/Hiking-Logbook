@@ -33,28 +33,27 @@ const fetchUserRoutes = async (userid) => {
 // FETCH functions for start and end coordinates of hikes
 //
 const coordinates = async (req, res) => {
+  try {
     const { userid } = req.params;
-
+    console.log("Fetching coordinates for userid:", userid);
 
     const routeData = await fetchUserRoutes(userid);
-   //.single(), Supabase will always return an object like: { "route": "18d95307-30db-403f-b1fe-a934c30ed30b" }
 
-    
     if (!routeData || !routeData.route) {
-        return res.status(404).json({ error: "No route found for this user" });
+      return res.status(404).json({ error: "No route found for this user" });
     }
 
     const routeId = routeData.route;
 
-    const { data:pathRow,error} = await supabase
-    .from("routes")
-    .select("path")
-    .eq("routeid", routeId)
-    .single();
-    
+    const { data: pathRow, error } = await supabase
+      .from("routes")
+      .select("path")
+      .eq("routeid", routeId)
+      .single();
 
     if (error) {
-        return res.status(400).json({ error: error.message });
+      console.error("Supabase error:", error);
+      return res.status(400).json({ error: error.message });
     }
 
     let coordinates = pathRow.path.features[0].geometry.coordinates;
@@ -63,20 +62,21 @@ const coordinates = async (req, res) => {
       coordinates = coordinates.flat();
     }
 
-
     const StartCoordinates = coordinates[0].slice(0, 2);
     const EndCoordinates = coordinates[coordinates.length - 1].slice(0, 2);
 
-    
-    
     res.status(200).json({
-        message:"Fetched start coordinates successfully",
-        start:StartCoordinates,
-        end: EndCoordinates, // Assuming path is an array of coordinate
+      message: "Fetched start coordinates successfully",
+      start: StartCoordinates,
+      end: EndCoordinates,
     });
 
-  
+  } catch (err) {
+    console.error("Coordinates endpoint error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
+
 
 
 
