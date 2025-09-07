@@ -18,7 +18,7 @@ const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
 const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/plannedHikes_details.js");
 const { fetchUser } = require("./users/users.controller");
 const { getNotes } = require("./notes/notes.controller");
-const { getGoals } = require("./goals/goals.controller");
+const { getGoals, addGoal, updateGoalStatus, removeGoal } = require("./goals/goals.controller");
 const { getRoute } = require("./routes/routes.controller");
 
 app.use(cors({ origin: true, credentials: true }));
@@ -41,19 +41,26 @@ app.post("/invite-friend", inviteFriend);
 app.post("/accept-invite", acceptInvite);
 app.post("/reject-invite", rejectInvite);
 app.get("/get-friends", getFriends);
+
+
 app.post("/signup", signUp);
 app.post("/signin", signIn);
 app.post("/googlesignin", signInWithGoogle);
-// Creating new hike
+
+
 app.post("/newHike", CreateNewHike);
-
-
 app.get("/completed-hikes", fetchCompletedHikes);
 app.get("/current-hike", fetchCurrentHike);
 app.get("/get-hike", fetchHike);
 
 app.get("/get-notes", getNotes);
+
+
 app.get("/get-goals", getGoals);
+app.post("/add-goal",addGoal)
+app.post("/update-goal-status",updateGoalStatus)
+app.post("/delete-goal",removeGoal)
+
 
 app.get("/planned-hikes", fetchPlannedHikes);
 app.put("/planned-hikes/:hikeId", editPlannedHike);

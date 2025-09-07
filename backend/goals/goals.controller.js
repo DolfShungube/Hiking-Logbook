@@ -35,7 +35,74 @@ const getGoals= async (req,res)=>{
 
 }
 
+const addGoal= async (req, res) => {
+  const {hikeid,goalDiscription,goalStatus} = req.body;
+
+  try {
+
+    const { data: sentData, error: sentError } = await supabase.rpc("add_custom_goal",
+        { hike_id: hikeid, goal_description:goalDiscription, goal_status:goalStatus });
+
+    if (sentError) {
+      console.error("Error while getting goal:", sentError);
+      return res.status(500).json({ error: sentError.message });
+    }
+
+
+    return res.status(200).json({ message: "added new goal successfully", data:sentData });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+
+const updateGoalStatus= async (req, res) => {
+  const {hikeid,goalDiscription,goalStatus} = req.body;
+
+  try {
+
+    const { data: sentData, error: sentError } = await supabase.rpc("update_goal_status",
+        { hike_id: hikeid, goal_description:goalDiscription, new_status:goalStatus });
+
+    if (sentError) {
+      console.error("Error while updating status:", sentError);
+      return res.status(500).json({ error: sentError.message });
+    }
+
+
+    return res.status(200).json({ message: "status updated successfully", data:sentData });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+
+const removeGoal= async (req, res) => {
+  const { hikeid, goalDescription } = req.body;
+
+  try {
+
+    const { data: sentData, error: sentError } = await supabase.rpc("remove_goal",
+        { hike_id: hikeid, goal_description:goalDescription});
+
+    if (sentError) {
+      console.error("Error while removing goal:", sentError);
+      return res.status(500).json({ error: sentError.message });
+    }
+
+
+    return res.status(200).json({ message: "goal removed successfully", data:sentData });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+
+
 
 module.exports={
-  getGoals
+  getGoals,addGoal,updateGoalStatus,removeGoal
 }
