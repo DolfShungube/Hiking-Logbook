@@ -31,12 +31,107 @@ const GoalDataContext= createContext(null);
     }    
 
 
+const addGoal = async (hike_id,goal) => {
+  try {
+
+    const res = await fetch('https://hiking-logbook-api.onrender.com/add-goal', {
+    
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        hikeid:hike_id,
+        goalDiscription:goal,
+        goalStatus: "in progress"
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return data
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
 
 
+
+
+
+
+
+    return data;
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+};
+
+
+
+const updateGoalStatus = async (hike_id,goal,newStatus) => {
+  try {
+
+    const res = await fetch('https://hiking-logbook-api.onrender.com/update-goal-status', {
+    
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        hikeid:hike_id,
+        goalDiscription:goal,
+        goalStatus: newStatus
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return data
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+
+
+    return data;
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+};
+const deleteGoal = async (hike_id,goal) => {
+  try {
+
+    const res = await fetch('https://hiking-logbook-api.onrender.com/delete-goal', {
+    
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        hikeid:hike_id,
+        goalDiscription:goal,
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return data
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+
+
+    return data;
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+};
 
 
     return (
-        <GoalDataContext.Provider value={{getGoals}}>
+        <GoalDataContext.Provider value={{getGoals,addGoal,updateGoalStatus,deleteGoal}}>
             {children}
         </GoalDataContext.Provider>
     )
