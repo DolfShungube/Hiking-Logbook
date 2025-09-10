@@ -25,16 +25,74 @@ const NotesDataContext= createContext(null);
         console.error("fetching error:", err);
             throw err;            
         }
+    } 
+    
+    
 
-    }    
+const addNote = async (hike_id,text) =>{
+  try {
 
+    const res = await fetch('https://hiking-logbook-api.onrender.com/add-note', {
+    
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        hikeid:hike_id,
+        text:text,
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return data
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+    return data;
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+};
+
+
+const removeNote = async (hike_id,text,date) =>{
+  try {
+
+    const res = await fetch('https://hiking-logbook-api.onrender.com/remove-note', {
+    
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        hikeid:hike_id,
+        text:text,
+        date:date
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return data
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+    return data;
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+};
 
 
 
 
 
     return (
-        <NotesDataContext.Provider value={{getNotes}}>
+        <NotesDataContext.Provider value={{getNotes,addNote,removeNote}}>
             {children}
         </NotesDataContext.Provider>
     )

@@ -17,7 +17,7 @@ const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
 
 const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/plannedHikes_details.js");
 const { fetchUser } = require("./users/users.controller");
-const { getNotes } = require("./notes/notes.controller");
+const { getNotes, addNotes, removeNotes } = require("./notes/notes.controller");
 const { getGoals, addGoal, updateGoalStatus, removeGoal } = require("./goals/goals.controller");
 const { getRoute } = require("./routes/routes.controller");
 
@@ -53,7 +53,10 @@ app.get("/completed-hikes", fetchCompletedHikes);
 app.get("/current-hike", fetchCurrentHike);
 app.get("/get-hike", fetchHike);
 
-app.get("/get-notes", getNotes);
+app.get("/get-notes", getNotes);  // gets notes based on hikeid
+app.post("/add-note", addNotes);   // add a new note using hikeid and the nte
+app.post("/remove-note", removeNotes);  // remove a notes item
+
 
 
 app.get("/get-goals", getGoals);
