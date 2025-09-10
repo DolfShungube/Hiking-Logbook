@@ -38,7 +38,7 @@ const Current = () => {
   const { hikeid } = useParams();
   const { getCoordinates } = hikeDataCollection();
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
-  const { getNotes } = NotesDataCollection();
+  const { getNotes, addNote, updateNote, deleteNote } = NotesDataCollection();
 
   // Fetch current user ID
   const getCurrentUserId = async () => {
@@ -111,42 +111,32 @@ const Current = () => {
     }
   };
 
-  // Save or edit note
+  // Notes functions
   const handleSaveNote = async () => {
     if (!note.trim()) return;
 
-    const noteObj = editedNote
-      ? { ...editedNote, text: note }
-      : { date: new Date().toISOString(), text: note };
-
     try {
-      await fetch("https://hiking-logbook-api.onrender.com/add-note", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hikeid, noteDescription: noteObj.text, noteDate: noteObj.date }),
-      });
+      if (editedNote) {
+        await updateNote(hikeid, editedNote.date, note);
+        setEditedNote(null);
+      } else {
+        await addNote(hikeid, note);
+      }
       setNote("");
-      setEditedNote(null);
       fetchNotes();
     } catch (err) {
       console.error("Error saving note:", err);
     }
   };
 
-  // Edit note
   const handleEditNote = (noteObj) => {
     setEditedNote(noteObj);
     setNote(noteObj.text);
   };
 
-  // Delete note
   const handleDeleteNote = async (noteObj) => {
     try {
-      await fetch("https://hiking-logbook-api.onrender.com/delete-note", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hikeid, noteDescription: noteObj.text }),
-      });
+      await deleteNote(hikeid, noteObj.date);
       setNotesList((prev) => prev.filter((n) => n.date !== noteObj.date));
     } catch (err) {
       console.error("Error deleting note:", err);
@@ -218,6 +208,7 @@ const Current = () => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [coords, pathCoords]);
 
+  // Fetch all initial data
   useEffect(() => {
     fetchStartCoordinates();
     fetchGoals();

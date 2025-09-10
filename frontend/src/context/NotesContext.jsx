@@ -1,58 +1,79 @@
 import { createContext, useContext } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: true, autoRefreshToken: true },
+});
 
 const NotesDataContext = createContext(null);
 
 export const NotesDataContextProvider = ({ children }) => {
-
+  // Fetch notes for a hike
   const getNotes = async (hike_id) => {
     try {
-      const res = await fetch(
-        `https://hiking-logbook-api.onrender.com/get-notes?hikeid=${encodeURIComponent(hike_id)}`,
-        { method: "GET" }
-      );
-      const data = await res.json();
-
-      if (!res.ok) {
-        console.error("Error fetching notes:", data.error);
-        throw new Error(data.error || "Failed to fetch notes");
-      }
-
-      return data?.data[0]?.notes?.notes || [];
-
+      const { data, error } = await supabase
+        .from("hikeNotes")
+        .select("*")
+        .eq("hikeid", hike_id)
+        .order("date", { ascending: true });
+      if (error) throw error;
+      return data || [];
     } catch (err) {
-      console.error("fetching error:", err);
+      console.error("Error fetching notes:", err);
       throw err;
     }
   };
 
+  // Add a new note
   const addNote = async (hike_id, noteText) => {
     try {
-      const res = await fetch('https://hiking-logbook-api.onrender.com/add-note', {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hikeid: hike_id,
-          noteDescription: noteText,
-          noteDate: new Date().toISOString() // automatically add current date
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        console.error("Error adding note:", data.error);
-        throw new Error(data.error || "Failed to add note");
-      }
-
+      const { data, error } = await supabase
+        .from("hikeNotes")
+        .insert([{ hikeid: hike_id, text: noteText, date: new Date().toISOString() }]);
+      if (error) throw error;
       return data;
     } catch (err) {
-      console.error("error:", err);
+      console.error("Error adding note:", err);
+      throw err;
+    }
+  };
+
+  // Update an existing note
+  const updateNote = async (hike_id, noteDate, noteText) => {
+    try {
+      const { data, error } = await supabase
+        .from("hikeNotes")
+        .update({ text: noteText, date: new Date().toISOString() })
+        .eq("hikeid", hike_id)
+        .eq("date", noteDate);
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error("Error updating note:", err);
+      throw err;
+    }
+  };
+
+  // Delete a note
+  const deleteNote = async (hike_id, noteDate) => {
+    try {
+      const { data, error } = await supabase
+        .from("hikeNotes")
+        .delete()
+        .eq("hikeid", hike_id)
+        .eq("date", noteDate);
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error("Error deleting note:", err);
       throw err;
     }
   };
 
   return (
-    <NotesDataContext.Provider value={{ getNotes, addNote }}>
+    <NotesDataContext.Provider value={{ getNotes, addNote, updateNote, deleteNote }}>
       {children}
     </NotesDataContext.Provider>
   );
