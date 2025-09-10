@@ -11,7 +11,7 @@ const supabase= createClient(supabaseUrl,supabasekey,{
 
 
 
-const inviteFriend= async (req, res) => {
+const inviteFriend= async (req, res) =>{  // friend request
   const {  userid, friendid} = req.body;
 
   try {
@@ -26,10 +26,10 @@ const inviteFriend= async (req, res) => {
 
     const { data: receivedData, error: receivedError } = await supabase.rpc(
       "friend_invite_received",
-      { user_id: friendid, friend_id: userid }
+      { user_id: friendid, friend_id: userid}
     );
 
-    if (receivedError) {
+    if (receivedError){
       console.error("Error in  receiving the invite:", receivedError);
       return res.status(500).json({ error: receivedError.message });
     }
@@ -42,7 +42,7 @@ const inviteFriend= async (req, res) => {
 };
 
 
-const acceptInvite= async (req, res) => {
+const acceptInvite= async (req, res) => {  // friend request
   const {  userid, friendid} = req.body;
 
   try {
@@ -72,7 +72,7 @@ const acceptInvite= async (req, res) => {
 
 
 
-const rejectInvite= async (req, res) => {
+const rejectInvite= async (req, res) =>{  // friend request
   const {  userid, friendid} = req.body;
 
   try {
@@ -107,7 +107,7 @@ const getFriends= async (req,res)=>{
     const {data,error:statusError}= await supabase
     .from("friends")
     .select("*")
-    .eq("hikeid",userid)
+    .eq("userid",userid)
     .single()
 
     if(statusError){
@@ -121,7 +121,6 @@ const getFriends= async (req,res)=>{
     console.error("Unexpected error:", err);
     return res.status(500).json({ error: "Something went wrong" });  
   }
-
 }
 
 

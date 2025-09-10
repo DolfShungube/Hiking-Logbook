@@ -26,8 +26,7 @@ const getNotes= async (req,res)=>{
       console.error("Error while fetching notes data", statusError);
       return res.status(500).json({ error: statusError.message });      
     }
-
-    
+  
     return res.status(200).json({data: sentData});    
   } catch (err) {
     console.error("Unexpected error:", err);
@@ -37,6 +36,53 @@ const getNotes= async (req,res)=>{
 }
 
 
+const addNotes= async (req, res) =>{
+  const {hikeid,text} = req.body;
+
+  try {
+
+    const { data: sentData, error: sentError } = await supabase.rpc("add_hike_note",
+        { p_hikeid: hikeid, p_text:text});
+
+    if (sentError) {
+      console.error("Error while getting notes:", sentError);
+      return res.status(500).json({ error: sentError.message });
+    }
+
+
+    return res.status(200).json({ message: "added new notes successfully", data:sentData });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+
+const removeNotes= async (req, res) =>{
+  const {hikeid,text,date} = req.body;
+
+  try {
+
+    const { data: sentData, error: sentError } = await supabase.rpc("remove_hike_note",
+        { p_hikeid: hikeid, p_text:text,p_date:date});
+
+    if (sentError) {
+      console.error("Error while removing note:", sentError);
+      return res.status(500).json({ error: sentError.message });
+    }
+
+
+    return res.status(200).json({ message: "note removed successfully", data:sentData });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+
+
+
+
 module.exports={
-  getNotes
+  getNotes,addNotes,removeNotes
 }
