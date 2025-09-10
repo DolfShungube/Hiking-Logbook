@@ -15,7 +15,9 @@ import {
   Edit,
   Trash2,
   Eye,
-  MoreVertical
+  MoreVertical,
+  Gauge,
+  MountainIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
@@ -90,33 +92,29 @@ const PlanHikeDefault = () => {
     });
   };
 
-  const formatTime = (timeString) => {
-    if (!timeString) return 'No time set';
+  const formatTime = (dateTimeString) => {
+    if (!dateTimeString) return 'No time set';
     try {
-      // Handle different time formats that might come from backend
-      let timeToFormat = timeString;
-      
-      // If it's already in HH:MM format, use it directly
-      if (timeString.includes(':') && timeString.length <= 8) {
-        // Extract just HH:MM if there are seconds
-        const timeParts = timeString.split(':');
-        timeToFormat = `${timeParts[0]}:${timeParts[1]}`;
-      }
-      
-      // Create date object for formatting
-      const [hours, minutes] = timeToFormat.split(':');
-      const timeDate = new Date();
-      timeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-      
-      return timeDate.toLocaleTimeString('en-US', {
+      const date = new Date(dateTimeString);
+      return date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true
       });
     } catch (error) {
-      console.log('Time formatting error for:', timeString, error);
-      return timeString; // Return original if parsing fails
+      console.log('Time formatting error for:', dateTimeString, error);
+      return 'Invalid time';
     }
+  };
+
+  const formatDistance = (distance) => {
+    if (!distance) return 'N/A';
+    return `${distance} km`;
+  };
+
+  const formatElevation = (elevation) => {
+    if (!elevation) return 'N/A';
+    return `${elevation} km`;
   };
 
   const getDaysUntil = (dateString) => {
@@ -137,6 +135,40 @@ const PlanHikeDefault = () => {
     return `${diffDays} days`;
   };
 
+  // Helper function to extract date from timestamp
+  const extractDateFromTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toISOString().split('T')[0]; 
+  };
+
+  // Helper function to extract time from timestamp
+  const extractTimeFromTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toTimeString().slice(0, 5);
+  };
+
+  // Helper function to combine date and time into timestamp
+  const combineDateTime = (dateStr, timeStr, originalTimestamp) => {
+    // Start with current date/time if no original timestamp
+    const baseDate = originalTimestamp ? new Date(originalTimestamp) : new Date();
+    
+    //new date, update it
+    if (dateStr) {
+      const [year, month, day] = dateStr.split('-');
+      baseDate.setFullYear(parseInt(year), parseInt(month) - 1, parseInt(day));
+    }
+    
+    // new time, update it
+    if (timeStr) {
+      const [hours, minutes] = timeStr.split(':');
+      baseDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    }
+    
+    return baseDate.toISOString();
+  };
+
   const handleViewHike = (hike) => {
     // Show hike details in a modal instead of navigating
     setSelectedHike(hike);
@@ -145,19 +177,20 @@ const PlanHikeDefault = () => {
   };
 
   const handleEditHike = (hike) => {
-    // Show edit form in a modal instead of navigating
     setEditingHike(hike);
+  
     setEditFormData({
       title: hike.title || '',
       location: hike.location || '',
-      date: hike.date || '',
-      time: hike.time || '',
-      description: hike.description || '',
-      difficulty: hike.difficulty || 'moderate',
-      status: hike.status || 'planned'
+      date: hike.startdate ? extractDateFromTimestamp(hike.startdate) : '',
+      time: hike.startdate ? extractTimeFromTimestamp(hike.startdate) : '',
+      difficulty: hike.difficulty || 'easy',
+      status: hike.status || 'planned',
+      distance: hike.distance?.toString() || '',
+      elevation: hike.elevation?.toString() || ''
     });
+  
     setShowEditModal(true);
-    setActiveDropdown(null);
   };
 
   const handleDeleteHike = async (hikeId) => {
@@ -193,6 +226,24 @@ const PlanHikeDefault = () => {
   const handleSaveEdit = async () => {
     try {
       setSavingEdit(true);
+      
+      const hikeId = editingHike.hikeid || editingHike.id;
+      
+      if (!hikeId) {
+        console.error('No hike ID found:', editingHike);
+        throw new Error('Hike ID not found');
+      }
+  
+      console.log('Saving edit for hike ID:', hikeId);
+      console.log('Edit form data:', editFormData);
+  
+      // Combine date and time into proper timestamp for startdate
+      const newStartDate = combineDateTime(
+        editFormData.date, 
+        editFormData.time, 
+        editingHike.startdate
+      );
+  
       // when running locally:  http://localhost:8080/planned-hikes/${editingHike.id}
       const response = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes/${editingHike.id}`, {
         method: 'PUT',
@@ -200,25 +251,47 @@ const PlanHikeDefault = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editFormData)
+        body: JSON.stringify({
+          title: editFormData.title,
+          location: editFormData.location,
+          startdate: newStartDate,
+          difficulty: editFormData.difficulty,
+          distance: parseFloat(editFormData.distance) || editingHike.distance,
+          elevation: parseFloat(editFormData.elevation) || editingHike.elevation,
+          status: editFormData.status
+        })
       });
-
+  
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server response:', response.status, errorText);
         throw new Error(`Failed to update hike: ${response.status}`);
       }
-
+  
       const result = await response.json();
+      console.log('Update successful:', result);
       
-      // Update the hike in the local state
-      setHikes(hikes.map(hike => 
-        hike.id === editingHike.id 
-          ? { ...hike, ...editFormData }
-          : hike
-      ));
-      
+      setHikes(prevHikes =>
+        prevHikes.map(hike => {
+          const currentHikeId = hike.hikeid || hike.id;
+          return currentHikeId === hikeId
+            ? { 
+                ...hike, 
+                title: editFormData.title,
+                location: editFormData.location,
+                startdate: newStartDate, 
+                difficulty: editFormData.difficulty,
+                distance: parseFloat(editFormData.distance) || hike.distance,
+                elevation: parseFloat(editFormData.elevation) || hike.elevation,
+                status: editFormData.status
+              }
+            : hike
+        })
+      );
+  
       setShowEditModal(false);
       setEditingHike(null);
-      setEditFormData({});
+      //setEditFormData({});
       
     } catch (err) {
       console.error("Error updating hike:", err);
@@ -318,7 +391,7 @@ const PlanHikeDefault = () => {
                 </button>
               </div>
             </div>
-
+  
             {/* Form */}
             <div className="p-6 space-y-4">
               {/* Title */}
@@ -327,28 +400,30 @@ const PlanHikeDefault = () => {
                   Hike Title
                 </label>
                 <input
-                  type="text"
-                  value={editFormData.title}
-                  onChange={(e) => handleEditInputChange('title', e.target.value)}
+  type="text"
+  value={editFormData.title}
+  onChange={(e) => handleEditInputChange('title', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Enter hike title"
+                  autoComplete="off"
                 />
               </div>
-
+  
               {/* Location */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Location
                 </label>
                 <input
-                  type="text"
-                  value={editFormData.location}
-                  onChange={(e) => handleEditInputChange('location', e.target.value)}
+  type="text"
+  value={editFormData.location}
+  onChange={(e) => handleEditInputChange('location', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Enter location"
+                  autoComplete="off"
                 />
               </div>
-
+  
               {/* Date and Time */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -357,7 +432,7 @@ const PlanHikeDefault = () => {
                   </label>
                   <input
                     type="date"
-                    value={editFormData.date}
+                    value={editFormData.date || ''}
                     onChange={(e) => handleEditInputChange('date', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -368,13 +443,45 @@ const PlanHikeDefault = () => {
                   </label>
                   <input
                     type="time"
-                    value={editFormData.time}
+                    value={editFormData.time || ''}
                     onChange={(e) => handleEditInputChange('time', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
-
+  
+              {/* Distance and Elevation */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Distance (km)
+                  </label>
+                  <input
+                    type="number"
+                    step="1.0"
+                    min="0"
+                    value={editFormData.distance || ''}
+                    onChange={(e) => handleEditInputChange('distance', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="Enter distance"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Elevation Gain (m)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    value={editFormData.elevation || ''}
+                    onChange={(e) => handleEditInputChange('elevation', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="Enter elevation gain"
+                  />
+                </div>
+              </div>
+  
               {/* Status and Difficulty */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -382,7 +489,7 @@ const PlanHikeDefault = () => {
                     Status
                   </label>
                   <select
-                    value={editFormData.status}
+                    value={editFormData.status || 'planned'}
                     onChange={(e) => handleEditInputChange('status', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
@@ -396,7 +503,7 @@ const PlanHikeDefault = () => {
                     Difficulty
                   </label>
                   <select
-                    value={editFormData.difficulty}
+                    value={editFormData.difficulty || 'easy'}
                     onChange={(e) => handleEditInputChange('difficulty', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
@@ -406,22 +513,8 @@ const PlanHikeDefault = () => {
                   </select>
                 </div>
               </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={editFormData.description}
-                  onChange={(e) => handleEditInputChange('description', e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="Add a description for your hike..."
-                />
-              </div>
             </div>
-
+  
             {/* Footer */}
             <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex gap-3 justify-end">
               <button
@@ -502,15 +595,23 @@ const PlanHikeDefault = () => {
                 </div>
                 <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                   <Calendar className="w-5 h-5" />
-                  <span>{formatDate(selectedHike.date)}</span>
+                  <span>{formatDate(selectedHike.startdate)}</span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                   <Clock className="w-5 h-5" />
-                  <span>{formatTime(selectedHike.time)}</span>
+                  <span>{formatTime(selectedHike.startdate)}</span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                   <Users className="w-5 h-5" />
                   <span>{selectedHike.attendees || 1} attendees</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                  <Gauge className="w-5 h-5" />
+                  <span>{formatDistance(selectedHike.distance)}</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                  <MountainIcon className="w-5 h-5" />
+                  <span>{formatElevation(selectedHike.elevation)}</span>
                 </div>
               </div>
 
@@ -539,16 +640,16 @@ const PlanHikeDefault = () => {
               <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
                 <div className="text-center">
                   <span className={`text-2xl font-bold ${
-                    getDaysUntil(selectedHike.date) === 'Today' || getDaysUntil(selectedHike.date) === 'Tomorrow'
+                    getDaysUntil(selectedHike.startdate) === 'Today' || getDaysUntil(selectedHike.startdate) === 'Tomorrow'
                       ? 'text-orange-600 dark:text-orange-400'
-                      : getDaysUntil(selectedHike.date) === 'Past'
+                      : getDaysUntil(selectedHike.startdate) === 'Past'
                       ? 'text-gray-400 dark:text-gray-500'
                       : 'text-blue-600 dark:text-blue-400'
                   }`}>
-                    {getDaysUntil(selectedHike.date)}
+                    {getDaysUntil(selectedHike.startdate)}
                   </span>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                    {getDaysUntil(selectedHike.date) === 'Past' ? 'This hike has passed' : 'until your hike'}
+                    {getDaysUntil(selectedHike.startdate) === 'Past' ? 'This hike has passed' : 'until your hike'}
                   </p>
                 </div>
               </div>
@@ -604,7 +705,7 @@ const PlanHikeDefault = () => {
               Cancel
             </button>
             <button
-              onClick={() => handleDeleteHike(hikeToDelete.id)}
+              onClick={() => handleDeleteHike(hikeToDelete.hikeid)}
               disabled={deletingHikeId === hikeToDelete?.id}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
