@@ -19,7 +19,7 @@ const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = req
 const { fetchUser } = require("./users/users.controller");
 const { getNotes, addNotes, removeNotes } = require("./notes/notes.controller");
 const { getGoals, addGoal, updateGoalStatus, removeGoal } = require("./goals/goals.controller");
-const { getRoute } = require("./routes/routes.controller");
+const { getRoute ,  getAllRoutes } = require("./routes/routes.controller");
 
 app.use(cors({ origin: true, credentials: true }));
 app.get("/", (req, res) => {
@@ -70,6 +70,7 @@ app.put("/planned-hikes/:hikeId", editPlannedHike);
 app.delete("/planned-hikes/:hikeId", deletePlannedHike);
 
 app.get("/get-route",getRoute);
+app.get("/get-all-routes", getAllRoutes);
 
 app.listen(port, "0.0.0.0", () => {
 });
