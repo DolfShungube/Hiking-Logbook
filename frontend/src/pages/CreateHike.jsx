@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from "@supabase/supabase-js";
-import { createContext,useContext } from "react";
-const supabaseUrl=import.meta.env.VITE_SUPABASE_URL;
-const supabasekey=import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase= createClient(supabaseUrl,supabasekey,{
-        auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-         }
+import { createContext, useContext } from "react";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabasekey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabasekey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
 });
 
 import { 
@@ -32,13 +33,27 @@ import { useNavigate } from 'react-router-dom';
 import { getWeather } from "../../apiCalls/getWeather.js";
 import { hikeDataCollection } from '../context/hikeDataContext.jsx';
 
+// Mock ImageWithFallback component with better error handling
+const ImageWithFallback = ({ src, alt, className }) => {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
 
+  const handleError = () => {
+    setHasError(true);
+    // Set a default placeholder image or use a generic hiking image
+    setImgSrc('https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop');
+  };
 
-
-// Mock ImageWithFallback component
-const ImageWithFallback = ({ src, alt, className }) => (
-  <img src={src} alt={alt} className={className} />
-);
+  return (
+    <img 
+      src={imgSrc} 
+      alt={alt} 
+      className={className}
+      onError={handleError}
+      style={{ objectFit: 'cover' }}
+    />
+  );
+};
 
 const PlanHike = () => {
   const [hikeTitle, setHikeTitle] = useState('');
@@ -55,7 +70,7 @@ const PlanHike = () => {
   const [weather, setWeather] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
-  const {session, currentUser} = UserAuth();
+  const { session, currentUser } = UserAuth();
 
   const [error, setError] = useState("");
   const [coords, setCoords] = useState(null);
@@ -63,7 +78,7 @@ const PlanHike = () => {
   const navigate = useNavigate();
   const { getCoordinates } = hikeDataCollection();
 
-  // Mock friends list(this is how the friends should be)
+  // Mock friends list
   const friendsList = [
     { id: 1, name: 'Sarah Johnson', email: 'sarah.j@email.com', avatar: 'SJ' },
     { id: 2, name: 'Mike Chen', email: 'mike.chen@email.com', avatar: 'MC' },
@@ -74,120 +89,215 @@ const PlanHike = () => {
     { id: 7, name: 'Lisa Wang', email: 'lisa.wang@email.com', avatar: 'LW' },
     { id: 8, name: 'Ryan Connor', email: 'ryan.oc@email.com', avatar: 'RC' }
   ];
-// Hoping that the Api for the trails would be like this
- const trails = [
-    {
-      id: 1,
-      name: 'Half Dome Trail',
-      location: 'Yosemite National Park, CA',
-      distance: '16.4 miles',
-      elevation: '4,800 ft',
-      duration: '10-14 hours',
-      difficulty: 'Expert',
-      image: 'https://images.unsplash.com/photo-1688602905494-5feda601966d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3NlbWl0ZSUyMGhhbGYlMjBkb21lJTIwdHJhaWx8ZW58MXx8fHwxNzU2MzI3MDg4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Iconic granite dome with cables section and panoramic views'
-    },
-    {
-      id: 2,
-      name: 'Angels Landing',
-      location: 'Zion National Park, UT',
-      distance: '5.4 miles',
-      elevation: '1,488 ft',
-      duration: '4-6 hours',
-      difficulty: 'Hard',
-      image: 'https://images.unsplash.com/photo-1686347858432-c385c54f9dff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhbmdlbHMlMjBsYW5kaW5nJTIwemlvbiUyMHRyYWlsfGVufDF8fHx8MTc1NjMyNzA5MXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Narrow ridge with chains and breathtaking canyon views'
-    },
-    {
-      id: 3,
-      name: 'Bright Angel Trail',
-      location: 'Grand Canyon National Park, AZ',
-      distance: '9.5 miles',
-      elevation: '3,020 ft',
-      duration: '6-9 hours',
-      difficulty: 'Hard',
-      image: 'https://images.unsplash.com/photo-1649786037057-8b1f92bdde95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxncmFuZCUyMGNhbnlvbiUyMGJyaWdodCUyMGFuZ2VsJTIwdHJhaWx8ZW58MXx8fHwxNzU2MzI3MDk1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Well-maintained trail descending into the Grand Canyon'
-    },
-    {
-      id: 4,
-      name: 'Mount Washington',
-      location: 'White Mountains, NH',
-      distance: '8.5 miles',
-      elevation: '4,300 ft',
-      duration: '6-8 hours',
-      difficulty: 'Hard',
-      image: 'https://images.unsplash.com/photo-1558483754-4618fc25fe5e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxhcHBhbGFjaGlhbiUyMHRyYWlsJTIwbW91bnRhaW5zfGVufDF8fHx8MTc1NjMyNzA5OHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Highest peak in the Northeast with extreme weather conditions'
-    },
-    {
-      id: 5,
-      name: 'Wonderland Trail',
-      location: 'Mount Rainier National Park, WA',
-      distance: '93 miles',
-      elevation: '22,000 ft',
-      duration: '10-14 days',
-      difficulty: 'Expert',
-      image: 'https://images.unsplash.com/photo-1572573022597-3da22e56ff39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtb3VudCUyMHJhaW5pZXIlMjB3b25kZXJsYW5kJTIwdHJhaWx8ZW58MXx8fHwxNzU2MzI3MTAxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Epic circumnavigation of Mount Rainier through diverse landscapes'
-    },
-    {
-      id: 6,
-      name: 'Mount Denali Base Camp',
-      location: 'Denali National Park, AK',
-      distance: '12.2 miles',
-      elevation: '3,200 ft',
-      duration: '8-10 hours',
-      difficulty: 'Moderate',
-      image: 'https://images.unsplash.com/photo-1648804536048-0a7d8b103bbe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtb3VudGFpbiUyMGhpa2luZyUyMHRyYWlsJTIwc2NlbmljfGVufDF8fHx8MTc1NjIxNjU5Nnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Scenic approach to North Americas highest peak'
-    }
-  ];
 
+  const [trails, setTrails] = useState([]);
+  const [isLoadingTrails, setIsLoadingTrails] = useState(true);
+
+  // Function to extract coordinates from GeoJSON path
+  const extractCoordinatesFromPath = (path) => {
+    if (!path || !path.features || !path.features[0]) return null;
+    
+    try {
+      const geometry = path.features[0].geometry;
+      let coordinates;
+      
+      // Handle both MultiLineString and LineString geometries
+      if (geometry.type === 'MultiLineString') {
+        coordinates = geometry.coordinates[0]; // Get first line string
+      } else if (geometry.type === 'LineString') {
+        coordinates = geometry.coordinates;
+      } else {
+        return null;
+      }
+      
+      if (coordinates && coordinates.length > 0) {
+        // Return first coordinate pair [longitude, latitude]
+        const firstPoint = coordinates[0];
+        return {
+          longitude: firstPoint[0],
+          latitude: firstPoint[1],
+          elevation: firstPoint[2] || null
+        };
+      }
+    } catch (error) {
+      console.error('Error extracting coordinates:', error);
+    }
+    return null;
+  };
+
+  // Function to calculate distance from GeoJSON path using Haversine formula
+  const calculateDistanceFromPath = (path) => {
+    if (!path || !path.features || !path.features[0]) return 'N/A';
+    
+    try {
+      const geometry = path.features[0].geometry;
+      let coordinates;
+      
+      // Handle both MultiLineString and LineString geometries
+      if (geometry.type === 'MultiLineString') {
+        coordinates = geometry.coordinates[0]; // Get first line string
+      } else if (geometry.type === 'LineString') {
+        coordinates = geometry.coordinates;
+      } else {
+        return 'N/A';
+      }
+      
+      if (coordinates && coordinates.length > 1) {
+        let totalDistance = 0;
+        
+        for (let i = 1; i < coordinates.length; i++) {
+          const [lon1, lat1] = coordinates[i - 1];
+          const [lon2, lat2] = coordinates[i];
+          
+          // Haversine formula for distance calculation
+          const R = 6371; // Earth's radius in km
+          const dLat = (lat2 - lat1) * Math.PI / 180;
+          const dLon = (lon2 - lon1) * Math.PI / 180;
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                   Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                   Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          totalDistance += R * c;
+        }
+        
+        return `${totalDistance.toFixed(2)} km`;
+      }
+    } catch (error) {
+      console.error('Error calculating distance:', error);
+    }
+    return 'N/A';
+  };
+
+  // Function to calculate elevation gain from path
+  const calculateElevationGain = (path) => {
+    if (!path || !path.features || !path.features[0]) return 'N/A';
+    
+    try {
+      const geometry = path.features[0].geometry;
+      let coordinates;
+      
+      // Handle both MultiLineString and LineString geometries
+      if (geometry.type === 'MultiLineString') {
+        coordinates = geometry.coordinates[0]; // Get first line string
+      } else if (geometry.type === 'LineString') {
+        coordinates = geometry.coordinates;
+      } else {
+        return 'N/A';
+      }
+      
+      if (coordinates && coordinates.length > 1) {
+        let totalGain = 0;
+        let previousElevation = coordinates[0][2] || 0;
+        
+        for (let i = 1; i < coordinates.length; i++) {
+          const currentElevation = coordinates[i][2] || 0;
+          const elevationDiff = currentElevation - previousElevation;
+          
+          // Only count positive elevation changes (gains)
+          if (elevationDiff > 0) {
+            totalGain += elevationDiff;
+          }
+          
+          previousElevation = currentElevation;
+        }
+        
+        return `${Math.round(totalGain)}m`;
+      }
+    } catch (error) {
+      console.error('Error calculating elevation gain:', error);
+    }
+    return 'N/A';
+  };
+
+  // Updated trail fetching with better error handling
+  useEffect(() => {
+    const fetchTrails = async () => {
+      setIsLoadingTrails(true);
+      try {
+        // Use get-all-routes endpoint instead of get-route
+        const res = await fetch("http://localhost:8080/get-all-routes");
+        const result = await res.json();
+        
+        if (res.ok && result.data) {
+          // Process the trails data to ensure proper structure
+          const processedTrails = result.data.map(trail => ({
+            id: trail.routeid || trail.id,
+            name: trail.name || 'Unknown Trail',
+            location: trail.location || 'Unknown Location',
+            difficulty: trail.difficulty || 'Easy',
+            distance: calculateDistanceFromPath(trail.path),
+            duration: 'N/A', // You might want to calculate this based on distance and difficulty
+            elevation: calculateElevationGain(trail.path),
+            description: trail.description || 'No description available',
+            path: trail.path,
+            image: `https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop&seed=${trail.routeid}`
+          }));
+          
+          setTrails(processedTrails);
+        } else {
+          console.error("Error fetching routes:", result.error || 'Unknown error');
+          setError("Failed to load trails. Please try again later.");
+        }
+      } catch (err) {
+        console.error("Network error:", err);
+        setError("Network error. Please check your connection.");
+      } finally {
+        setIsLoadingTrails(false);
+      }
+    };
+
+    fetchTrails();
+  }, []);
 
   //get coordinates that I will use in the get weather function
-  const getCurrentUser = async()=>{
-    const {data:{user},error} = await supabase.auth.getUser();
-    if(user){
+  const getCurrentUser = async () => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (user) {
       return user.id;
     }
-    if(error){
-      console.log("User with such id not found")
+    if (error) {
+      console.log("User with such id not found");
     }
-  }
+  };
 
-  // Mock weather data based on location
-  const getWeatherForLocation = async() => {
-    try{
-     const userid= await getCurrentUser();
-     const coordsData = await getCoordinates(userid);
-     if(coordsData && coordsData.length > 0){
-
-      const startCoords = {
-        lat: coordsData.start[1],
-        lon: coordsData.start[0]
-      };
-
-      // Saving to state so I can use it in my getWeather function
-      setCoords(startCoords);
-       // Now I can call getWeather using these coordinates
-      const weatherData = await getWeather(startCoords.lat, startCoords.lon);
-      setWeather(weatherData);
+  // Updated weather function to use trail coordinates
+  const getWeatherForLocation = async (trail) => {
+    try {
+      // First try to get coordinates from the trail's path data
+      let weatherCoords = extractCoordinatesFromPath(trail.path);
       
-     }else{
-      setError("No coordinates found for this user");
-     }
+      if (!weatherCoords) {
+        // Fallback to user coordinates if trail coordinates not available
+        const userid = await getCurrentUser();
+        const coordsData = await getCoordinates(userid);
+        if (coordsData && coordsData.length > 0) {
+          weatherCoords = {
+            latitude: coordsData.start[1],
+            longitude: coordsData.start[0]
+          };
+        }
+      }
 
-    }catch(e){
-      setError("Error fetching coordinates")
+      if (weatherCoords) {
+        setCoords(weatherCoords);
+        const weatherData = await getWeather(weatherCoords.latitude, weatherCoords.longitude);
+        console.log('Weather data:', weatherData);
+        console.log('Description field:', weatherData?.description);
+        setWeather(weatherData);
+
+      } else {
+        setError("No coordinates found for weather data");
+      }
+
+    } catch (e) {
+      setError("Error fetching weather data");
       console.log(e);
-
     }
- 
   };
 
   // Weather icon helper function
   const getWeatherIcon = (description) => {
+     console.log('getWeatherIcon called with:', description, typeof description);
     const desc = description.toLowerCase();
     if (desc.includes('sunny')) return <Sun className="w-6 h-6 text-yellow-500" />;
     if (desc.includes('rain')) return <CloudRain className="w-6 h-6 text-blue-500" />;
@@ -197,7 +307,7 @@ const PlanHike = () => {
 
   useEffect(() => {
     if (selectedTrail) {
-      setWeather(getWeatherForLocation(selectedTrail.location));
+      getWeatherForLocation(selectedTrail);
     }
   }, [selectedTrail]);
 
@@ -210,9 +320,18 @@ const PlanHike = () => {
     setSelectedTrail(trail);
     setLocation(trail.location);
     setDifficulty(trail.difficulty.toLowerCase());
+    
     if (!hikeTitle) {
       setHikeTitle(`${trail.name} Adventure`);
     }
+    
+    // Optional: Log trail information for debugging
+    console.log('Selected trail:', {
+      name: trail.name,
+      distance: trail.distance,
+      elevation: trail.elevation,
+      coordinates: extractCoordinatesFromPath(trail.path)
+    });
   };
 
   const handleSelectFriendForInvite = (friend) => {
@@ -243,8 +362,8 @@ const PlanHike = () => {
     setInvitedFriends(invitedFriends.filter(friend => friend.inviteId !== friendId));
   };
   
-  // Submit handler to create hike------------------------------------------------------------------------------
-    const handleCreateHike = async () => {
+  // Submit handler to create hike
+  const handleCreateHike = async () => {
     if (!currentUser || !selectedTrail || !date || !time || !hikeTitle.trim()) {
       setSubmitMessage('Please fill in all required fields and ensure you are logged in');
       return;
@@ -257,8 +376,8 @@ const PlanHike = () => {
       const hikingGroup = {
         members: invitedFriends.map(friend => friend.id)
       };
-      //  use this when running locally,   http://localhost:8080/newHike
-      const response = await fetch('https://hiking-logbook-api.onrender.com/newHike', {
+
+      const response = await fetch('http://localhost:8080/newHike', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -274,6 +393,7 @@ const PlanHike = () => {
           hikinggroup: hikingGroup,
           difficulty,
           title: hikeTitle,
+          route: selectedTrail?.id || null // Add route reference
         })
       });
 
@@ -308,7 +428,6 @@ const PlanHike = () => {
       setIsSubmitting(false);
     }
   };
-  // -----------------------------------------------------------------------------------------------------------------------------------------
 
   // Reset form function
   const resetForm = () => {
@@ -325,14 +444,6 @@ const PlanHike = () => {
     setSubmitMessage('');
   };
 
-/// My component
-
-  const handleDateChange = (e) => {
-    setDate(e.target.value);
-  };
-
-
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-6xl mx-auto">
@@ -347,6 +458,12 @@ const PlanHike = () => {
             </p>
           )}
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+            <p className="text-red-700 dark:text-red-400">{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
@@ -383,6 +500,7 @@ const PlanHike = () => {
                       id="date"
                       type="date"
                       value={date}
+                      min={new Date().toISOString().split("T")[0]}
                       onChange={(e) => setDate(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
@@ -395,6 +513,9 @@ const PlanHike = () => {
                       id="time"
                       type="time"
                       value={time}
+                      min="06:00"
+                      max="18:00"
+                      step="900"
                       onChange={(e) => setTime(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
@@ -524,49 +645,63 @@ const PlanHike = () => {
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {filteredTrails.map((trail) => (
-                    <div
-                      key={trail.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                        selectedTrail?.id === trail.id 
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                          : 'border-gray-200 dark:border-gray-600'
-                      }`}
-                      onClick={() => handleTrailSelect(trail)}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white">{trail.name}</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
-                            <MapPin className="w-3 h-3" />
-                            {trail.location}
-                          </p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <Mountain className="w-3 h-3" />
-                              {trail.distance}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {trail.duration}
-                            </span>
+                
+                {isLoadingTrails ? (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">Loading trails...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {filteredTrails.map((trail) => (
+                      <div
+                        key={trail.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                          selectedTrail?.id === trail.id 
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                            : 'border-gray-200 dark:border-gray-600'
+                        }`}
+                        onClick={() => handleTrailSelect(trail)}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium text-gray-900 dark:text-white">{trail.name}</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
+                              <MapPin className="w-3 h-3" />
+                              {trail.location}
+                            </p>
+                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                              <span className="flex items-center gap-1">
+                                <Mountain className="w-3 h-3" />
+                                {trail.distance}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {trail.elevation}
+                              </span>
+                            </div>
                           </div>
+                          <span 
+                            className={`px-2 py-1 rounded-full text-xs font-medium
+                              ${trail.difficulty === 'Easy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : ''}
+                              ${trail.difficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : ''}
+                              ${trail.difficulty === 'Hard' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' : ''}
+                              ${trail.difficulty === 'Expert' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : ''}
+                            `}
+                          >
+                            {trail.difficulty}
+                          </span>
                         </div>
-                        <span 
-                          className={`px-2 py-1 rounded-full text-xs font-medium
-                            ${trail.difficulty === 'Easy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : ''}
-                            ${trail.difficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : ''}
-                            ${trail.difficulty === 'Hard' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' : ''}
-                            ${trail.difficulty === 'Expert' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : ''}
-                          `}
-                        >
-                          {trail.difficulty}
-                        </span>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                    {filteredTrails.length === 0 && !isLoadingTrails && (
+                      <div className="text-center py-8">
+                        <Mountain className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500 dark:text-gray-400">No trails found matching your search</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -640,7 +775,6 @@ const PlanHike = () => {
               </div>
             )}
 
-
             {/* Trail Preview */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -673,7 +807,7 @@ const PlanHike = () => {
                         {selectedTrail.location}
                       </p>
                       <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{selectedTrail.description}</p>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="font-medium text-gray-900 dark:text-white">Distance:</span>
                           <p className="text-gray-600 dark:text-gray-400">{selectedTrail.distance}</p>
@@ -681,10 +815,6 @@ const PlanHike = () => {
                         <div>
                           <span className="font-medium text-gray-900 dark:text-white">Elevation:</span>
                           <p className="text-gray-600 dark:text-gray-400">{selectedTrail.elevation}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-900 dark:text-white">Duration:</span>
-                          <p className="text-gray-600 dark:text-gray-400">{selectedTrail.duration}</p>
                         </div>
                       </div>
                     </div>
