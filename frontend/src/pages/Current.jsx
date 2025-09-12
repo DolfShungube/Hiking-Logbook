@@ -32,13 +32,12 @@ const Current = () => {
 
   // Notes state
   const [note, setNote] = useState("");
-  const [editedNote, setEditedNote] = useState(null);
   const [notesList, setNotesList] = useState([]);
 
   const { hikeid } = useParams();
   const { getCoordinates } = hikeDataCollection();
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
-  const { getNotes, addNote, updateNote, deleteNote } = NotesDataCollection();
+  const { getNotes, addNote } = NotesDataCollection();
 
   // Fetch current user ID
   const getCurrentUserId = async () => {
@@ -99,51 +98,19 @@ const Current = () => {
     }
   };
 
-  // Add goal
-  const handleAddGoal = async () => {
-    if (!goal.trim()) return;
-    try {
-      await addGoal(hikeid, goal);
-      setGoal("");
-      fetchGoals();
-    } catch (err) {
-      console.error("Error adding goal:", err);
-    }
-  };
-
-  // Notes functions
-  const handleSaveNote = async () => {
+  // Add new note
+  const handleAddNote = async () => {
     if (!note.trim()) return;
-
     try {
-      if (editedNote) {
-        await updateNote(hikeid, editedNote.date, note);
-        setEditedNote(null);
-      } else {
-        await addNote(hikeid, note);
-      }
+      await addNote(hikeid, note);
       setNote("");
       fetchNotes();
     } catch (err) {
-      console.error("Error saving note:", err);
+      console.error("Error adding note:", err);
     }
   };
 
-  const handleEditNote = (noteObj) => {
-    setEditedNote(noteObj);
-    setNote(noteObj.text);
-  };
-
-  const handleDeleteNote = async (noteObj) => {
-    try {
-      await deleteNote(hikeid, noteObj.date);
-      setNotesList((prev) => prev.filter((n) => n.date !== noteObj.date));
-    } catch (err) {
-      console.error("Error deleting note:", err);
-    }
-  };
-
-  // Toggle goal status (checkbox)
+  // Toggle goal status
   const handleToggleGoal = async (goalItem) => {
     try {
       const newStatus = goalItem.status === "complete" ? "incomplete" : "complete";
@@ -267,22 +234,22 @@ const Current = () => {
                   <span className="ml-auto">2 hrs left</span>
                 </li>
               </ul>
-            </div>
 
-            {/* Buttons */}
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={() => setShowNotesModal(true)}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold transition"
-              >
-                Notes
-              </button>
-              <button
-                onClick={() => setShowGoalsModal(true)}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold transition"
-              >
-                Goals
-              </button>
+              {/* Buttons */}
+              <div className="flex gap-4 mt-4">
+                <button
+                  onClick={() => setShowNotesModal(true)}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold transition"
+                >
+                  Notes
+                </button>
+                <button
+                  onClick={() => setShowGoalsModal(true)}
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold transition"
+                >
+                  Goals
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -315,7 +282,9 @@ const Current = () => {
                     className="mr-2"
                   />
                   <span
-                    className={`cursor-pointer ${g.status === "complete" ? "line-through text-gray-400" : ""}`}
+                    className={`cursor-pointer ${
+                      g.status === "complete" ? "line-through text-gray-400" : ""
+                    }`}
                   >
                     {g.goal}
                   </span>
@@ -331,7 +300,12 @@ const Current = () => {
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 mb-4 dark:bg-gray-700 dark:text-white"
             />
             <button
-              onClick={handleAddGoal}
+              onClick={async () => {
+                if (!goal.trim()) return;
+                await addGoal(hikeid, goal);
+                setGoal("");
+                fetchGoals();
+              }}
               className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold"
             >
               Add Goal
@@ -354,31 +328,25 @@ const Current = () => {
               Notes
             </h3>
 
+            {/* Existing notes */}
             <ul className="mb-4 space-y-2 max-h-60 overflow-y-auto">
-              {notesList.map((n) => (
-                <li
-                  key={n.date}
-                  className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-700 rounded"
-                >
-                  <span>{n.text}</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEditNote(n)}
-                      className="text-yellow-500 hover:text-yellow-700"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteNote(n)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                </li>
-              ))}
+              {notesList.map((n) => {
+                const dateObj = new Date(n.date);
+                const formattedDate = dateObj.toLocaleDateString();
+                const formattedTime = dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+                return (
+                  <li key={n.date} className="p-2 bg-gray-100 dark:bg-gray-700 rounded">
+                    <p className="text-gray-900 dark:text-gray-100">{n.text}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {formattedDate} {formattedTime}
+                    </p>
+                  </li>
+                );
+              })}
             </ul>
 
+            {/* Add new note */}
             <input
               type="text"
               value={note}
@@ -387,10 +355,10 @@ const Current = () => {
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 mb-4 dark:bg-gray-700 dark:text-white"
             />
             <button
-              onClick={handleSaveNote}
+              onClick={handleAddNote}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold"
             >
-              {editedNote ? "Save Note" : "Add Note"}
+              Add Note
             </button>
           </div>
         </div>
