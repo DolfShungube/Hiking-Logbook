@@ -10,7 +10,6 @@ export const NotesDataContextProvider = ({ children }) => {
         `https://hiking-logbook-api.onrender.com/get-notes?hikeid=${encodeURIComponent(hike_id)}`,
         { method: "GET" }
       );
-
       const data = await res.json();
 
       if (!res.ok) {
@@ -31,16 +30,14 @@ export const NotesDataContextProvider = ({ children }) => {
       const res = await fetch("https://hiking-logbook-api.onrender.com/add-note", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hikeid: hike_id, text: text }),
+        body: JSON.stringify({ hikeid: hike_id, text }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
         console.error("Error adding note:", data.error);
         throw new Error(data.error || `HTTP error! Status: ${res.status}`);
       }
-
       return data;
     } catch (err) {
       console.error("Error:", err);
@@ -54,16 +51,14 @@ export const NotesDataContextProvider = ({ children }) => {
       const res = await fetch("https://hiking-logbook-api.onrender.com/remove-note", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hikeid: hike_id, text: text, date: date }),
+        body: JSON.stringify({ hikeid: hike_id, text, date }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
         console.error("Error removing note:", data.error);
         throw new Error(data.error || `HTTP error! Status: ${res.status}`);
       }
-
       return data;
     } catch (err) {
       console.error("Error:", err);
