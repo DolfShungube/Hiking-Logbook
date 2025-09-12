@@ -78,7 +78,7 @@ const Sidebar = forwardRef(({ collapsed }, ref) => {
       <div className="mt-auto p-3">
         <button
           onClick={handleGooglesignInUser}
-          className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition w-full"
+          className="flex items-center gap-2 p-2 rounded-lg bg-transparent hover:bg-gray-200 dark:bg-gray-900 dark:hover:bg-gray-700 transition w-full"
         >
           <LogOut size={20} />
           {!collapsed && <span>Logout</span>}

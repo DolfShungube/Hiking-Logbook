@@ -1,4 +1,4 @@
-import { Home, MessagesSquare, CalendarDays, Settings,BookmarkMinus, MapPin } from "lucide-react";
+import { Home, MessagesSquare, CalendarDays, Settings,BookmarkMinus, MapPin ,LogOut } from "lucide-react";
 
 
 
@@ -29,7 +29,7 @@ export const navbarLinks = [
             {
                 label: "View Current Hike",
                 icon:MapPin,
-                path: "/myhikes",
+                path: "/dashboard/View_Hike",
             },
 
 
