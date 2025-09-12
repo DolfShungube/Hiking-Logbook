@@ -37,7 +37,7 @@ const Current = () => {
   const { hikeid } = useParams();
   const { getCoordinates } = hikeDataCollection();
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
-  const { getNotes, addNote } = NotesDataCollection();
+  const { getNotes, addNote, removeNote } = NotesDataCollection();
 
   // Fetch current user ID
   const getCurrentUserId = async () => {
@@ -98,7 +98,19 @@ const Current = () => {
     }
   };
 
-  // Add new note
+  // Add goal
+  const handleAddGoal = async () => {
+    if (!goal.trim()) return;
+    try {
+      await addGoal(hikeid, goal);
+      setGoal("");
+      fetchGoals();
+    } catch (err) {
+      console.error("Error adding goal:", err);
+    }
+  };
+
+  // Add note
   const handleAddNote = async () => {
     if (!note.trim()) return;
     try {
@@ -110,7 +122,17 @@ const Current = () => {
     }
   };
 
-  // Toggle goal status
+  // Remove note
+  const handleRemoveNote = async (noteObj) => {
+    try {
+      await removeNote(hikeid, noteObj.text, noteObj.date);
+      setNotesList((prev) => prev.filter((n) => n.date !== noteObj.date));
+    } catch (err) {
+      console.error("Error removing note:", err);
+    }
+  };
+
+  // Toggle goal status (checkbox)
   const handleToggleGoal = async (goalItem) => {
     try {
       const newStatus = goalItem.status === "complete" ? "incomplete" : "complete";
@@ -234,132 +256,141 @@ const Current = () => {
                   <span className="ml-auto">2 hrs left</span>
                 </li>
               </ul>
+            </div>
 
-              {/* Buttons */}
-              <div className="flex gap-4 mt-4">
-                <button
-                  onClick={() => setShowNotesModal(true)}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold transition"
-                >
-                  Notes
-                </button>
-                <button
-                  onClick={() => setShowGoalsModal(true)}
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold transition"
-                >
-                  Goals
-                </button>
-              </div>
+            {/* Buttons */}
+            <div className="flex gap-4 mt-4">
+              <button
+                onClick={() => setShowNotesModal(true)}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold transition"
+              >
+                Notes
+              </button>
+              <button
+                onClick={() => setShowGoalsModal(true)}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold transition"
+              >
+                Goals
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Goals Modal */}
-      {showGoalsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 shadow-lg relative">
+      {/* Notes Modal */}
+      {showNotesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-96 max-h-[80vh] overflow-y-auto relative">
             <button
-              onClick={() => setShowGoalsModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              onClick={() => setShowNotesModal(false)}
+              className="absolute top-3 right-3 text-gray-600 dark:text-gray-300 hover:text-gray-900"
             >
               <X size={20} />
             </button>
-            <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-              Goals
+            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              Notes
             </h3>
 
-            <ul className="mb-4 space-y-2 max-h-60 overflow-y-auto">
-              {goalsList.map((g, idx) => (
+            {/* Add Note */}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                placeholder="Add a note..."
+                className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+              <button
+                onClick={handleAddNote}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+              >
+                Add
+              </button>
+            </div>
+
+            {/* Notes List */}
+            <ul className="space-y-2">
+              {notesList.length === 0 && (
+                <li className="text-gray-500 dark:text-gray-400">No notes yet.</li>
+              )}
+              {notesList.map((n, idx) => (
                 <li
                   key={idx}
-                  className="flex items-center p-2 bg-gray-100 dark:bg-gray-700 rounded"
+                  className="flex justify-between items-center p-2 rounded bg-gray-100 dark:bg-gray-900"
                 >
-                  <input
-                    type="checkbox"
-                    checked={g.status === "complete"}
-                    onChange={() => handleToggleGoal(g)}
-                    className="mr-2"
-                  />
-                  <span
-                    className={`cursor-pointer ${
-                      g.status === "complete" ? "line-through text-gray-400" : ""
-                    }`}
+                  <div>
+                    <span className="text-gray-800 dark:text-gray-200">{n.text}</span>
+                    <br />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(n.date).toLocaleString()}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveNote(n)}
+                    className="text-red-500 hover:text-red-700"
                   >
-                    {g.goal}
-                  </span>
+                    <X size={16} />
+                  </button>
                 </li>
               ))}
             </ul>
-
-            <input
-              type="text"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-              placeholder="Enter new goal..."
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 mb-4 dark:bg-gray-700 dark:text-white"
-            />
-            <button
-              onClick={async () => {
-                if (!goal.trim()) return;
-                await addGoal(hikeid, goal);
-                setGoal("");
-                fetchGoals();
-              }}
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold"
-            >
-              Add Goal
-            </button>
           </div>
         </div>
       )}
 
-      {/* Notes Modal */}
-      {showNotesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 shadow-lg relative">
+      {/* Goals Modal */}
+      {showGoalsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-96 max-h-[80vh] overflow-y-auto relative">
             <button
-              onClick={() => setShowNotesModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              onClick={() => setShowGoalsModal(false)}
+              className="absolute top-3 right-3 text-gray-600 dark:text-gray-300 hover:text-gray-900"
             >
               <X size={20} />
             </button>
-            <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-              Notes
+            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              Goals
             </h3>
 
-            {/* Existing notes */}
-            <ul className="mb-4 space-y-2 max-h-60 overflow-y-auto">
-              {notesList.map((n) => {
-                const dateObj = new Date(n.date);
-                const formattedDate = dateObj.toLocaleDateString();
-                const formattedTime = dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            {/* Add Goal */}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                placeholder="Add a goal..."
+                className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+              />
+              <button
+                onClick={handleAddGoal}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold"
+              >
+                Add
+              </button>
+            </div>
 
-                return (
-                  <li key={n.date} className="p-2 bg-gray-100 dark:bg-gray-700 rounded">
-                    <p className="text-gray-900 dark:text-gray-100">{n.text}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {formattedDate} {formattedTime}
-                    </p>
-                  </li>
-                );
-              })}
+            {/* Goals List */}
+            <ul className="space-y-2">
+              {goalsList.length === 0 && (
+                <li className="text-gray-500 dark:text-gray-400">No goals yet.</li>
+              )}
+              {goalsList.map((g, idx) => (
+                <li
+                  key={idx}
+                  className="flex justify-between items-center p-2 rounded bg-gray-100 dark:bg-gray-900"
+                >
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={g.status === "complete"}
+                      onChange={() => handleToggleGoal(g)}
+                      className="form-checkbox h-5 w-5 text-green-500"
+                    />
+                    <span className="text-gray-800 dark:text-gray-200">{g.goal}</span>
+                  </label>
+                </li>
+              ))}
             </ul>
-
-            {/* Add new note */}
-            <input
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Enter new note..."
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 mb-4 dark:bg-gray-700 dark:text-white"
-            />
-            <button
-              onClick={handleAddNote}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold"
-            >
-              Add Note
-            </button>
           </div>
         </div>
       )}
