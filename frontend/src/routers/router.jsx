@@ -12,6 +12,8 @@ import CreateHike from "../pages/CreateHike.jsx";
 import HikeCreatedPage from "../pages/HikeCreated.jsx";
 import HikeLogbookPage from "../pages/logBook.jsx";
 import Current from "../pages/current.jsx";//Make sure the filename matches exactly
+import SettingsPage  from "../pages/Settings.jsx";  
+import ChatFriendsPage  from  "../pages/Chats.jsx";
 
 
 const router = createBrowserRouter([
@@ -79,7 +81,7 @@ const router = createBrowserRouter([
       },
       {
         path: "Chats",
-        element: <h1 className="title">Chats</h1>,
+        element: <ChatFriendsPage />
       },
       {
         path: "View_Hike",
@@ -87,7 +89,7 @@ const router = createBrowserRouter([
       },
       {
         path: "Settings",
-        element: <h1 className="title">Settings</h1>,
+        element: <SettingsPage />
       },
     ],
   },
