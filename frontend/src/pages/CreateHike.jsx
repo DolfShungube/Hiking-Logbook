@@ -396,7 +396,7 @@ const filteredTrails = trails.filter(trail => {
         members: invitedFriends.map(friend => friend.id)
       };
 
-      const response = await fetch('http://localhost:8080/newHike', {
+      const response = await fetch('https://hiking-logbook-api.onrender.com/newHike', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
