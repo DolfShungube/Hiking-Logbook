@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { createClient } from "@supabase/supabase-js";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { UserAuth } from "../context/AuthContext.jsx";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -38,23 +39,14 @@ const Current = () => {
   const { getCoordinates } = hikeDataCollection();
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
+  const { currentUser } = UserAuth();
 
   // Fetch current user ID
-  const getCurrentUserId = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      return user?.id ?? null;
-    } catch (err) {
-      console.error("Error getting user:", err);
-      setError("Could not get current user");
-      return null;
-    }
-  };
 
   // Fetch start coordinates and trail path
   const fetchStartCoordinates = async () => {
     try {
-      const userId = await getCurrentUserId();
+      const userId = currentUser.id;
       if (!userId) {
         setError("User not logged in");
         setLoading(false);
@@ -81,7 +73,7 @@ const Current = () => {
   // Fetch goals
   const fetchGoals = async () => {
     try {
-      const data = await getGoals(hikeid);
+      const data = await getGoals(hikeid,currentUser.id);
       setGoalsList(data);
     } catch (err) {
       console.error("Error fetching goals:", err);
@@ -91,7 +83,7 @@ const Current = () => {
   // Fetch notes
   const fetchNotes = async () => {
     try {
-      const data = await getNotes(hikeid);
+      const data = await getNotes(hikeid,currentUser.id);
       setNotesList(data); // data expected as [{date, text}, ...]
     } catch (err) {
       console.error("Error fetching notes:", err);
@@ -102,7 +94,7 @@ const Current = () => {
   const handleAddGoal = async () => {
     if (!goal.trim()) return;
     try {
-      await addGoal(hikeid, goal);
+      await addGoal(hikeid, goal,currentUser.id);
       setGoal("");
       fetchGoals();
     } catch (err) {
@@ -114,7 +106,7 @@ const Current = () => {
   const handleAddNote = async () => {
     if (!note.trim()) return;
     try {
-      await addNote(hikeid, note);
+      await addNote(hikeid, note,currentUser.id);
       setNote("");
       fetchNotes();
     } catch (err) {
@@ -125,7 +117,7 @@ const Current = () => {
   // Remove note
   const handleRemoveNote = async (noteObj) => {
     try {
-      await removeNote(hikeid, noteObj.text, noteObj.date);
+      await removeNote(hikeid, noteObj.text, noteObj.date,currentUser.id);
       setNotesList((prev) => prev.filter((n) => n.date !== noteObj.date));
     } catch (err) {
       console.error("Error removing note:", err);
@@ -136,7 +128,7 @@ const Current = () => {
   const handleToggleGoal = async (goalItem) => {
     try {
       const newStatus = goalItem.status === "complete" ? "incomplete" : "complete";
-      await updateGoalStatus(hikeid, goalItem.goal, newStatus);
+      await updateGoalStatus(hikeid, goalItem.goal, newStatus,currentUser.id);
       setGoalsList((prev) =>
         prev.map((g) => (g.goal === goalItem.goal ? { ...g, status: newStatus } : g))
       );

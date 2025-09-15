@@ -4,11 +4,11 @@ const GoalDataContext= createContext(null);
 
  export const GoalDataContextProvider=({children})=>{
 
-    const getGoals= async(hike_id)=>{
+    const getGoals= async(hike_id,userid)=>{
 
         try {
             const res= await fetch(
-                `https://hiking-logbook-api.onrender.com/get-goals?hikeid=${encodeURIComponent(hike_id)}`,{
+                `https://hiking-logbook-api.onrender.com/get-goals?hikeid=${encodeURIComponent(hike_id)}&userid=${encodeURIComponent(userid)}`,{
                 method:"GET",
             })
 
@@ -31,7 +31,7 @@ const GoalDataContext= createContext(null);
     }    
 
 
-const addGoal = async (hike_id,goal) => {
+const addGoal = async (hike_id,goal,userid) => {
   try {
 
     const res = await fetch('https://hiking-logbook-api.onrender.com/add-goal', {
@@ -43,7 +43,8 @@ const addGoal = async (hike_id,goal) => {
       body: JSON.stringify({
         hikeid:hike_id,
         goalDiscription:goal,
-        goalStatus: "in progress"
+        goalStatus: "in progress",
+        userid:userid
       })
     });
 
@@ -69,7 +70,7 @@ const addGoal = async (hike_id,goal) => {
 
 
 
-const updateGoalStatus = async (hike_id,goal,newStatus) => {
+const updateGoalStatus = async (hike_id,goal,newStatus,userid) => {
   try {
 
     const res = await fetch('https://hiking-logbook-api.onrender.com/update-goal-status', {
@@ -81,7 +82,8 @@ const updateGoalStatus = async (hike_id,goal,newStatus) => {
       body: JSON.stringify({
         hikeid:hike_id,
         goalDiscription:goal,
-        goalStatus: newStatus
+        goalStatus: newStatus,
+        userid:userid
       })
     });
 
@@ -99,7 +101,7 @@ const updateGoalStatus = async (hike_id,goal,newStatus) => {
     throw err;
   }
 };
-const deleteGoal = async (hike_id,goal) => {
+const deleteGoal = async (hike_id,goal,userid) => {
   try {
 
     const res = await fetch('https://hiking-logbook-api.onrender.com/delete-goal', {
@@ -111,6 +113,7 @@ const deleteGoal = async (hike_id,goal) => {
       body: JSON.stringify({
         hikeid:hike_id,
         goalDiscription:goal,
+        userid:userid
       })
     });
 

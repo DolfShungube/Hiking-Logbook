@@ -66,8 +66,8 @@ app.post("/delete-goal",removeGoal)
 
 
 app.get("/planned-hikes", fetchPlannedHikes);
-app.put("/planned-hikes/:hikeId", editPlannedHike);
-app.delete("/planned-hikes/:hikeId", deletePlannedHike);
+app.put("/planned-hikes/:hikeId/:userid", editPlannedHike);
+app.delete("/planned-hikes/:hikeId/:userid", deletePlannedHike);
 
 app.get("/get-route",getRoute);
 app.get("/get-all-routes", getAllRoutes);

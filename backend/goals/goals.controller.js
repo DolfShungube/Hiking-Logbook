@@ -13,12 +13,14 @@ const supabase= createClient(supabaseUrl,supabasekey,{
 
 
 const getGoals= async (req,res)=>{
-  const {hikeid}= req.query
+  const {hikeid,userid}= req.query
   try {
     const {data,error:statusError}= await supabase
     .from("customGoals")
     .select("*")
     .eq("hikeid",hikeid)
+    .eq("userid",userid)
+
 
 
     if(statusError){
@@ -35,13 +37,13 @@ const getGoals= async (req,res)=>{
 
 }
 
-const addGoal= async (req, res) => {
-  const {hikeid,goalDiscription,goalStatus} = req.body;
+const addGoal= async (req, res) =>{
+  const {hikeid,goalDiscription,goalStatus,userid} = req.body;
 
   try {
 
     const { data: sentData, error: sentError } = await supabase.rpc("add_custom_goal",
-        { hike_id: hikeid, goal_description:goalDiscription, goal_status:goalStatus });
+        { hike_id: hikeid, goal_description:goalDiscription, goal_status:goalStatus,p_user:userid });
 
     if (sentError) {
       console.error("Error while getting goal:", sentError);
@@ -58,12 +60,12 @@ const addGoal= async (req, res) => {
 
 
 const updateGoalStatus= async (req, res) => {
-  const {hikeid,goalDiscription,goalStatus} = req.body;
+  const {hikeid,goalDiscription,goalStatus,userid} = req.body;
 
   try {
 
     const { data: sentData, error: sentError } = await supabase.rpc("update_goal_status",
-        { hike_id: hikeid, goal_description:goalDiscription, new_status:goalStatus });
+        { hike_id: hikeid, goal_description:goalDiscription, new_status:goalStatus,p_user:userid });
 
     if (sentError) {
       console.error("Error while updating status:", sentError);
@@ -80,12 +82,12 @@ const updateGoalStatus= async (req, res) => {
 
 
 const removeGoal= async (req, res) => {
-  const { hikeid, goalDescription } = req.body;
+  const { hikeid, goalDescription,userid } = req.body;
 
   try {
 
     const { data: sentData, error: sentError } = await supabase.rpc("remove_goal",
-        { hike_id: hikeid, goal_description:goalDescription});
+        { hike_id: hikeid, goal_description:goalDescription,p_user:userid});
 
     if (sentError) {
       console.error("Error while removing goal:", sentError);

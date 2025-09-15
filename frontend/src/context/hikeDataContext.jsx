@@ -60,11 +60,11 @@ const HikeDataContext= createContext(null);
     }
 
 
-    const getHike= async(hike_id)=>{
+    const getHike= async(hike_id,user_id)=>{
 
         try {
             const res= await fetch(
-                `https://hiking-logbook-api.onrender.com/get-hike?hikeid=${encodeURIComponent(hike_id)}`,{
+                `https://hiking-logbook-api.onrender.com/get-hike?hikeid=${encodeURIComponent(hike_id)}$userid=${encodeURIComponent(user_id)}`,{
                 method:"GET",
             })
 
