@@ -326,7 +326,7 @@ const PlanHike = () => {
     }
     
     // Optional: Log trail information for debugging
-    console.log('Selected trail:', {
+    console.log('Selected trail:',{
       name: trail.name,
       distance: trail.distance,
       elevation: trail.elevation,

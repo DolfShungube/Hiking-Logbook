@@ -13,13 +13,14 @@ const supabase= createClient(supabaseUrl,supabasekey,{
 
 
 const getNotes= async (req,res)=>{
-  const {hikeid}= req.query
+  const {hikeid,userid}= req.query
  
   try {
     const {data: sentData,error:statusError}= await supabase
     .from("hikeNotes")
     .select("*")
     .eq("hikeid",hikeid)
+    .eq("userid",userid)
 
 
     if(statusError){
@@ -37,12 +38,12 @@ const getNotes= async (req,res)=>{
 
 
 const addNotes= async (req, res) =>{
-  const {hikeid,text} = req.body;
+  const {hikeid,text,userid} = req.body;
 
   try {
 
     const { data: sentData, error: sentError } = await supabase.rpc("add_hike_note",
-        { p_hikeid: hikeid, p_text:text});
+        { p_hikeid: hikeid, p_text:text,p_user:userid});
 
     if (sentError) {
       console.error("Error while getting notes:", sentError);
@@ -59,12 +60,12 @@ const addNotes= async (req, res) =>{
 
 
 const removeNotes= async (req, res) =>{
-  const {hikeid,text,date} = req.body;
+  const {hikeid,text,date,userid} = req.body;
 
   try {
 
     const { data: sentData, error: sentError } = await supabase.rpc("remove_hike_note",
-        { p_hikeid: hikeid, p_text:text,p_date:date});
+        { p_hikeid: hikeid, p_text:text,p_date:date,p_user:userid});
 
     if (sentError) {
       console.error("Error while removing note:", sentError);

@@ -84,12 +84,13 @@ const fetchPlannedHikes = async (req, res) => {
 };
 
 const fetchHike = async (req, res) => {
-  const { hikeid } = req.query;
+  const { hikeid,userid } = req.query;
   try {
     const { data: sentData, error: sentError } = await supabase
       .from("HikeData")
       .select("*")
-      .eq("hikeid", hikeid);
+      .eq("hikeid", hikeid)
+      .eq("userid", userid) 
         
     if (sentError) {
       console.error("Error while fetching the hike:", sentError);
@@ -108,7 +109,7 @@ const fetchHike = async (req, res) => {
 
 // EDIT/DELETE functions - use hikeid to target SPECIFIC hikes
 const editPlannedHike = async (req, res) => {
-  const { hikeId } = req.params; // This is the hikeid (primary key)
+  const { hikeId,userid} = req.params; // This is the hikeid (primary key)
   const updateData = req.body;
 
   try {
@@ -116,6 +117,7 @@ const editPlannedHike = async (req, res) => {
       .from("HikeData")
       .select("*")
       .eq("hikeid", hikeId)
+      .eq("userid", userid) 
       .single();
 
     if (fetchError || !existingHike) {
@@ -128,6 +130,7 @@ const editPlannedHike = async (req, res) => {
       .from("HikeData")
       .update(updateData)
       .eq("hikeid", hikeId)
+      .eq("userid", userid) 
       .select();
 
     if (updateError) {
@@ -146,13 +149,14 @@ const editPlannedHike = async (req, res) => {
 };
 
 const deletePlannedHike = async (req, res) => {
-  const { hikeId } = req.params;
+  const { hikeId,userid } = req.params;
 
   try {
     const { data: existingHike, error: fetchError } = await supabase
       .from("HikeData")
       .select("*")
       .eq("hikeid", hikeId)
+      .eq("userid", userid) 
       .single();
 
     if (fetchError || !existingHike) {
@@ -181,7 +185,7 @@ const deletePlannedHike = async (req, res) => {
   }
 };
 
-module.exports = {
+module.exports ={
   fetchCompletedHikes,
   fetchCurrentHike,
   fetchPlannedHikes,
