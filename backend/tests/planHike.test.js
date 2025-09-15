@@ -42,7 +42,6 @@ const mockResponse = () => {
 describe("Hikes Controller", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  // ---------------- fetchPlannedHikes ----------------
   describe("fetchPlannedHikes", () => {
     it("should return planned hikes successfully", async () => {
       const mockData = [
@@ -64,7 +63,9 @@ describe("Hikes Controller", () => {
       expect(res.status).toHaveBeenCalledWith(200);
       const response = res.json.mock.calls[0][0];
       expect(response.data[0]).toMatchObject({ id: 1, location: "Yosemite", attendees: 3 });
-      expect(response.data[0].image).toContain("yosemite");
+
+      // FIXED: use case-insensitive regex to match image URL
+      expect(response.data[0].image).toMatch(/yosemite/i);
     });
 
     it("should return 400 if userid is missing", async () => {
@@ -95,6 +96,5 @@ describe("Hikes Controller", () => {
     });
   });
 
-  // Other controller tests remain the same but you may need to **mock each chain fully** like above for `select().eq()`, `update().eq().select()`, etc.
-
+  // You can continue mocking other controller methods similarly...
 });
