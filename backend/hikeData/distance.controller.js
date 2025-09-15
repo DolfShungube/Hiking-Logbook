@@ -1,5 +1,5 @@
+// backend/hikeData/distance.controller.js
 const { createClient } = require("@supabase/supabase-js");
-
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabasekey = process.env.VITE_SUPABASE_ANON_KEY;
@@ -10,9 +10,7 @@ const supabase = createClient(supabaseUrl, supabasekey, {
   }
 });
 
-
-
-// this fetcgUserRoutes function works
+// fetchUserRoutes: return null when no route found, throw on DB errors
 const fetchUserRoutes = async (userid) => {
   const { data, error } = await supabase
     .from("HikeData")
@@ -20,18 +18,32 @@ const fetchUserRoutes = async (userid) => {
     .eq("userid", userid)
     .eq("status", "in progress")
     .single();
-    
 
+  // If Supabase reports an error...
   if (error) {
+    // Treat "no rows" / not found as not-an-error for our purposes -> return null
+    // Supabase PostgREST may include text like "No rows found" or code PGRST116 depending on version
+    const msg = (error.message || "").toLowerCase();
+    const isNoRows = msg.includes("no rows") || msg.includes("not found") || error.code === "PGRST116";
+    if (isNoRows) {
+      return null;
+    }
+    // For other DB errors, bubble up
     throw new Error(error.message);
   }
-  data.route = data.route.trim();
+
+  // If no data returned (explicitly null), treat as not found
+  if (!data) return null;
+
+  // Safely trim route if it exists and is a string
+  if (data.route && typeof data.route === "string") {
+    data.route = data.route.trim();
+  }
+
   return data;
 };
 
-
-// FETCH functions for start and end coordinates of hikes
-//
+// coordinates controller
 const coordinates = async (req, res) => {
   try {
     const { userid } = req.params;
@@ -39,6 +51,7 @@ const coordinates = async (req, res) => {
 
     const routeData = await fetchUserRoutes(userid);
 
+    // If fetchUserRoutes returned null => no route found
     if (!routeData || !routeData.route) {
       return res.status(404).json({ error: "No route found for this user" });
     }
@@ -56,12 +69,13 @@ const coordinates = async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
+    // Paths may be LineString or MultiLineString
     let coordinates = pathRow.path.features[0].geometry.coordinates;
-
     if (pathRow.path.features[0].geometry.type === "MultiLineString") {
       coordinates = coordinates.flat();
     }
 
+    // keep only lon/lat
     coordinates = coordinates.map(coord => coord.slice(0, 2));
     const StartCoordinates = coordinates[0].slice(0, 2);
     const EndCoordinates = coordinates[coordinates.length - 1].slice(0, 2);
@@ -71,7 +85,7 @@ const coordinates = async (req, res) => {
       start: StartCoordinates,
       end: EndCoordinates,
       difficulty: pathRow.difficulty || "Unknown",
-      path: coordinates, // send all points along the route 
+      path: coordinates, // send all points along the route
     });
 
   } catch (err) {
@@ -79,12 +93,6 @@ const coordinates = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-
-
-
-
-
 
 module.exports = {
   coordinates,

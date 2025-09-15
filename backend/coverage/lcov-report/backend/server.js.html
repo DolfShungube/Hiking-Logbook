@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75.75% </span>
+                <span class="strong">77.77% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>50/66</span>
+                <span class='fraction'>56/72</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75.75% </span>
+                <span class="strong">77.77% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>50/66</span>
+                <span class='fraction'>56/72</span>
             </div>
         
             
@@ -218,7 +218,18 @@
 <a name='L153'></a><a href='#L153'>153</a>
 <a name='L154'></a><a href='#L154'>154</a>
 <a name='L155'></a><a href='#L155'>155</a>
-<a name='L156'></a><a href='#L156'>156</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -261,17 +272,15 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -279,6 +288,19 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -392,9 +414,9 @@ const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
 &nbsp;
 const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/plannedHikes_details.js");
 const { fetchUser } = require("./users/users.controller");
-const { getNotes } = require("./notes/notes.controller");
-const { getGoals } = require("./goals/goals.controller");
-const { getRoute } = require("./routes/routes.controller");
+const { getNotes, addNotes, removeNotes } = require("./notes/notes.controller");
+const { getGoals, addGoal, updateGoalStatus, removeGoal } = require("./goals/goals.controller");
+const { getRoute ,  getAllRoutes } = require("./routes/routes.controller");
 &nbsp;
 app.use(cors({ origin: true, credentials: true }));
 app.get("/", <span class="fstat-no" title="function not covered" >(r</span>eq, res) =&gt; {
@@ -416,25 +438,36 @@ app.post("/invite-friend", inviteFriend);
 app.post("/accept-invite", acceptInvite);
 app.post("/reject-invite", rejectInvite);
 app.get("/get-friends", getFriends);
+&nbsp;
+&nbsp;
 app.post("/signup", signUp);
 app.post("/signin", signIn);
 app.post("/googlesignin", signInWithGoogle);
-// Creating new hike
+&nbsp;
+&nbsp;
 app.post("/newHike", CreateNewHike);
-&nbsp;
-&nbsp;
 app.get("/completed-hikes", fetchCompletedHikes);
 app.get("/current-hike", fetchCurrentHike);
 app.get("/get-hike", fetchHike);
 &nbsp;
-app.get("/get-notes", getNotes);
+app.get("/get-notes", getNotes);  // gets notes based on hikeid
+app.post("/add-note", addNotes);   // add a new note using hikeid and the nte
+app.post("/remove-note", removeNotes);  // remove a notes item
+&nbsp;
+&nbsp;
+&nbsp;
 app.get("/get-goals", getGoals);
+app.post("/add-goal",addGoal)
+app.post("/update-goal-status",updateGoalStatus)
+app.post("/delete-goal",removeGoal)
+&nbsp;
 &nbsp;
 app.get("/planned-hikes", fetchPlannedHikes);
 app.put("/planned-hikes/:hikeId", editPlannedHike);
 app.delete("/planned-hikes/:hikeId", deletePlannedHike);
 &nbsp;
 app.get("/get-route",getRoute);
+app.get("/get-all-routes", getAllRoutes);
 &nbsp;
 app.listen(port, "0.0.0.0", () =&gt; {
 });
@@ -535,7 +568,7 @@ app.get("/userHikeId/:userid", <span class="fstat-no" title="function not covere
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-06T15:11:28.621Z
+                at 2025-09-15T22:17:00.189Z
             </div>
         <script src="../prettify.js"></script>
         <script>
