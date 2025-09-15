@@ -215,7 +215,7 @@ const PlanHike = () => {
       setIsLoadingTrails(true);
       try {
         // Use get-all-routes endpoint instead of get-route
-        const res = await fetch("http://localhost:8080/get-all-routes");
+        const res = await fetch("https://hiking-logbook-api.onrender.com/get-all-routes");
         const result = await res.json();
         
         if (res.ok && result.data) {
