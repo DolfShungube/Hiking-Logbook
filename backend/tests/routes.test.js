@@ -1,6 +1,7 @@
 // backend/tests/routeController.test.js
-const { getRoute } = require("../routes/routes.controller.js");
+const { getRoute, getAllRoutes } = require("../routes/routes.controller.js");
 
+// Mock Supabase client
 jest.mock("@supabase/supabase-js", () => {
   const mockFrom = jest.fn();
   return {
@@ -13,10 +14,8 @@ jest.mock("@supabase/supabase-js", () => {
 
 const { __mockFrom: mockFrom } = require("@supabase/supabase-js").createClient();
 
-const mockRequest = (query = {}) => ({
-  query,
-});
-
+// Helpers to mock req/res
+const mockRequest = (query = {}) => ({ query });
 const mockResponse = () => {
   const res = {};
   res.status = jest.fn().mockReturnValue(res);
@@ -24,59 +23,109 @@ const mockResponse = () => {
   return res;
 };
 
-describe("Route Controller - getRoute", () => {
+describe("Route Controller", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  // Success case: Supabase returns data
-  it("should return route successfully", async () => {
-    const mockData = [{ routeid: 10, name: "Trail 1" }];
+  // ------------------- getRoute -------------------
+  describe("getRoute", () => {
+    it("should return route successfully", async () => {
+      const mockData = [{ routeid: 10, name: "Trail 1" }];
 
-    mockFrom.mockReturnValue({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockResolvedValue({ data: mockData, error: null }),
+      mockFrom.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({ data: mockData, error: null }),
+      });
+
+      const req = mockRequest({ routeid: 10 });
+      const res = mockResponse();
+
+      await getRoute(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ data: mockData });
     });
 
-    const req = mockRequest({ routeid: 10 });
-    const res = mockResponse();
+    it("should return 500 if Supabase returns an error", async () => {
+      const statusError = { message: "Failed to fetch route" };
 
-    await getRoute(req, res);
+      mockFrom.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({ data: null, error: statusError }),
+      });
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ data: mockData });
+      const req = mockRequest({ routeid: 10 });
+      const res = mockResponse();
+
+      await getRoute(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Failed to fetch route" });
+    });
+
+    it("should handle unexpected errors (catch block)", async () => {
+      mockFrom.mockImplementation(() => { throw new Error("Unexpected exception"); });
+
+      const req = mockRequest({ routeid: 10 });
+      const res = mockResponse();
+
+      await getRoute(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Something went wrong" });
+    });
   });
 
-  // Supabase returns an error (statusError exists)
-  it("should return 500 if Supabase returns an error", async () => {
-    const statusError = { message: "Failed to fetch route" };
+  // ------------------- getAllRoutes -------------------
+  describe("getAllRoutes", () => {
+    it("should return all routes successfully", async () => {
+      const mockData = [
+        { routeid: 1, name: "Trail A" },
+        { routeid: 2, name: "Trail B" },
+      ];
 
-    mockFrom.mockReturnValue({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockResolvedValue({ data: null, error: statusError }),
+      mockFrom.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({ data: mockData, error: null }),
+      });
+
+      const req = mockRequest();
+      const res = mockResponse();
+
+      await getAllRoutes(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ data: mockData });
     });
 
-    const req = mockRequest({ routeid: 10 });
-    const res = mockResponse();
+    it("should return 500 if Supabase returns an error", async () => {
+      const statusError = { message: "Failed to fetch all routes" };
 
-    await getRoute(req, res);
+      mockFrom.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({ data: null, error: statusError }),
+      });
 
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({ error: "Failed to fetch route" });
-  });
+      const req = mockRequest();
+      const res = mockResponse();
 
-  // Unexpected error (throws exception)
-  it("should handle unexpected errors (catch block)", async () => {
-    mockFrom.mockImplementation(() => {
-      throw new Error("Unexpected exception");
+      await getAllRoutes(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Failed to fetch all routes" });
     });
 
-    const req = mockRequest({ routeid: 10 });
-    const res = mockResponse();
+    it("should handle unexpected errors (catch block)", async () => {
+      mockFrom.mockImplementation(() => { throw new Error("Unexpected crash"); });
 
-    await getRoute(req, res);
+      const req = mockRequest();
+      const res = mockResponse();
 
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({ error: "Something went wrong" });
+      await getAllRoutes(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Something went wrong" });
+    });
   });
 });
