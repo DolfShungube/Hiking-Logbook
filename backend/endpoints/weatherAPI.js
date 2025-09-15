@@ -14,6 +14,7 @@ router.get("/forecast", async(req,res) =>{
     }else{
 
         try{
+            console.log('API running latitude and longitude are present')
             const response = await fetch(
                 `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${API_KEY}`
             );

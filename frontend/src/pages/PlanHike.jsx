@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
+import { getWeather } from '../../apiCalls/getWeather'; 
+
 
 const PlanHikeDefault = () => {
   const [activeStep, setActiveStep] = useState(0);
