@@ -229,7 +229,8 @@ const PlanHike = () => {
             duration: 'N/A', // You might want to calculate this based on distance and difficulty
             elevation: calculateElevationGain(trail.path),
             description: trail.description || 'No description available',
-            path: trail.path,
+            //this path is the issue
+            //path: trail.path,
             image: `https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop&seed=${trail.routeid}`
           }));
           
@@ -260,29 +261,39 @@ const PlanHike = () => {
     }
   };
 
-  // Updated weather function to use trail coordinates
+  // Updated weather function to use trail coordinates.. works just fine also
   const getWeatherForLocation = async (trail) => {
     try {
       // First try to get coordinates from the trail's path data
-      let weatherCoords = extractCoordinatesFromPath(trail.path);
+        let weatherCoords;
       
-      if (!weatherCoords) {
+
         // Fallback to user coordinates if trail coordinates not available
         const userid = await getCurrentUser();
         const coordsData = await getCoordinates(userid);
-        if (coordsData && coordsData.length > 0) {
+        console.log("coordsData:", coordsData);
+        if (coordsData && coordsData.start && coordsData.start.length === 2) {
           weatherCoords = {
             latitude: coordsData.start[1],
             longitude: coordsData.start[0]
           };
         }
-      }
+      
+          console.log("weatherCoords:", weatherCoords);
 
       if (weatherCoords) {
         setCoords(weatherCoords);
-        const weatherData = await getWeather(weatherCoords.latitude, weatherCoords.longitude);
+        
+        const lat = parseFloat(weatherCoords.latitude.toString().trim());
+        const lon = parseFloat(weatherCoords.longitude.toString().trim());
+
+        
+        console.log('Sending to getWeather:', { lat, lon, typeLat: typeof lat, typeLon: typeof lon });
+
+        //the weather API works fine
+        const weatherData = await getWeather(lat, lon);
         console.log('Weather data:', weatherData);
-        console.log('Description field:', weatherData?.description);
+        //console.log('Description field:', weatherData?.description);
         setWeather(weatherData);
 
       } else {
@@ -296,14 +307,18 @@ const PlanHike = () => {
   };
 
   // Weather icon helper function
-  const getWeatherIcon = (description) => {
-     console.log('getWeatherIcon called with:', description, typeof description);
-    const desc = description.toLowerCase();
-    if (desc.includes('sunny')) return <Sun className="w-6 h-6 text-yellow-500" />;
-    if (desc.includes('rain')) return <CloudRain className="w-6 h-6 text-blue-500" />;
-    if (desc.includes('cloud')) return <Cloud className="w-6 h-6 text-gray-500" />;
-    return <Sun className="w-6 h-6 text-yellow-500" />;
-  };
+const getWeatherIcon = (description) => {
+  if (!description) return <Sun className="w-6 h-6 text-yellow-500" />;
+  
+  const desc = description.toLowerCase();
+  if (desc.includes('clear')) return <Sun className="w-6 h-6 text-yellow-500" />;
+  if (desc.includes('rain')) return <CloudRain className="w-6 h-6 text-blue-500" />;
+  if (desc.includes('cloud')) return <Cloud className="w-6 h-6 text-gray-500" />;
+  if (desc.includes('partly')) return <Cloud className="w-6 h-6 text-gray-400" />;
+  return <Sun className="w-6 h-6 text-yellow-500" />;
+};
+
+
 
   useEffect(() => {
     if (selectedTrail) {
@@ -311,15 +326,19 @@ const PlanHike = () => {
     }
   }, [selectedTrail]);
 
-  const filteredTrails = trails.filter(trail =>
-    trail.name.toLowerCase().includes(searchTrails.toLowerCase()) ||
-    trail.location.toLowerCase().includes(searchTrails.toLowerCase())
-  );
+const filteredTrails = trails.filter(trail => {
+  const trailName = trail?.name?.toLowerCase() || '';
+  const trailLocation = trail?.location?.toLowerCase() || '';
+  const search = (searchTrails || '').toLowerCase();  // <-- safe fallback
+  return trailName.includes(search) || trailLocation.includes(search);
+});
+
+
 
   const handleTrailSelect = (trail) => {
     setSelectedTrail(trail);
     setLocation(trail.location);
-    setDifficulty(trail.difficulty.toLowerCase());
+     setDifficulty(trail.difficulty?.toLowerCase() || ''); 
     
     if (!hikeTitle) {
       setHikeTitle(`${trail.name} Adventure`);
@@ -710,70 +729,88 @@ const PlanHike = () => {
           <div className="space-y-6">
              {/* Weather Information Card */}
             {weather && selectedTrail && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    {getWeatherIcon(weather.description)}
-                    Weather Forecast
-                  </h3>
-                </div>
-                <div className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {getWeatherIcon(weather.description)}
-                        <div>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{weather.description}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{selectedTrail.location}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{weather.temperature}°C</p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center gap-2">
-                        <Wind className="w-4 h-4 text-gray-500" />
-                        <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Wind Speed</p>
-                          <p className="font-medium text-gray-900 dark:text-white">{weather.windSpeed || 'N/A'} km/h</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Cloud className="w-4 h-4 text-gray-500" />
-                        <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Humidity</p>
-                          <p className="font-medium text-gray-900 dark:text-white">{weather.humidity || 'N/A'}%</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Weather-based recommendations */}
-                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Weather Recommendations</h4>
-                      <div className="space-y-1">
-                        {weather.description.toLowerCase().includes('rain') && (
-                          <p className="text-sm text-amber-600 dark:text-amber-400">⚠️ Bring waterproof gear and check trail conditions</p>
-                        )}
-                        {weather.temperature < 10 && (
-                          <p className="text-sm text-blue-600 dark:text-blue-400">🧥 Pack warm layers for cold conditions</p>
-                        )}
-                        {weather.temperature > 25 && (
-                          <p className="text-sm text-red-600 dark:text-red-400">☀️ Bring plenty of water and sun protection</p>
-                        )}
-                        {(weather.windSpeed || 0) > 15 && (
-                          <p className="text-sm text-purple-600 dark:text-purple-400">💨 Expect strong winds, secure loose items</p>
-                        )}
-                        {weather.description.toLowerCase().includes('sunny') && (
-                          <p className="text-sm text-green-600 dark:text-green-400">✅ Perfect weather for hiking!</p>
-                        )}
-                      </div>
-                    </div>
+  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        {getWeatherIcon(weather.current?.description)}
+        Weather Forecast
+      </h3>
+    </div>
+    <div className="p-6">
+      <div className="space-y-4">
+        {/* Current Weather */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {getWeatherIcon(weather.current?.description)}
+            <div>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
+                {weather.current?.description || 'No data'}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Current Conditions</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {weather.current?.temp ? `${Math.round(weather.current.temp)}°C` : 'N/A'}
+            </p>
+          </div>
+        </div>
+        
+        {/* Daily Forecast */}
+        {weather.daily && weather.daily.length > 0 && (
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">7-Day Forecast</h4>
+            <div className="space-y-3">
+              {weather.daily.slice(0, 7).map((day, index) => (
+                <div key={index} className="flex items-center justify-between text-sm">
+                  <div className="w-20">
+                    <p className="text-gray-900 dark:text-white font-medium">
+                      {index === 0 ? 'Today' : new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-1">
+                    {getWeatherIcon(day.summary)}
+                    <span className="text-gray-600 dark:text-gray-400 text-xs capitalize">
+                      {day.summary.toLowerCase()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 w-20 justify-end">
+                    <span className="text-gray-900 dark:text-white font-medium">
+                      {day.maxTemp ? `${Math.round(day.maxTemp)}°` : 'N/A'}
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      {day.minTemp ? `${Math.round(day.minTemp)}°` : 'N/A'}
+                    </span>
                   </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Weather-based recommendations */}
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Weather Recommendations</h4>
+          <div className="space-y-1">
+            {weather.current?.description?.toLowerCase().includes('rain') && (
+              <p className="text-sm text-amber-600 dark:text-amber-400">⚠️ Bring waterproof gear and check trail conditions</p>
             )}
+            {(weather.current?.temp || 0) < 10 && (
+              <p className="text-sm text-blue-600 dark:text-blue-400">🧥 Pack warm layers for cold conditions</p>
+            )}
+            {(weather.current?.temp || 0) > 25 && (
+              <p className="text-sm text-red-600 dark:text-red-400">☀️ Bring plenty of water and sun protection</p>
+            )}
+            {weather.current?.description?.toLowerCase().includes('sunny') || 
+             weather.current?.description?.toLowerCase().includes('clear') && (
+              <p className="text-sm text-green-600 dark:text-green-400">✅ Perfect weather for hiking!</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
             {/* Trail Preview */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
