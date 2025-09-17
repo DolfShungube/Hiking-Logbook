@@ -83,7 +83,7 @@ const fetchPlannedHikes = async (req, res) => {
   }
 };
 
-const fetchHike = async (req, res) => {
+const fetchHike = async (req, res) =>{
   const { hikeid,userid } = req.query;
   try {
     const { data: sentData, error: sentError } = await supabase
