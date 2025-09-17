@@ -20,7 +20,7 @@ Tracking completed hikes was historically done with a physical logbook. **Hiking
 [tagia](https://tree.taiga.io/project/noblewolf-hiking-logbook)
 ### code coverage:
 [![codecov](https://codecov.io/gh/DolfShungube/Hiking-Logbook/branch/master/graph/badge.svg)](https://codecov.io/gh/DolfShungube/Hiking-Logbook)
-[coverage graph](https://codecov.io/gh/DolfShungube/Hiking-Logbook/graphs/sunburst.svg?token=3IHG16fCjK)
+
 
 ## Project Setup for running the application locally
 
