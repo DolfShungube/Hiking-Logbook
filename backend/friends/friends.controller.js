@@ -124,8 +124,86 @@ const getFriends= async (req,res)=>{
 }
 
 
+
+const hikeInviteFriend= async (req, res) =>{
+  const {  userid, friendid,hikeid} = req.body;
+
+  try {
+
+    const { data: sentData, error: sentError } = await supabase.rpc("add_hike_invite",
+        { sender_user: userid, target_user: friendid, hike:hikeid});
+
+    if (sentError) {
+      console.error("Error while sending invite:", sentError);
+      return res.status(500).json({ error: sentError.message });
+    }
+
+    return res.status(200).json({ message: "Friend invite sent successfully" });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+const acceptHikeInvite= async (req, res) => {  // hike invite request
+
+  const {friendid,hikeid} = req.body;
+
+  try {
+
+    const { data: sentData, error: updateError } = await supabase.rpc("add_hike_member",
+        { friend_user: friendid, hike:hikeid });
+
+    if (updateError) {
+      console.error("Error while accepting friend invite:", updateError);
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    
+// ill implement this part on other side
+
+    const { data: FriendData, error: statusError } = await supabase.rpc("remove_hike_invite",
+        { target_user: friendid, hike: hikeid});
+
+    if (statusError){
+      console.error("Error while updating status of accept:", statusError);
+      return res.status(500).json({ error: statusError.message });
+    }
+
+    
+
+
+
+    return res.status(200).json({ message: "accepted successfully" });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+const rejectHikeInvite= async (req, res) =>{
+  const {  hikeid, friendid} = req.body;
+
+  try {
+    const { data: FriendData, error: statusError } = await supabase.rpc("remove_hike_invite",
+        { target_user: friendid, hike: hikeid});
+
+    if (statusError){
+      console.error("Error while updating status of accept:", statusError);
+      return res.status(500).json({ error: statusError.message });
+    }       
+
+    return res.status(200).json({ message: "rejected successfully" });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+
+
 module.exports={
-  inviteFriend,acceptInvite,rejectInvite,getFriends
+  inviteFriend,acceptInvite,rejectInvite,getFriends,hikeInviteFriend,acceptHikeInvite,rejectHikeInvite
 }
 
 

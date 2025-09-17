@@ -8,15 +8,15 @@ const port = process.env.PORT || 8080;
 app.use(express.json());
 
 const weatherRouter = require("./endpoints/weatherAPI.js");
-const { inviteFriend, acceptInvite, rejectInvite, getFriends } = require("./friends/friends.controller");
+const { inviteFriend, acceptInvite, rejectInvite, getFriends, hikeInviteFriend, acceptHikeInvite, rejectHikeInvite} = require("./friends/friends.controller");
 const { signIn, signInWithGoogle, signUp } = require("./auth/auth.controller");
-const { fetchCompletedHikes, fetchCurrentHike } = require("./hikeData/hikes.controller");
-const { CreateNewHike } = require("./hikeData/CreateNewHike");
+const { fetchCompletedHikes, fetchCurrentHike,CreateNewHike,fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/hikes.controller");
+//const { CreateNewHike } = require("./hikeData/CreateNewHike");
 const { coordinates } = require("./hikeData/distance.controller.js");
 const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
 
-const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/plannedHikes_details.js");
-const { fetchUser } = require("./users/users.controller");
+//const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/plannedHikes_details.js");
+const { fetchUser, getUserByName } = require("./users/users.controller");
 const { getNotes, addNotes, removeNotes } = require("./notes/notes.controller");
 const { getGoals, addGoal, updateGoalStatus, removeGoal } = require("./goals/goals.controller");
 const { getRoute ,  getAllRoutes } = require("./routes/routes.controller");
@@ -36,11 +36,15 @@ const supabase = createClient(supabaseUrl, supabasekey, {
 });
 
 app.get("/get-user", fetchUser);
+app.get("/get-user-by-name",getUserByName);
 
 app.post("/invite-friend", inviteFriend);
 app.post("/accept-invite", acceptInvite);
 app.post("/reject-invite", rejectInvite);
 app.get("/get-friends", getFriends);
+app.post("/invite-friend-hike",hikeInviteFriend)
+app.post("/accept-hike-invite",acceptHikeInvite)
+app.post("/reject-hike-invite",rejectHikeInvite)
 
 
 app.post("/signup", signUp);

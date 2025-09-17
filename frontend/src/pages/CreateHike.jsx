@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from "@supabase/supabase-js";
-import { createContext, useContext } from "react";
+import defaultUserProfile from "../assets/profile.jpg";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabasekey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -32,6 +32,8 @@ import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getWeather } from "../../apiCalls/getWeather.js";
 import { hikeDataCollection } from '../context/hikeDataContext.jsx';
+import { friendDataCollection } from '../context/FriendsContext.jsx';
+import { UserDataCollection } from '../context/UsersContext.jsx';
 
 // Mock ImageWithFallback component with better error handling
 const ImageWithFallback = ({ src, alt, className }) => {
@@ -77,18 +79,52 @@ const PlanHike = () => {
 
   const navigate = useNavigate();
   const { getCoordinates } = hikeDataCollection();
+  const{getUsersFriends,newHikeInvite}= friendDataCollection()
+    const {getUser,getUserByName}= UserDataCollection()
 
-  // Mock friends list
-  const friendsList = [
-    { id: 1, name: 'Sarah Johnson', email: 'sarah.j@email.com', avatar: 'SJ' },
-    { id: 2, name: 'Mike Chen', email: 'mike.chen@email.com', avatar: 'MC' },
-    { id: 3, name: 'Emily Rodriguez', email: 'emily.r@email.com', avatar: 'ER' },
-    { id: 4, name: 'David Kim', email: 'david.kim@email.com', avatar: 'DK' },
-    { id: 5, name: 'Jessica Brown', email: 'jess.brown@email.com', avatar: 'JB' },
-    { id: 6, name: 'Alex Thompson', email: 'alex.t@email.com', avatar: 'AT' },
-    { id: 7, name: 'Lisa Wang', email: 'lisa.wang@email.com', avatar: 'LW' },
-    { id: 8, name: 'Ryan Connor', email: 'ryan.oc@email.com', avatar: 'RC' }
-  ];
+  const[friendsList,setFriendsList]=useState([]);
+  const[myhikeid,setHikeId]=useState(null)
+
+
+
+
+  const handleFriends = async (userId) => {  // populates the friendlist with details of users friends
+    try {
+  
+      let friendIDCollection = await getUsersFriends(userId);
+      let friendsData = friendIDCollection?.friend_list?.friends || [];
+      // let MyinvitesReceived = (friendIDCollection?.friend_list?.invitesreceived || []).map(item => item.userid);
+      // let MyinvitesSent=(friendIDCollection?.friend_list?.invitessent||[]).map(item => item.userid);
+      // setInvitesRecieved(MyinvitesReceived)
+      // setInvitesSent(MyinvitesSent)
+  
+      let friendsList = await Promise.all(
+        friendsData.map(async (friendid) => {
+          let userData = await getUser(friendid);
+          let user = userData;
+       
+  
+          if (!user) return null;
+  
+          return {
+            id: friendid,
+            name: user.full_name || user.firstname,
+            avatar: user.picture || defaultUserProfile,
+          };
+        })
+      );
+  
+      setFriendsList(friendsList.filter(Boolean));
+     
+      
+  
+    } catch (err) {
+      console.error("Error fetching friends:", err);
+    }
+  };
+
+
+
 
   const [trails, setTrails] = useState([]);
   const [isLoadingTrails, setIsLoadingTrails] = useState(true);
@@ -211,8 +247,13 @@ const PlanHike = () => {
 
   // Updated trail fetching with better error handling
   useEffect(() => {
+      if (currentUser?.id) {
+    handleFriends(currentUser.id);
+  }
     const fetchTrails = async () => {
       setIsLoadingTrails(true);
+
+
       try {
         // Use get-all-routes endpoint instead of get-route
         const res = await fetch("https://hiking-logbook-api.onrender.com/get-all-routes");
@@ -248,18 +289,18 @@ const PlanHike = () => {
     };
 
     fetchTrails();
-  }, []);
+  }, [currentUser?.id]);
 
-  //get coordinates that I will use in the get weather function
-  const getCurrentUser = async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (user) {
-      return user.id;
-    }
-    if (error) {
-      console.log("User with such id not found");
-    }
-  };
+  //get coordinates that I will use in the get weather function (we already have a context for this)
+  // const getCurrentUser = async () => {
+  //   const { data: { user }, error } = await supabase.auth.getUser();
+  //   if (user) {
+  //     return user.id;
+  //   }
+  //   if (error) {
+  //     console.log("User with such id not found");
+  //   }
+  // };
 
   // Updated weather function to use trail coordinates.. works just fine also
   const getWeatherForLocation = async (trail) => {
@@ -269,7 +310,7 @@ const PlanHike = () => {
       
 
         // Fallback to user coordinates if trail coordinates not available
-        const userid = await getCurrentUser();
+        const userid = currentUser.id;
         const coordsData = await getCoordinates(userid);
         console.log("coordsData:", coordsData);
         if (coordsData && coordsData.start && coordsData.start.length === 2) {
@@ -335,7 +376,7 @@ const filteredTrails = trails.filter(trail => {
 
 
 
-  const handleTrailSelect = (trail) => {
+  const handleTrailSelect = (trail) =>{
     setSelectedTrail(trail);
     setLocation(trail.location);
      setDifficulty(trail.difficulty?.toLowerCase() || ''); 
@@ -353,19 +394,23 @@ const filteredTrails = trails.filter(trail => {
     });
   };
 
-  const handleSelectFriendForInvite = (friend) => {
+
+  ///////////////////////////////////////////////////////////////////////////////////
+
+  const handleSelectFriendForInvite = (friend) =>{
     if (selectedFriendsForInvite.find(f => f.id === friend.id)) {
       setSelectedFriendsForInvite(selectedFriendsForInvite.filter(f => f.id !== friend.id));
     } else {
       setSelectedFriendsForInvite([...selectedFriendsForInvite, friend]);
+      console.log(selectedFriendsForInvite)
     }
   };
 
-  const handleSendInvites = () => {
+  const handleSendInvites = () =>{
     const newInvites = selectedFriendsForInvite.map(friend => ({
       ...friend,
       status: 'pending',
-      inviteId: Date.now() + friend.id
+      inviteId:friend.id
     }));
     
     const uniqueInvites = newInvites.filter(newInvite => 
@@ -376,6 +421,8 @@ const filteredTrails = trails.filter(trail => {
     setSelectedFriendsForInvite([]);
     setShowFriendsModal(false);
   };
+
+  ////////////////////////////////////////////////////////////////////////////////////////
 
   const handleRemoveFriend = (friendId) => {
     setInvitedFriends(invitedFriends.filter(friend => friend.inviteId !== friendId));
@@ -393,10 +440,11 @@ const filteredTrails = trails.filter(trail => {
 
     try {
       const hikingGroup = {
-        members: invitedFriends.map(friend => friend.id)
+
+       members:[currentUser.id]
       };
 
-      const response = await fetch('https://hiking-logbook-api.onrender.com/newHike', {
+      const response = await fetch('https://hiking-logbook-api.onrender.com/newHike', {  // should return the hikeid
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -416,10 +464,27 @@ const filteredTrails = trails.filter(trail => {
         })
       });
 
+
+      
+
       const result = await response.json();
 
-      if (response.ok) {
+      if(result?.hike){
+
+        const myhikeid=result.hike.hikeid
+     
+          await Promise.all(
+            invitedFriends.map(friend =>
+             newHikeInvite(friend.id,currentUser.id, myhikeid)
+              
+            )
+          );
+      }
+
+
+      if ( response.ok) {
         setSubmitMessage(`Hike plan created successfully!`);
+        
         setTimeout(() => {
           navigate('/dashboard/Calendar', { 
             state: { 
@@ -943,12 +1008,19 @@ const filteredTrails = trails.filter(trail => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                            {friend.avatar}
-                          </div>
+
+                           <img
+                               src={friend.avatar || defaultUserProfile}                 
+                                alt={friend.name}
+                                onError={(e) =>
+                                    (e.currentTarget.src = defaultUserProfile)
+                                  }
+                               className="size-10 rounded-full object-cover"
+                         />
+
                           <div>
                             <p className="font-medium text-gray-900 dark:text-white">{friend.name}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{friend.email}</p>
+
                           </div>
                         </div>
                         <div className="flex items-center">

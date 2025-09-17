@@ -31,6 +31,28 @@ const fetchUser= async (req, res) => {
   }
 };
 
+
+const getUserByName= async (req,res)=>{
+  const {userName}= req.query
+  try {
+    const {data,error:statusError}= await supabase
+    .from("user_display")
+    .select("id")
+    .ilike("display_name", `%${userName}%`);
+
+    if(statusError){
+      console.error("Error while fetching friend data", statusError);
+      return res.status(500).json({ error: statusError.message });      
+    }
+
+    
+    return res.status(200).json({ data});    
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });  
+  }
+}
+
 module.exports={
- fetchUser
+ fetchUser,getUserByName
 }
