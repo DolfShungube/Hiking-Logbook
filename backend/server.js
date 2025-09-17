@@ -11,12 +11,12 @@ const weatherRouter = require("./endpoints/weatherAPI.js");
 const { inviteFriend, acceptInvite, rejectInvite, getFriends, hikeInviteFriend, acceptHikeInvite, rejectHikeInvite} = require("./friends/friends.controller");
 const { signIn, signInWithGoogle, signUp } = require("./auth/auth.controller");
 //CreateNewHike,fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike
-const { fetchCompletedHikes, fetchCurrentHike} = require("./hikeData/hikes.controller");
-const { CreateNewHike } = require("./hikeData/CreateNewHike");
+const { fetchCompletedHikes, CreateNewHike, fetchCurrentHike,deletePlannedHike,editPlannedHike,fetchHike,fetchPlannedHikes} = require("./hikeData/hikes.controller");
+//const { CreateNewHike } = require("./hikeData/CreateNewHike");
 const { coordinates } = require("./hikeData/distance.controller.js");
 const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
 
-const { fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike } = require("./hikeData/plannedHikes_details.js");
+//const { fetchHike, fetchPlannedHikes, editPlannedHike} = require("./hikeData/plannedHikes_details.js");
 const { fetchUser, getUserByName } = require("./users/users.controller");
 const { getNotes, addNotes, removeNotes } = require("./notes/notes.controller");
 const { getGoals, addGoal, updateGoalStatus, removeGoal } = require("./goals/goals.controller");

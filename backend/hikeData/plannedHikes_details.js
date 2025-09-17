@@ -233,7 +233,7 @@ const fetchHike = async (req, res) => {
 };
 
 const editPlannedHike = async (req, res) => {
-  const { hikeId } = req.params;
+  const { hikeId} = req.params;
   const updateData = req.body;
 
   try {
