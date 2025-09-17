@@ -450,7 +450,7 @@ const filteredTrails = trails.filter(trail => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userid: currentUser.id,
-          startdate: date,
+          startdate: new Date(date+"T"+time+":00"),
           enddate: date,
           location,
           weather,
