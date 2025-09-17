@@ -7,6 +7,7 @@ const supabase= createClient(supabaseUrl,supabasekey,{
         autoRefreshToken: true,
          }
 });
+exports.supabase = supabase;
 const CreateNewHike = async (req,res)=> {
   console.log('Creating hike with data:', req.body);
   const {userid,   

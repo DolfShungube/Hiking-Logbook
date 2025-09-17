@@ -13,6 +13,7 @@ import { GoalDataCollection, GoalDataContextProvider } from './context/GoalsCont
 import { NotesDataContextProvider } from './context/NotesContext.jsx'
 import { UserDataContextProvider } from './context/UsersContext.jsx'
 import { RouteDataContextProvider } from './context/MapRoutesContext.jsx'
+import { FriendDataContextProvider } from './context/FriendsContext.jsx'
 
 
 createRoot(document.getElementById('root')).render(
@@ -24,9 +25,11 @@ createRoot(document.getElementById('root')).render(
       <GoalDataContextProvider>
       <HikeDataContextProvider>
       <RouteDataContextProvider>
+       <FriendDataContextProvider>
       <ThemeProvider storageKey="theme">
         <RouterProvider router={router} />
       </ThemeProvider>
+      </FriendDataContextProvider>
       </RouteDataContextProvider>
       </HikeDataContextProvider>
       </GoalDataContextProvider>

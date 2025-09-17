@@ -25,7 +25,31 @@ const UserDataContext= createContext(null);
             throw err;            
         }
 
-    }    
+    }
+    
+    
+    const getUserByName= async(user_name)=>{
+
+        try {
+            const res= await fetch(
+                `https://hiking-logbook-api.onrender.com/get-user-by-name?userName=${encodeURIComponent(user_name)}`,{
+                method:"GET",
+            })
+
+            const data = await res.json();
+
+            if(!res.ok){
+                console.error("Error fetching user:", data.error);
+                throw new Error(data.error || "Failed to fetch  user");
+            }
+            return data.data;
+            
+        } catch (err) {
+        console.error("fetching error:", err);
+            throw err;            
+        }
+
+    }      
 
 
 
@@ -33,7 +57,7 @@ const UserDataContext= createContext(null);
 
 
     return (
-        <UserDataContext.Provider value={{getUser}}>
+        <UserDataContext.Provider value={{getUser,getUserByName}}>
             {children}
         </UserDataContext.Provider>
     )
