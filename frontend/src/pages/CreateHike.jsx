@@ -83,7 +83,8 @@ const PlanHike = () => {
     const {getUser,getUserByName}= UserDataCollection()
 
   const[friendsList,setFriendsList]=useState([]);
-  const[myhikeid,setHikeId]=useState(null)
+  const[myhikeid,setHikeId]=useState(null);
+
 
 
 
@@ -337,6 +338,7 @@ const PlanHike = () => {
         //console.log('Description field:', weatherData?.description);
         setWeather(weatherData);
 
+
       } else {
         setError("No coordinates found for weather data");
       }
@@ -427,7 +429,8 @@ const filteredTrails = trails.filter(trail => {
   const handleRemoveFriend = (friendId) => {
     setInvitedFriends(invitedFriends.filter(friend => friend.inviteId !== friendId));
   };
-  
+  //works fine
+  //console.log("testing under here to see", weather);
   // Submit handler to create hike
   const handleCreateHike = async () => {
     if (!currentUser || !selectedTrail || !date || !time || !hikeTitle.trim()) {
@@ -437,12 +440,37 @@ const filteredTrails = trails.filter(trail => {
 
     setIsSubmitting(true);
     setSubmitMessage('Creating your hike plan...');
-
+    
     try {
       const hikingGroup = {
 
        members:[currentUser.id]
       };
+      const matched = weather.daily.find(day => day.date === date);
+      if (!matched) {
+      // No forecast available for this date (likely > 7 days ahead)
+      setError("Cannot forecast for dates beyond 7 days from today");
+      return; // stop further execution
+      }
+      const filledWeather ={
+          ...weather,
+          discription: matched
+          ? (()=>{
+            const summary = matched.summary.toLowerCase();
+
+            const keywords = ["clear sky","partly cloudy","broken clouds","rain","sunny","windy","fog","cloudy"]
+
+            const found = keywords.find(word=>summary.includes(word));
+
+            return found || summary
+          })()
+          :weather.current.description,
+          temperature: matched
+          ? `${matched.maxTemp}°C`
+          : `${weather.current.temp}°C`,
+       
+          
+      }
 
       const response = await fetch('https://hiking-logbook-api.onrender.com/newHike', {  // should return the hikeid
         method: 'POST',
@@ -453,7 +481,7 @@ const filteredTrails = trails.filter(trail => {
           startdate: new Date(date+"T"+time+":00"),
           enddate: date,
           location,
-          weather,
+          weather:filledWeather,
           elevation: selectedTrail?.elevation || null,
           status: "planned",
           distance: selectedTrail?.distance || null,
