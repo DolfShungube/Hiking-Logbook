@@ -6,7 +6,9 @@ export async function getWeather(lat, lon) {
     if (!res.ok) throw new Error("Failed to fetch weather data");
     const data = await res.json();
     return{
-       current: {
+      discription:"",
+      temperature:"",
+      current: {
         temp: data.current.temp,
         description: data.current.weather[0].description
       },
