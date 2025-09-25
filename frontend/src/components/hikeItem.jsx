@@ -3,6 +3,7 @@ import { formatDate,formatTime,getDaysUntil,extractDate } from '../utils/hikeDat
 import { Calendar, Clock, MapPin, Users } from 'lucide-react'
 
 const HikeItem=({data,onClick})=> {
+
     const StartdateHandle= extractDate(data.startdate);
 
   return (   

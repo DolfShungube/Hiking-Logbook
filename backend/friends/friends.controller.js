@@ -163,7 +163,7 @@ const acceptHikeInvite= async (req, res) => {  // hike invite request
 // ill implement this part on other side
 
     const { data: FriendData, error: statusError } = await supabase.rpc("remove_hike_invite",
-        { target_user: friendid, hike: hikeid});
+        {target_user: friendid,hike: hikeid});
 
     if (statusError){
       console.error("Error while updating status of accept:", statusError);
@@ -184,9 +184,11 @@ const acceptHikeInvite= async (req, res) => {  // hike invite request
 const rejectHikeInvite= async (req, res) =>{
   const {  hikeid, friendid} = req.body;
 
+
   try {
+
     const { data: FriendData, error: statusError } = await supabase.rpc("remove_hike_invite",
-        { target_user: friendid, hike: hikeid});
+        {target_user:friendid,hike:hikeid});
 
     if (statusError){
       console.error("Error while updating status of accept:", statusError);

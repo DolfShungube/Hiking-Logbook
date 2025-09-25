@@ -9,30 +9,29 @@ import { friendDataCollection } from "../context/FriendsContext.jsx";
 import { UserDataCollection } from "../context/UsersContext.jsx";
 import { UserPlus} from 'lucide-react';
 
+import Notification from "../components/Notification.jsx";
+import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 
 
 
 let mydata=null
 
-const recommendations = [
-  { id: 1, title: "Hiking on Mount Denali", location: "Alaska", dates: "2 Dec – 3 Dec", cta: "Join" },
-  { id: 2, title: "Camping on Cho Oyu", location: "Nepal", dates: "1 Jan – 5 Jan", cta: "Joined" },
-  { id: 3, title: "Explore Mount Elbrus", location: "Russia", dates: "10 Jan – 20 Jan", cta: "Join" },
-  { id: 4, title: "Climbing Mt. Fuji", location: "Japan", dates: "15 Mar – 18 Mar", cta: "Join" },
-  { id: 5, title: "Hiking in the Andes", location: "Peru", dates: "1 Apr – 6 Apr", cta: "Join" },
-];
+
 
 const DashboardPage = () => {
   const { theme } = useTheme();
   const [showAllFriends, setShowAllFriends] = useState(false);
   const [friends,setUsersFriends]=useState([]);
   const[invitesRecieved,setInvitesRecieved]=useState([])
+  const[hikeInvites,sethikeInvites]=useState([])
   const[invitesSent,setInvitesSent]=useState([])
 
   const [showAllRecs, setShowAllRecs] = useState(false);
   const {session,currentUser}= UserAuth()
   const {getUser,getUserByName}= UserDataCollection()
-  const{getUsersFriends,newFriendInvite,acceptFriendInvite,rejectFriendInvite}= friendDataCollection()
+  const{getUsersFriends,newFriendInvite}= friendDataCollection()
+  const{getHike}= hikeDataCollection()
+  
 
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,7 +77,7 @@ const handleSearch= async (query) => {
           avatar: user.picture || defaultUserProfile,
         };
       })
-    );
+    );  
 
 
         const uniqueResults = friendsList
@@ -116,8 +115,10 @@ const handleFriends = async (userId) => {
     let friendsData = friendIDCollection?.friend_list?.friends || [];
     let MyinvitesReceived = (friendIDCollection?.friend_list?.invitesreceived || []).map(item => item.userid);
     let MyinvitesSent=(friendIDCollection?.friend_list?.invitessent||[]).map(item => item.userid);
-    setInvitesRecieved(MyinvitesReceived)
+    let myHikeInvites=(friendIDCollection?.friend_list?.hikeInvites||[]);
     setInvitesSent(MyinvitesSent)
+   
+
 
     let friendsList = await Promise.all(
       friendsData.map(async (friendid) => {
@@ -135,7 +136,43 @@ const handleFriends = async (userId) => {
       })
     );
 
+
+    let friendsInviteList = await Promise.all(
+      MyinvitesReceived.map(async (friendid) => {
+        let user = await getUser(friendid);
+        // let user = userData;
+     
+
+        if (!user) return null;
+
+        return {
+          id: friendid,
+          name: user.full_name || user.firstname,
+          avatar: user.picture || defaultUserProfile,
+        };
+      })
+    );
+    
+    let hikeInviteList = await Promise.all(
+      myHikeInvites.map(async (item)=>{
+
+        let hikeItemTmp= await getHike(item.hikeid,item.user);
+        
+        if(!hikeItemTmp){return}
+        let data=hikeItemTmp[0]
+        return data
+          
+        
+
+      })
+
+    )
+
+
+
     setUsersFriends(friendsList.filter(Boolean));
+    setInvitesRecieved(friendsInviteList.filter(Boolean))
+    sethikeInvites(hikeInviteList.filter(Boolean))
    
     
 
@@ -204,7 +241,7 @@ useEffect(() => {
           </span>
         </button>
 
-        {!showSearch && (
+        {!showSearch &&(
           <button
             className="text-sm text-blue-500 dark:text-blue-600"
             onClick={() => setShowAllFriends(!showAllFriends)}
@@ -313,13 +350,11 @@ useEffect(() => {
         )}
       </div>
     </div>
-  
 
+    <div className="card lg:col-span-8">
 
-        {/* RECOMMENDATIONS FOR YOU */}
-        <div className="card lg:col-span-12">
           <div className="card-header flex items-center justify-between">
-            <p className="card-title">Recommendation For You 🌈</p>
+            <p className="card-title">Notifications</p>
             <button
               className="text-blue-500 dark:text-blue-600"
               onClick={() => setShowAllRecs(!showAllRecs)}
@@ -328,29 +363,21 @@ useEffect(() => {
             </button>
           </div>
 
-          <div className="card-body flex flex-col gap-4">
-            {(showAllRecs ? recommendations : recommendations.slice(0, 3)).map((r) => (
-              <div
-                key={r.id}
-                className="flex items-center justify-between rounded-lg bg-slate-50 p-4 dark:bg-slate-900"
-              >
-                <div className="flex flex-col">
-                  <p className="font-semibold text-slate-900 dark:text-slate-50">{r.title}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {r.location} • {r.dates}
-                  </p>
-                </div>
-                <button
-                  className={`px-4 py-1 rounded-full text-white ${
-                    r.cta === "Joined" ? "bg-slate-400" : "bg-blue-500"
-                  }`}
-                >
-                  {r.cta}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+
+
+      <Notification
+  friendInvites={invitesRecieved} 
+  HikeInvites={hikeInvites} 
+  friends={friends}
+  onFriendHandled={(id) => setInvitesRecieved(prev => prev.filter(u => u.id !== id))}
+  onHikeHandled={(id) => sethikeInvites(prev => prev.filter(h => h.hikeid !== id))}
+  
+     
+      />
+    </div>
+  
+
+      
       </div>
     </div>
   );

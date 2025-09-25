@@ -34,7 +34,7 @@ const fetchCompletedHikes = async (req, res) => {
   }
 };
 
-const fetchCurrentHike = async (req, res) => {
+const fetchCurrentHike = async (req, res) =>{
   const { userid } = req.query;
   try {
     const { data: sentData, error: sentError } = await supabase
@@ -186,7 +186,7 @@ const deletePlannedHike = async (req, res) => {
 };
 
 
-const CreateNewHike = async (req,res)=> {
+const CreateNewHike = async (req,res)=>{
   console.log('Creating hike with data:', req.body);
   const {userid,   
         startdate,           
@@ -207,9 +207,9 @@ const CreateNewHike = async (req,res)=> {
       enddate: req.body.enddate,
       location: req.body.location,
       weather: req.body.weather,  // You might store as JSON if your DB supports it
-      elevation: parseFloat(req.body.elevation.replace(/[^\d.-]/g, '')), // "3,200 ft" → 3200
+      elevation: parseFloat(String(req.body.elevation).replace(/[^\d.-]/g, '')), // "3,200 ft" → 3200
       status: req.body.status,
-      distance: parseFloat(req.body.distance.replace(/[^\d.-]/g, '')),  // "12.2 miles" → 12.2
+      distance: parseFloat(String(req.body.distance).replace(/[^\d.-]/g, '')),  // "12.2 miles" → 12.2
       hikinggroup: req.body.hikinggroup,
       difficulty: req.body.difficulty,
       title: String(req.body.title), // Explicitly convert to string

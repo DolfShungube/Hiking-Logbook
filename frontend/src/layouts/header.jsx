@@ -34,7 +34,7 @@ const Header = ({collapsed, setCollapsed}) => {
         </button>
         <button className="btn-ghost size-10">
                     <Bell size={20} />
-                </button>
+        </button>
                 <button className="size-10 overflow-hidden rounded-full">
                     <img
                         src={profileImg}
@@ -47,7 +47,7 @@ const Header = ({collapsed, setCollapsed}) => {
   )
 }
 export default Header
-Header.propTypes = {
+Header.propTypes ={
   collapsed: PropTypes.bool,
   setCollapsed: PropTypes.func,
 };

@@ -146,7 +146,7 @@ const newHikeInvite = async (friendid,userid,hikeid) =>{
 
 
 
-const acceptHikeInvite = async (friendid,userid,hikeid) =>{
+const acceptHikeInvite = async (friendid,hikeid) =>{
   try {
     const res = await fetch('https://hiking-logbook-api.onrender.com/accept-hike-invite',{
     
@@ -174,7 +174,7 @@ const acceptHikeInvite = async (friendid,userid,hikeid) =>{
 };
 
 
-const rejectHikeInvite = async (friendid,userid,hikeid) =>{
+const rejectHikeInvite = async (friendid,hikeid) =>{ // had user id
   try {
     const res = await fetch('https://hiking-logbook-api.onrender.com/reject-hike-invite',{
     
