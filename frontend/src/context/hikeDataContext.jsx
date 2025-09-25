@@ -62,9 +62,10 @@ const HikeDataContext= createContext(null);
 
     const getHike= async(hike_id,user_id)=>{
 
+
         try {
             const res= await fetch(
-                `https://hiking-logbook-api.onrender.com/get-hike?hikeid=${encodeURIComponent(hike_id)}$userid=${encodeURIComponent(user_id)}`,{
+                `https://hiking-logbook-api.onrender.com/get-hike?hikeid=${encodeURIComponent(hike_id)}&userid=${encodeURIComponent(user_id)}`,{
                 method:"GET",
             })
 
@@ -109,6 +110,77 @@ const HikeDataContext= createContext(null);
     } 
 
 
+const createNewHike = async(userid,startdate,location,weather,elevation,route,mystatus,
+                                distance,hikinggroup,difficulty,title) =>{
+  try {
+
+    const res = await fetch('https://hiking-logbook-api.onrender.com/newHike', {
+    
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        userid:userid,   
+        startdate:startdate,
+        enddate:startdate,          
+        location:location,
+        weather:weather,
+        elevation:elevation,                  
+        route:route,
+        status:mystatus,             
+        distance:distance,                    
+        hikinggroup:hikinggroup,
+        difficulty:difficulty,
+        title:title
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        console.log(res)
+        throw new Error(`HTTP error! Status: ${res.status}`);
+
+    }
+
+    return data;
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+}; 
+
+
+const updateHike= async(hikeid,userid,myData) =>{
+  try {
+
+    const res = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes/${encodeURIComponent(hikeid)}/${encodeURIComponent(userid)}`, {
+    
+      method: "PUT",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(myData)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        console.log(res)
+        throw new Error(`HTTP error! Status: ${res.status}`);
+
+    }
+
+    return data;
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+};    
+
+
+
     
 
 
@@ -117,7 +189,7 @@ const HikeDataContext= createContext(null);
 
 
     return (
-        <HikeDataContext.Provider value={{getCompletedHikesData,getCurrentHikeData,getHike,getCoordinates}}>
+        <HikeDataContext.Provider value={{getCompletedHikesData,getCurrentHikeData,getHike,getCoordinates,createNewHike,updateHike}}>
             {children}
         </HikeDataContext.Provider>
     )
