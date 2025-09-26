@@ -7,6 +7,7 @@ import { hikeDataCollection } from "../context/hikeDataContext";
 import { NotesDataCollection } from "../context/NotesContext";
 import { GoalDataCollection } from "../context/GoalsContext";
 import { UserDataCollection } from "../context/UsersContext";
+import { UserAuth } from "../context/AuthContext";
 
 
 
@@ -24,6 +25,7 @@ export default function HikeLogbookPage() {
   const [members,setMembers]= useState([])
   const [error, setError] = useState("");
   const [coords, setCoords] = useState(null);
+  const [pageLoading, setPageLoading] = useState(true);
   const [currentCoords, setCurrentCoords] = useState(null);
   
 
@@ -31,6 +33,7 @@ export default function HikeLogbookPage() {
   const {getNotes}= NotesDataCollection()
   const {getGoals}= GoalDataCollection()
   const {getUser}= UserDataCollection()
+  const {currentUser,authLoading}= UserAuth()
   //const {getCoordinates}= hikeDataCollection()
 
 
@@ -70,42 +73,77 @@ export default function HikeLogbookPage() {
   }
 
 
-  const handleHike= async(hike_id)=>{
-
-  let res = await getHike(hike_id);
-  res=res[0]
-
-
-  const [notesData, goalsData, membersData] = await Promise.all([
-    getNotes(hike_id),
-    getGoals(hike_id),
-    Promise.all(res.hikinggroup.members.map(id => getUser(id))),
-  ])
-
-  setNotes(notesData);
-  setGoals(goalsData);
-  setMembers( membersData.map(tmp => tmp?.name || tmp?.firstname || "missing name"));
-
-  handleDate(res.startdate,res.enddate);
-  handleWeather(res.weather)
+  const handleHike= async(hike_id,user_id)=>{
+    try {
+      let res = await getHike(hike_id,user_id);
+      res=res[0]
 
 
-  setHike(res);
-  return res
+      const [notesData, goalsData, membersData] = await Promise.all([
+        getNotes(hike_id,user_id),
+        getGoals(hike_id,user_id),
+        Promise.all(res.hikinggroup.members.map(id => getUser(id))),
+      ])
+
+      setNotes(notesData);
+      setGoals(goalsData);
+      setMembers( membersData.map(tmp => tmp?.name || tmp?.firstname || "missing name"));
+
+      handleDate(res.startdate,res.enddate);
+      handleWeather(res.weather)
+
+
+      setHike(res);
+  } catch (err) {
+      setError("Failed to load hike data.");
+    } finally {
+      setPageLoading(false);
+    }
 
 
   }  
 
   
   useEffect(()=>{
-
-    if(!hike){
-      handleHike(hikeid);
-
+if(!authLoading){
+    if(!hike && currentUser){    
+      handleHike(hikeid,currentUser.id);
+    }else{
+      setPageLoading(false);
     }
+  }
+  
+  },[hikeid,currentUser?.id,authLoading])
 
 
-  },[hikeid])
+
+
+
+if (pageLoading || authLoading){
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-lg text-gray-600 italic">Loading log entry...</p>
+      </div>
+    );
+  }
+
+
+  if (error){
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-red-600 font-semibold">{error}</p>
+      </div>
+    );
+  }
+
+
+  if (!hike){
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-gray-600 italic">No hike data found.</p>
+      </div>
+    );
+  }
 
 
   return (

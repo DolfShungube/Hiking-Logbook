@@ -31,19 +31,26 @@ const HikeCollection = ({ type }) => {
     }
   };
 
-  useEffect(() => {
-    if (currentUser?.id) {  
+useEffect(() => {
+  const fetchData = async () => {
+    if (currentUser?.id) {
       setLoading(true);
-      if (type === "current") {
-        HandleCurrentHike(currentUser.id);
-      } else {
-        HandleCompletedHikes(currentUser.id);
+      try {
+        if (type === "current") {
+          await HandleCurrentHike(currentUser.id);
+        } else {
+          await HandleCompletedHikes(currentUser.id);
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
-  }, [currentUser, type]);
+  };
 
-  if (loading) {
+  fetchData();
+}, [currentUser, type]);
+
+  if (loading){
     return <p className="text-gray-500 dark:text-gray-400">Loading hikes...</p>;
   } else if (!loading && table && table.length === 0) {
     return <p className="text-gray-500 dark:text-gray-400">You have not started any hike yet.</p>;

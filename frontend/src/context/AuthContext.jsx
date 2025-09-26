@@ -19,6 +19,7 @@ export const AuthContextProvider=({children})=>{
 
     const [session,setSession]= useState(undefined)
     const [currentUser,setCurrentUser]= useState()
+    const [authLoading, setLoading] = useState(true);
 const signUpNewUser = async (firstName,lastName,email,password ) => {
   try {
 
@@ -154,41 +155,50 @@ const getHikeID = async (userId)=>{
 
 
 
-useEffect(() => {
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    setSession(session);
+  useEffect(() => {
+    // 1. Load session from Supabase (cached in localStorage)
+    const getInitialSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (session?.user) {
-      const meta = session.user.user_metadata;
-      const displayName = meta?.name ?? meta?.firstname ?? null;
-      setCurrentUser({ ...session.user, displayName });
-    } else {
-      setCurrentUser(null);
-    }
-  });
-
-  const { data: authListener } = supabase.auth.onAuthStateChange(
-    (_event, session) => {
       setSession(session);
 
       if (session?.user) {
         const meta = session.user.user_metadata;
-        const userName = meta?.name ?? meta?.firstName ?? null;
-        const id= session.user.id
-        setCurrentUser({ ...session.user, userName,id });
+        const displayName = meta?.name ?? meta?.firstname ?? null;
+        setCurrentUser({ ...session.user, displayName });
       } else {
         setCurrentUser(null);
       }
-    }
-  );
 
-  return () => {
-    authListener.subscription.unsubscribe();
-  };
-}, []);
+      setLoading(false);
+    };
+
+    getInitialSession();
+
+    // 2. Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+
+        if (session?.user) {
+          const meta = session.user.user_metadata;
+          const userName = meta?.name ?? meta?.firstName ?? null;
+          setCurrentUser({ ...session.user, userName, id: session.user.id });
+        } else {
+          setCurrentUser(null);
+        }
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
     return (
-        <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser,GooglesignInUser,currentUser}}>
+        <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser,GooglesignInUser,currentUser,authLoading}}>
             {children}
         </AuthContext.Provider>
     )

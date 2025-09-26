@@ -39,20 +39,16 @@ const Current = () => {
   const { getCoordinates } = hikeDataCollection();
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
-  const { currentUser } = UserAuth();
+  const { currentUser,authLoading } = UserAuth();
 
   // Fetch current user ID
 
   // Fetch start coordinates and trail path
   const fetchStartCoordinates = async () => {
     try {
-      const { data,error} = await supabase.auth.getUser();
-      if (!data.user || error) {
-        setError("User not logged in");
-        setLoading(false);
-        return;
-      }
-      const coordsData = await getCoordinates(data.user.id);
+       //removed trivial code as currentUser checks this
+       
+      const coordsData = await getCoordinates(currentUser.id);
       if (!coordsData?.start || !coordsData?.path) {
         setError("No start coordinates or path found");
         setLoading(false);
@@ -190,13 +186,16 @@ const Current = () => {
   }, [coords, pathCoords]);
 
   // Fetch all initial data
-  useEffect(() => {
+  useEffect(() =>{
+    if(!authLoading){
+      console.log(currentUser);
     fetchStartCoordinates();
     fetchGoals();
     fetchNotes();
-  }, []);
+  }
+  }, [currentUser,authLoading]);
 
-  if (loading) return <p className="text-center mt-10">Loading hike info...</p>;
+  if (loading|| authLoading) return <p className="text-center mt-10">Loading hike info...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
