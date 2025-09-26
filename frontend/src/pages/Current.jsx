@@ -46,13 +46,13 @@ const Current = () => {
   // Fetch start coordinates and trail path
   const fetchStartCoordinates = async () => {
     try {
-      const userId = currentUser.id;
-      if (!userId) {
+      const { data,error} = await supabase.auth.getUser();
+      if (!data.user || error) {
         setError("User not logged in");
         setLoading(false);
         return;
       }
-      const coordsData = await getCoordinates(userId);
+      const coordsData = await getCoordinates(data.user.id);
       if (!coordsData?.start || !coordsData?.path) {
         setError("No start coordinates or path found");
         setLoading(false);
