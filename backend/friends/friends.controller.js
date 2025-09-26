@@ -58,7 +58,7 @@ const acceptInvite= async (req, res) => {  // friend request
     const { data: FriendData, error: statusError } = await supabase.rpc("accept_invite",
         { user_id: friendid, friend_id: userid});
 
-    if (statusError) {
+    if (statusError){
       console.error("Error while updating status of the friend requestor:", statusError);
       return res.status(500).json({ error: statusError.message });
     }    
