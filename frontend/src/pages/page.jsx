@@ -16,8 +16,6 @@ import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 
 let mydata=null
 
-
-
 const DashboardPage = () => {
   const { theme } = useTheme();
   const [showAllFriends, setShowAllFriends] = useState(false);
@@ -218,7 +216,7 @@ useEffect(() => {
           </div>
 
           <div className="card-body bg-slate-100 dark:bg-slate-950 w-180 h-100 overflow-hidden">
-              <RouteTracker routeGeoJSON={mydata} className="w-full h-full" />
+              <RouteTracker preview routeGeoJSON={mydata} className="w-full h-full" />
           </div>
         </div>
 
