@@ -34,6 +34,7 @@ import { getWeather } from "../../apiCalls/getWeather.js";
 import { hikeDataCollection } from '../context/hikeDataContext.jsx';
 import { friendDataCollection } from '../context/FriendsContext.jsx';
 import { UserDataCollection } from '../context/UsersContext.jsx';
+import { GoalDataCollection } from '../context/GoalsContext.jsx';
 
 // Mock ImageWithFallback component with better error handling
 const ImageWithFallback = ({ src, alt, className }) => {
@@ -63,7 +64,6 @@ const PlanHike = () => {
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [difficulty, setDifficulty] = useState('');
-  const [goals, setGoals] = useState('');
   const [selectedTrail, setSelectedTrail] = useState(null);
   const [searchTrails, setSearchTrails] = useState('');
   const [invitedFriends, setInvitedFriends] = useState([]);
@@ -74,39 +74,54 @@ const PlanHike = () => {
   const [submitMessage, setSubmitMessage] = useState('');
   const { session, currentUser } = UserAuth();
 
+  // Goals state - using the proper way like in Current.jsx
+  const [goal, setGoal] = useState("");
+  const [goalsList, setGoalsList] = useState([]);
+
   const [error, setError] = useState("");
   const [coords, setCoords] = useState(null);
 
   const navigate = useNavigate();
   const { getCoordinates } = hikeDataCollection();
-  const{getUsersFriends,newHikeInvite}= friendDataCollection()
-    const {getUser,getUserByName}= UserDataCollection()
+  const { getUsersFriends, newHikeInvite } = friendDataCollection();
+  const { getUser, getUserByName } = UserDataCollection();
+  const { addGoal } = GoalDataCollection();
 
-  const[friendsList,setFriendsList]=useState([]);
-  const[myhikeid,setHikeId]=useState(null);
+  const [friendsList, setFriendsList] = useState([]);
+  const [myhikeid, setHikeId] = useState(null);
 
+  // Add goal - using the same pattern as Current.jsx
+  const handleAddGoal = async () => {
+    if (!goal.trim()) return;
+    
+    // For planning phase, we add to local state first
+    // Then save all goals to DB when hike is created
+    const newGoal = {
+      goal: goal.trim(),
+      status: "in progress"
+    };
+    
+    setGoalsList([...goalsList, newGoal]);
+    setGoal("");
+  };
 
-
-
+  // Remove goal from local state during planning
+  const handleRemoveGoal = (goalToRemove) => {
+    setGoalsList(goalsList.filter(g => g.goal !== goalToRemove));
+  };
 
   const handleFriends = async (userId) => {  // populates the friendlist with details of users friends
     try {
-  
       let friendIDCollection = await getUsersFriends(userId);
       let friendsData = friendIDCollection?.friend_list?.friends || [];
-      // let MyinvitesReceived = (friendIDCollection?.friend_list?.invitesreceived || []).map(item => item.userid);
-      // let MyinvitesSent=(friendIDCollection?.friend_list?.invitessent||[]).map(item => item.userid);
-      // setInvitesRecieved(MyinvitesReceived)
-      // setInvitesSent(MyinvitesSent)
-  
+
       let friendsList = await Promise.all(
         friendsData.map(async (friendid) => {
           let userData = await getUser(friendid);
           let user = userData;
-       
-  
+
           if (!user) return null;
-  
+
           return {
             id: friendid,
             name: user.full_name || user.firstname,
@@ -114,18 +129,12 @@ const PlanHike = () => {
           };
         })
       );
-  
+
       setFriendsList(friendsList.filter(Boolean));
-     
-      
-  
     } catch (err) {
       console.error("Error fetching friends:", err);
     }
   };
-
-
-
 
   const [trails, setTrails] = useState([]);
   const [isLoadingTrails, setIsLoadingTrails] = useState(true);
@@ -254,7 +263,6 @@ const PlanHike = () => {
     const fetchTrails = async () => {
       setIsLoadingTrails(true);
 
-
       try {
         // Use get-all-routes endpoint instead of get-route
         const res = await fetch("https://hiking-logbook-api.onrender.com/get-all-routes");
@@ -271,8 +279,6 @@ const PlanHike = () => {
             duration: 'N/A', // You might want to calculate this based on distance and difficulty
             elevation: calculateElevationGain(trail.path),
             description: trail.description || 'No description available',
-            //this path is the issue
-            //path: trail.path,
             image: `https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop&seed=${trail.routeid}`
           }));
           
@@ -292,36 +298,23 @@ const PlanHike = () => {
     fetchTrails();
   }, [currentUser?.id]);
 
-  //get coordinates that I will use in the get weather function (we already have a context for this)
-  // const getCurrentUser = async () => {
-  //   const { data: { user }, error } = await supabase.auth.getUser();
-  //   if (user) {
-  //     return user.id;
-  //   }
-  //   if (error) {
-  //     console.log("User with such id not found");
-  //   }
-  // };
-
-  // Updated weather function to use trail coordinates.. works just fine also
+  // Updated weather function to use trail coordinates
   const getWeatherForLocation = async (trail) => {
     try {
-      // First try to get coordinates from the trail's path data
-        let weatherCoords;
-      
+      let weatherCoords;
 
-        // Fallback to user coordinates if trail coordinates not available
-        const userid = currentUser.id;
-        const coordsData = await getCoordinates(userid);
-        console.log("coordsData:", coordsData);
-        if (coordsData && coordsData.start && coordsData.start.length === 2) {
-          weatherCoords = {
-            latitude: coordsData.start[1],
-            longitude: coordsData.start[0]
-          };
-        }
-      
-          console.log("weatherCoords:", weatherCoords);
+      // Fallback to user coordinates if trail coordinates not available
+      const userid = currentUser.id;
+      const coordsData = await getCoordinates(userid);
+      console.log("coordsData:", coordsData);
+      if (coordsData && coordsData.start && coordsData.start.length === 2) {
+        weatherCoords = {
+          latitude: coordsData.start[1],
+          longitude: coordsData.start[0]
+        };
+      }
+    
+      console.log("weatherCoords:", weatherCoords);
 
       if (weatherCoords) {
         setCoords(weatherCoords);
@@ -329,16 +322,11 @@ const PlanHike = () => {
         const lat = parseFloat(weatherCoords.latitude.toString().trim());
         const lon = parseFloat(weatherCoords.longitude.toString().trim());
 
-        
         console.log('Sending to getWeather:', { lat, lon, typeLat: typeof lat, typeLon: typeof lon });
 
-        //the weather API works fine
         const weatherData = await getWeather(lat, lon);
         console.log('Weather data:', weatherData);
-        //console.log('Description field:', weatherData?.description);
         setWeather(weatherData);
-
-
       } else {
         setError("No coordinates found for weather data");
       }
@@ -350,18 +338,16 @@ const PlanHike = () => {
   };
 
   // Weather icon helper function
-const getWeatherIcon = (description) => {
-  if (!description) return <Sun className="w-6 h-6 text-yellow-500" />;
-  
-  const desc = description.toLowerCase();
-  if (desc.includes('clear')) return <Sun className="w-6 h-6 text-yellow-500" />;
-  if (desc.includes('rain')) return <CloudRain className="w-6 h-6 text-blue-500" />;
-  if (desc.includes('cloud')) return <Cloud className="w-6 h-6 text-gray-500" />;
-  if (desc.includes('partly')) return <Cloud className="w-6 h-6 text-gray-400" />;
-  return <Sun className="w-6 h-6 text-yellow-500" />;
-};
-
-
+  const getWeatherIcon = (description) => {
+    if (!description) return <Sun className="w-6 h-6 text-yellow-500" />;
+    
+    const desc = description.toLowerCase();
+    if (desc.includes('clear')) return <Sun className="w-6 h-6 text-yellow-500" />;
+    if (desc.includes('rain')) return <CloudRain className="w-6 h-6 text-blue-500" />;
+    if (desc.includes('cloud')) return <Cloud className="w-6 h-6 text-gray-500" />;
+    if (desc.includes('partly')) return <Cloud className="w-6 h-6 text-gray-400" />;
+    return <Sun className="w-6 h-6 text-yellow-500" />;
+  };
 
   useEffect(() => {
     if (selectedTrail) {
@@ -372,11 +358,9 @@ const getWeatherIcon = (description) => {
 const filteredTrails = trails.filter(trail => {
   const trailName = trail?.name?.toLowerCase() || '';
   const trailLocation = trail?.location?.toLowerCase() || '';
-  const search = (searchTrails || '').toLowerCase();  // <-- safe fallback
+  const search = (searchTrails || '').toLowerCase();
   return trailName.includes(search) || trailLocation.includes(search);
 });
-
-
 
   const handleTrailSelect = (trail) =>{
     setSelectedTrail(trail);
@@ -387,7 +371,6 @@ const filteredTrails = trails.filter(trail => {
       setHikeTitle(`${trail.name} Adventure`);
     }
     
-    // Optional: Log trail information for debugging
     console.log('Selected trail:',{
       name: trail.name,
       distance: trail.distance,
@@ -395,9 +378,6 @@ const filteredTrails = trails.filter(trail => {
       coordinates: extractCoordinatesFromPath(trail.path)
     });
   };
-
-
-  ///////////////////////////////////////////////////////////////////////////////////
 
   const handleSelectFriendForInvite = (friend) =>{
     if (selectedFriendsForInvite.find(f => f.id === friend.id)) {
@@ -424,13 +404,10 @@ const filteredTrails = trails.filter(trail => {
     setShowFriendsModal(false);
   };
 
-  ////////////////////////////////////////////////////////////////////////////////////////
-
   const handleRemoveFriend = (friendId) => {
     setInvitedFriends(invitedFriends.filter(friend => friend.inviteId !== friendId));
   };
-  //works fine
-  //console.log("testing under here to see", weather);
+
   // Submit handler to create hike
   const handleCreateHike = async () => {
     if (!currentUser || !selectedTrail || !date || !time || !hikeTitle.trim()) {
@@ -443,36 +420,29 @@ const filteredTrails = trails.filter(trail => {
     
     try {
       const hikingGroup = {
-
        members:[currentUser.id]
       };
       const matched = weather.daily.find(day => day.date === date);
       if (!matched) {
-      // No forecast available for this date (likely > 7 days ahead)
       setError("Cannot forecast for dates beyond 7 days from today");
-      return; // stop further execution
+      return;
       }
       const filledWeather ={
           ...weather,
           discription: matched
           ? (()=>{
             const summary = matched.summary.toLowerCase();
-
             const keywords = ["clear sky","partly cloudy","broken clouds","rain","sunny","windy","fog","cloudy"]
-
             const found = keywords.find(word=>summary.includes(word));
-
             return found || summary
           })()
           :weather.current.description,
           temperature: matched
           ? `${matched.maxTemp}°C`
           : `${weather.current.temp}°C`,
-       
-          
       }
 
-      const response = await fetch('https://hiking-logbook-api.onrender.com/newHike', {  // should return the hikeid
+      const response = await fetch('https://hiking-logbook-api.onrender.com/newHike', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -488,27 +458,31 @@ const filteredTrails = trails.filter(trail => {
           hikinggroup: hikingGroup,
           difficulty,
           title: hikeTitle,
-          route: selectedTrail?.id || null // Add route reference
+          route: selectedTrail?.id || null
         })
       });
-
-
-      
 
       const result = await response.json();
 
       if(result?.hike){
-
         const myhikeid=result.hike.hikeid
-     
+        setHikeId(myhikeid);
+
+        // Save goals to database using the same pattern as Current.jsx
+        if (goalsList.length > 0) {
           await Promise.all(
-            invitedFriends.map(friend =>
-             newHikeInvite(friend.id,currentUser.id, myhikeid)
-              
+            goalsList.map(goalItem =>
+              addGoal(myhikeid, goalItem.goal, currentUser.id)
             )
           );
+        }
+     
+        await Promise.all(
+          invitedFriends.map(friend =>
+           newHikeInvite(friend.id,currentUser.id, myhikeid)
+          )
+        );
       }
-
 
       if ( response.ok) {
         setSubmitMessage(`Hike plan created successfully!`);
@@ -525,7 +499,7 @@ const filteredTrails = trails.filter(trail => {
                 trail: selectedTrail,
                 invitedFriends,
                 weather,
-                goals
+                goals: goalsList
               }
             }
           });
@@ -548,7 +522,8 @@ const filteredTrails = trails.filter(trail => {
     setTime('');
     setLocation('');
     setDifficulty('');
-    setGoals('');
+    setGoal('');
+    setGoalsList([]);
     setSelectedTrail(null);
     setSearchTrails('');
     setInvitedFriends([]);
@@ -672,14 +647,44 @@ const filteredTrails = trails.filter(trail => {
                     <Target className="w-4 h-4" />
                     Hiking Goals
                   </label>
-                  <textarea
-                    id="goals"
-                    placeholder="e.g., Improve fitness, reach summit before sunset, practice navigation skills, team building..."
-                    value={goals}
-                    onChange={(e) => setGoals(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                  />
+
+                  {/* Add Goal */}
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      placeholder="Add a goal..."
+                      className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={goal}
+                      onChange={(e) => setGoal(e.target.value)}
+                    />
+                    <button
+                      onClick={handleAddGoal}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {/* Goals List */}
+                  <ul className="space-y-2">
+                    {goalsList.length === 0 && (
+                      <li className="text-gray-500 dark:text-gray-400">No goals yet.</li>
+                    )}
+                    {goalsList.map((g, idx) => (
+                      <li
+                        key={idx}
+                        className="flex justify-between items-center p-2 rounded bg-gray-100 dark:bg-gray-900"
+                      >
+                        <span className="text-gray-800 dark:text-gray-200">{g.goal}</span>
+                        <button
+                          onClick={() => handleRemoveGoal(g.goal)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X size={16} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
@@ -710,15 +715,6 @@ const filteredTrails = trails.filter(trail => {
                           key={friend.inviteId}
                           className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md"
                         >
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                              {friend.avatar || friend.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{friend.name}</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">{friend.email}</p>
-                            </div>
-                          </div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 rounded-full">
                               {friend.status}
@@ -1103,3 +1099,4 @@ const filteredTrails = trails.filter(trail => {
 };
 
 export default PlanHike;
+  

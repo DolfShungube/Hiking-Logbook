@@ -28,7 +28,6 @@ const Current = () => {
   const [showGoalsModal, setShowGoalsModal] = useState(false);
 
   // Goals state
-  const [goal, setGoal] = useState("");
   const [goalsList, setGoalsList] = useState([]);
 
   // Notes state
@@ -37,17 +36,13 @@ const Current = () => {
 
   const { hikeid } = useParams();
   const { getCoordinates } = hikeDataCollection();
-  const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
+  const { getGoals, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
-  const { currentUser,authLoading } = UserAuth();
-
-  // Fetch current user ID
+  const { currentUser, authLoading } = UserAuth();
 
   // Fetch start coordinates and trail path
   const fetchStartCoordinates = async () => {
     try {
-       //removed trivial code as currentUser checks this
-       
       const coordsData = await getCoordinates(currentUser.id);
       if (!coordsData?.start || !coordsData?.path) {
         setError("No start coordinates or path found");
@@ -69,7 +64,7 @@ const Current = () => {
   // Fetch goals
   const fetchGoals = async () => {
     try {
-      const data = await getGoals(hikeid,currentUser.id);
+      const data = await getGoals(hikeid, currentUser.id);
       setGoalsList(data);
     } catch (err) {
       console.error("Error fetching goals:", err);
@@ -79,22 +74,10 @@ const Current = () => {
   // Fetch notes
   const fetchNotes = async () => {
     try {
-      const data = await getNotes(hikeid,currentUser.id);
+      const data = await getNotes(hikeid, currentUser.id);
       setNotesList(data); // data expected as [{date, text}, ...]
     } catch (err) {
       console.error("Error fetching notes:", err);
-    }
-  };
-
-  // Add goal
-  const handleAddGoal = async () => {
-    if (!goal.trim()) return;
-    try {
-      await addGoal(hikeid, goal,currentUser.id);
-      setGoal("");
-      fetchGoals();
-    } catch (err) {
-      console.error("Error adding goal:", err);
     }
   };
 
@@ -102,7 +85,7 @@ const Current = () => {
   const handleAddNote = async () => {
     if (!note.trim()) return;
     try {
-      await addNote(hikeid, note,currentUser.id);
+      await addNote(hikeid, note, currentUser.id);
       setNote("");
       fetchNotes();
     } catch (err) {
@@ -113,7 +96,7 @@ const Current = () => {
   // Remove note
   const handleRemoveNote = async (noteObj) => {
     try {
-      await removeNote(hikeid, noteObj.text, noteObj.date,currentUser.id);
+      await removeNote(hikeid, noteObj.text, noteObj.date, currentUser.id);
       setNotesList((prev) => prev.filter((n) => n.date !== noteObj.date));
     } catch (err) {
       console.error("Error removing note:", err);
@@ -124,7 +107,7 @@ const Current = () => {
   const handleToggleGoal = async (goalItem) => {
     try {
       const newStatus = goalItem.status === "complete" ? "incomplete" : "complete";
-      await updateGoalStatus(hikeid, goalItem.goal, newStatus,currentUser.id);
+      await updateGoalStatus(hikeid, goalItem.goal, newStatus, currentUser.id);
       setGoalsList((prev) =>
         prev.map((g) => (g.goal === goalItem.goal ? { ...g, status: newStatus } : g))
       );
@@ -186,16 +169,16 @@ const Current = () => {
   }, [coords, pathCoords]);
 
   // Fetch all initial data
-  useEffect(() =>{
-    if(!authLoading){
+  useEffect(() => {
+    if (!authLoading) {
       console.log(currentUser);
-    fetchStartCoordinates();
-    fetchGoals();
-    fetchNotes();
-  }
-  }, [currentUser,authLoading]);
+      fetchStartCoordinates();
+      fetchGoals();
+      fetchNotes();
+    }
+  }, [currentUser, authLoading]);
 
-  if (loading|| authLoading) return <p className="text-center mt-10">Loading hike info...</p>;
+  if (loading || authLoading) return <p className="text-center mt-10">Loading hike info...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
@@ -343,24 +326,7 @@ const Current = () => {
               Goals
             </h3>
 
-            {/* Add Goal */}
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                placeholder="Add a goal..."
-                className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-              />
-              <button
-                onClick={handleAddGoal}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold"
-              >
-                Add
-              </button>
-            </div>
-
-            {/* Goals List */}
+            {/* Goals List - Only checkboxes, no add functionality */}
             <ul className="space-y-2">
               {goalsList.length === 0 && (
                 <li className="text-gray-500 dark:text-gray-400">No goals yet.</li>
