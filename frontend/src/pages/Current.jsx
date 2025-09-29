@@ -8,6 +8,7 @@ import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { createClient } from "@supabase/supabase-js";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { UserAuth } from "../context/AuthContext.jsx";
+import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -23,6 +24,7 @@ const Current = () => {
   const [error, setError] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
   const [pathCoords, setPathCoords] = useState([]);
+  const [mapData,setMapData]=useState(null);
 
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
@@ -35,10 +37,33 @@ const Current = () => {
   const [notesList, setNotesList] = useState([]);
 
   const { hikeid } = useParams();
-  const { getCoordinates } = hikeDataCollection();
+  const { getCoordinates,getHike } = hikeDataCollection();
   const { getGoals, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
+  const {getRouteJson}= RouteDataCollection();
   const { currentUser, authLoading } = UserAuth();
+
+
+
+
+    const handleMap= async(hike_id,user_id)=>{
+  let res = await getHike(hike_id,user_id);
+  const routeid=res[0]?.route || null
+
+  if(routeid){
+
+
+
+    let data= await getRouteJson(routeid)
+    if(data[0]){
+    setMapData(data[0]?.path || null)
+  }
+    
+
+  }
+
+
+  }
 
   // Fetch start coordinates and trail path
   const fetchStartCoordinates = async () => {
@@ -62,7 +87,7 @@ const Current = () => {
   };
 
   // Fetch goals
-  const fetchGoals = async () => {
+  const fetchGoals = async () =>{
     try {
       const data = await getGoals(hikeid, currentUser.id);
       setGoalsList(data);
@@ -129,7 +154,7 @@ const Current = () => {
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   };
 
-  // Track live position
+
   useEffect(() => {
     if (!coords || pathCoords.length === 0) return;
     const watchId = navigator.geolocation.watchPosition(
@@ -171,12 +196,17 @@ const Current = () => {
   // Fetch all initial data
   useEffect(() => {
     if (!authLoading) {
-      console.log(currentUser);
       fetchStartCoordinates();
       fetchGoals();
       fetchNotes();
+      if(!mapData){
+      handleMap(hikeid,currentUser.id);
+
+    }      
     }
-  }, [currentUser, authLoading]);
+
+
+  }, [currentUser, authLoading,hikeid]);
 
   if (loading || authLoading) return <p className="text-center mt-10">Loading hike info...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
@@ -191,15 +221,8 @@ const Current = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Map */}
           <div className="lg:col-span-8 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden shadow-lg">
-            {coords && pathCoords.length > 0 ? (
-              <RouteTracker
-                routeGeoJSON={pathCoords}
-                className="w-full h-[420px]"
-                currentPosition={currentCoords ? [currentCoords.lng, currentCoords.lat] : null}
-              />
-            ) : (
-              <p className="text-center text-gray-500">Loading map...</p>
-            )}
+            {mapData?(
+            <RouteTracker routeGeoJSON={mapData} className="w-full h-[420px]" />):(<p className="text-center text-gray-500">Loading map...</p>)}
           </div>
 
           {/* Trail Info */}
@@ -223,11 +246,6 @@ const Current = () => {
                   <Activity size={20} className="text-red-500" />
                   <span className="font-medium">Difficulty:</span>
                   <span className="ml-auto">{difficulty || "Loading..."}</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <MapPinned size={20} className="text-purple-500" />
-                  <span className="font-medium">Duration:</span>
-                  <span className="ml-auto">2 hrs left</span>
                 </li>
               </ul>
             </div>

@@ -19,29 +19,9 @@ import {
 } from 'lucide-react';
 
 // Mock data for the created hike
-const hikeData = {
-  id: 'hike-001',
-  title: 'Half Dome Trail Adventure',
-  date: '2024-12-15',
-  time: '06:00',
-  location: 'Yosemite National Park, CA',
-  difficulty: 'Expert',
-  description: 'Epic adventure to conquer the iconic Half Dome! We\'ll start early to avoid crowds and make the most of the daylight. Don\'t forget your permits, plenty of water, and gloves for the cables section. This is going to be an unforgettable experience with amazing views!',
-  trail: {
-    name: 'Half Dome Trail',
-    distance: '16.4 miles',
-    elevation: '4,800 ft',
-    duration: '10-14 hours',
-    image: 'https://images.unsplash.com/photo-1688602905494-5feda601966d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3NlbWl0ZSUyMGhhbGYlMjBkb21lJTIwdHJhaWx8ZW58MXx8fHwxNzU2MzI3MDg4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  }
-};
 
-const invitedFriends = [
-  { id: 1, name: "Albert Flores", status: "Accepted", avatar: "https://i.pravatar.cc/100?img=11" },
-  { id: 2, name: "Marvin Kay", status: "Pending", avatar: "https://i.pravatar.cc/100?img=12" },
-  { id: 3, name: "Guy Hawkin", status: "Accepted", avatar: "https://i.pravatar.cc/100?img=13" },
-  { id: 4, name: "Sofia Carter", status: "Accepted", avatar: "https://i.pravatar.cc/100?img=16" },
-];
+
+
 
 const weatherData = {
   temperature: "72°F",

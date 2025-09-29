@@ -25,7 +25,7 @@ function RouteTracker({
   const [tracking, setTracking] = useState(true);
 
   const showToast = (msg, duration = 3000) => {
-    if (preview) return; // ✅ no toast in preview mode
+    if (preview) return; 
     setToast(msg);
     setTimeout(() => setToast(null), duration);
   };
@@ -69,7 +69,7 @@ function RouteTracker({
         },
       });
 
-      // Fallback route centering if GPS is slow
+
       let fallbackTimer;
       if (routeGeoJSON?.features?.length) {
         fallbackTimer = setTimeout(() => {
@@ -79,7 +79,7 @@ function RouteTracker({
             map.fitBounds(bounds, { padding: 50 });
             setInitialCentered(true);
           }
-        }, 4000);
+        }, 60000);
       }
 
       // Start tracking user
