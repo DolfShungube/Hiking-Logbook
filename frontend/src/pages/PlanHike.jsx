@@ -187,7 +187,6 @@ const EditHikeModal = ({
   );
 };
 
-// Also move the other modals outside for consistency
 const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handleEditHike, formatDate, formatTime, getDaysUntil }) => {
   if (!showHikeModal || !selectedHike) return null;
 
@@ -197,11 +196,11 @@ const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handl
         {/* Header */}
         <div className="relative">
           <img 
-            src={selectedHike.image} 
+            src={selectedHike.image || 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=400&fit=crop'} 
             alt={selectedHike.title}
             className="w-full h-48 object-cover rounded-t-xl"
             onError={(e) => {
-              e.target.src = 'https://images.unsplash.com/photo-1648804536048-0a7d8b103bbe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtb3VudGFpbiUyMGhpa2luZyUyMHRyYWlsJTIwc2NlbmljfGVufDF8fHx8MTc1NjIxNjU5Nnww&ixlib=rb-4.1.0&q=80&w=1080';
+              e.target.src = 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=400&fit=crop';
             }}
           />
           <button
@@ -244,7 +243,7 @@ const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handl
             </div>
             <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
               <Users className="w-5 h-5" />
-              <span>{selectedHike.attendees || 1} attendees</span>
+              <span>{selectedHike?.hikinggroup?.members?.length || 1} attendees</span>
             </div>
           </div>
 
@@ -312,7 +311,7 @@ const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handl
   );
 };
 
-const DeleteConfirmationModal = ({ showDeleteModal, setShowDeleteModal, hikeToDelete, handleDeleteHike, deletingHikeId }) => {
+const DeleteConfirmationModal = ({ showDeleteModal, setShowDeleteModal, hikeToDelete, setHikeToDelete, handleDeleteHike, deletingHikeId }) => {
   if (!showDeleteModal || !hikeToDelete) return null;
 
   return (
@@ -340,10 +339,10 @@ const DeleteConfirmationModal = ({ showDeleteModal, setShowDeleteModal, hikeToDe
             </button>
             <button
               onClick={() => handleDeleteHike(hikeToDelete.hikeid || hikeToDelete.id)}
-              disabled={deletingHikeId === hikeToDelete?.id}
+              disabled={deletingHikeId === (hikeToDelete?.hikeid || hikeToDelete?.id)}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {deletingHikeId === hikeToDelete?.id ? (
+              {deletingHikeId === (hikeToDelete?.hikeid || hikeToDelete?.id) ? (
                 <>
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
                   Deleting...
@@ -388,6 +387,9 @@ const PlanHikeDefault = () => {
   
   const navigate = useNavigate();
   const { currentUser } = UserAuth();
+
+  // Default hike image
+  const defaultHikeImage = 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop';
 
   // Fetch hikes from your API
   useEffect(() => {
@@ -620,7 +622,7 @@ const PlanHikeDefault = () => {
         throw new Error(`Failed to delete hike: ${response.status}`);
       }
 
-      setHikes(hikes.filter(hike => hike.id !== hikeId));
+      setHikes(hikes.filter(hike => (hike.hikeid || hike.id) !== hikeId));
       setShowDeleteModal(false);
       setHikeToDelete(null);
       
@@ -687,8 +689,6 @@ const PlanHikeDefault = () => {
     { icon: Camera, value: "25k+", label: "Shared Photos" }
   ];
 
-
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Modals */}
@@ -726,6 +726,7 @@ const PlanHikeDefault = () => {
         showDeleteModal={showDeleteModal}
         setShowDeleteModal={setShowDeleteModal}
         hikeToDelete={hikeToDelete}
+        setHikeToDelete={setHikeToDelete}
         handleDeleteHike={handleDeleteHike}
         deletingHikeId={deletingHikeId}
       />
@@ -836,11 +837,11 @@ const PlanHikeDefault = () => {
                   <div className="flex">
                     <div className="w-32 h-32 flex-shrink-0">
                       <img 
-                        src={hike.image} 
+                        src={hike.image || defaultHikeImage} 
                         alt={hike.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.target.src = 'https://images.unsplash.com/photo-1648804536048-0a7d8b103bbe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtb3VudGFpbiUyMGhpa2luZyUyMHRyYWlsJTIwc2NlbmljfGVufDF8fHx8MTc1NjIxNjU5Nnww&ixlib=rb-4.1.0&q=80&w=1080';
+                          e.target.src = defaultHikeImage;
                         }}
                       />
                     </div>
@@ -861,12 +862,12 @@ const PlanHikeDefault = () => {
                           </span>
                           <div className="relative">
                             <button
-                              onClick={(e) => toggleDropdown(hike.id, e)}
+                              onClick={(e) => toggleDropdown(hike.hikeid || hike.id, e)}
                               className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                             >
                               <MoreVertical className="w-4 h-4 text-gray-500" />
                             </button>
-                            {activeDropdown === hike.id && (
+                            {activeDropdown === (hike.hikeid || hike.id) && (
                               <div className="absolute right-0 top-8 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-[120px]">
                                 <button
                                   onClick={() => handleViewHike(hike)}
@@ -901,31 +902,31 @@ const PlanHikeDefault = () => {
                       </p>
 
                       <div className="flex items-center gap-4 mb-3 text-sm text-gray-500 dark:text-gray-400">
-  <span className="flex items-center gap-1">
-    <Calendar className="w-3 h-3" />
-    {formatDate(hike.startdate)}
-  </span>
-  <span className="flex items-center gap-1">
-    <Clock className="w-3 h-3" />
-    {formatTime(hike.startdate)}
-  </span>
-  <span className="flex items-center gap-1">
-    <Users className="w-3 h-3" />
-    {hike.attendees || 1}
-  </span>
-</div>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(hike.startdate)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatTime(hike.startdate)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {hike?.hikinggroup?.members?.length || 1}
+                        </span>
+                      </div>
 
-<div className="flex justify-between items-center">
-  <span className={`text-sm font-medium ${
-    getDaysUntil(hike.startdate) === 'Today' || getDaysUntil(hike.startdate) === 'Tomorrow'
-      ? 'text-orange-600 dark:text-orange-400'
-      : getDaysUntil(hike.startdate) === 'Past'
-      ? 'text-gray-400 dark:text-gray-500'
-      : 'text-gray-500 dark:text-gray-400'
-  }`}>
-    {getDaysUntil(hike.startdate)}
-  </span>
-</div>
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm font-medium ${
+                          getDaysUntil(hike.startdate) === 'Today' || getDaysUntil(hike.startdate) === 'Tomorrow'
+                            ? 'text-orange-600 dark:text-orange-400'
+                            : getDaysUntil(hike.startdate) === 'Past'
+                            ? 'text-gray-400 dark:text-gray-500'
+                            : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {getDaysUntil(hike.startdate)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
