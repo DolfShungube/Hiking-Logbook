@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { MapPinned, Clock, Activity, Map, X } from "lucide-react";
 import RouteTracker from "../components/map.jsx";
 import { GoalDataCollection } from "../context/GoalsContext";
@@ -9,6 +9,7 @@ import { createClient } from "@supabase/supabase-js";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { UserAuth } from "../context/AuthContext.jsx";
 import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
+import format from "pretty-format";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -42,9 +43,20 @@ const Current = () => {
   const { getNotes, addNote, removeNote } = NotesDataCollection();
   const {getRouteJson}= RouteDataCollection();
   const { currentUser, authLoading } = UserAuth();
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+  const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
 
-
+const handleStartPause = () => {
+  setIsTimerRunning(prevState => !prevState);
+}
 
     const handleMap= async(hike_id,user_id)=>{
   let res = await getHike(hike_id,user_id);
@@ -208,6 +220,46 @@ const Current = () => {
 
   }, [currentUser, authLoading,hikeid]);
 
+
+  // Timer and persist state
+ useEffect(() => {
+  let timerId;
+
+  if (isTimerRunning) {
+    timerId = setInterval(() => {
+      setElapsedTime(prevTime => {
+        // Correct way to save time to local storage
+        const newTime = prevTime + 1;
+        localStorage.setItem('elapsedTime', newTime.toString());
+        return newTime;
+      });
+    }, 1000);
+  }
+
+ 
+  localStorage.setItem('isTimerRunning', isTimerRunning.toString());
+
+  return () => {
+    if (timerId) {
+      clearInterval(timerId);
+    }
+  };
+}, [isTimerRunning]);
+
+//another useEffect to load the persisted state on mount
+useEffect(() =>{
+  const savedTime = localStorage.getItem('elapsedTime');
+  if(savedTime){
+    setElapsedTime(parseInt(savedTime,10));
+  }
+
+  const savedStatus = localStorage.getItem('isTimerRunning');
+  if(savedStatus){
+    setIsTimerRunning(savedStatus === 'true');
+  }
+}, []); // Empty dependency array means this runs only on mount
+
+
   if (loading || authLoading) return <p className="text-center mt-10">Loading hike info...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
@@ -240,7 +292,7 @@ const Current = () => {
                 <li className="flex items-center gap-3">
                   <Clock size={20} className="text-green-500" />
                   <span className="font-medium">Time:</span>
-                  <span className="ml-auto">3 hrs</span>
+                  <span className="ml-auto">{formatTime(elapsedTime)}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Activity size={20} className="text-red-500" />
@@ -263,6 +315,13 @@ const Current = () => {
                 className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold transition"
               >
                 Goals
+              </button>
+              {/* This button is newly added to control the timer */}
+              <button
+              onClick={handleStartPause}
+              className={`flex-1 ${isTimerRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'} text-white py-2 rounded-lg font-semibold transition`}
+              >
+              {isTimerRunning ? 'Pause Time' : 'Start Time'}
               </button>
             </div>
           </div>
