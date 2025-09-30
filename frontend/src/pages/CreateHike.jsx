@@ -279,7 +279,7 @@ const PlanHike = () => {
             duration: 'N/A', // You might want to calculate this based on distance and difficulty
             elevation: calculateElevationGain(trail.path),
             description: trail.description || 'No description available',
-            image: `https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop&seed=${trail.routeid}`
+            image: trail.image
           }));
           
           setTrails(processedTrails);
@@ -592,18 +592,23 @@ const filteredTrails = trails.filter(trail => {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  <div>
+                 <div>
                     <label htmlFor="time" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Time *
+                      Time * (6:00 AM - 5:00 PM)
                     </label>
                     <input
                       id="time"
                       type="time"
                       value={time}
                       min="06:00"
-                      max="18:00"
+                      max="17:00"
                       step="900"
-                      onChange={(e) => setTime(e.target.value)}
+                      onChange={(e) => {
+                        const selectedTime = e.target.value;
+                        if (selectedTime >= "06:00" && selectedTime <= "17:00") {
+                          setTime(selectedTime);
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -762,45 +767,58 @@ const filteredTrails = trails.filter(trail => {
                 ) : (
                   <div className="space-y-3 max-h-64 overflow-y-auto">
                     {filteredTrails.map((trail) => (
-                      <div
-                        key={trail.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                          selectedTrail?.id === trail.id 
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                            : 'border-gray-200 dark:border-gray-600'
-                        }`}
-                        onClick={() => handleTrailSelect(trail)}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium text-gray-900 dark:text-white">{trail.name}</h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
-                              <MapPin className="w-3 h-3" />
-                              {trail.location}
-                            </p>
-                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <Mountain className="w-3 h-3" />
-                                {trail.distance}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {trail.elevation}
-                              </span>
-                            </div>
-                          </div>
-                          <span 
-                            className={`px-2 py-1 rounded-full text-xs font-medium
-                              ${trail.difficulty === 'Easy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : ''}
-                              ${trail.difficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : ''}
-                              ${trail.difficulty === 'Hard' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' : ''}
-                              ${trail.difficulty === 'Expert' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : ''}
-                            `}
-                          >
-                            {trail.difficulty}
-                          </span>
-                        </div>
-                      </div>
+                     <div
+  key={trail.id}
+  className={`flex gap-4 p-3 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
+    selectedTrail?.id === trail.id 
+      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+      : 'border-gray-200 dark:border-gray-600'
+  }`}
+  onClick={() => handleTrailSelect(trail)}
+>
+  {/* Image on the left */}
+  <img
+    src={trail.image}
+    alt={trail.name}
+    className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+    onError={(e) => {
+      e.target.src = 'https://images.unsplash.com/photo-1648804536048-0a7d8b103bbe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtb3VudGFpbiUyMGhpa2luZyUyMHRyYWlsJTIwc2NlbmljfGVufDF8fHx8MTc1NjIxNjU5Nnww&ixlib=rb-4.1.0&q=80&w=1080';
+    }}
+  />
+  
+  {/* Text content on the right */}
+  <div className="flex-1 flex flex-col justify-between">
+    <div className="flex justify-between items-start">
+      <div>
+        <h4 className="font-medium text-gray-900 dark:text-white">{trail.name}</h4>
+        <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
+          <MapPin className="w-3 h-3" />
+          {trail.location}
+        </p>
+        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+          <span className="flex items-center gap-1">
+            <Mountain className="w-3 h-3" />
+            {trail.distance}
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {trail.elevation}
+          </span>
+        </div>
+      </div>
+      <span 
+        className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap
+          ${trail.difficulty === 'Easy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : ''}
+          ${trail.difficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : ''}
+          ${trail.difficulty === 'Hard' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' : ''}
+          ${trail.difficulty === 'Expert' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : ''}
+        `}
+      >
+        {trail.difficulty}
+      </span>
+    </div>
+  </div>
+</div>
                     ))}
                     {filteredTrails.length === 0 && !isLoadingTrails && (
                       <div className="text-center py-8">

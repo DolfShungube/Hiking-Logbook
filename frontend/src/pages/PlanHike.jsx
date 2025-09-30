@@ -4,12 +4,9 @@ import {
   MapPin,
   Calendar,
   Users,
-  Star,
   ArrowRight,
   Compass,
   Camera,
-  Heart,
-  TrendingUp,
   Clock,
   Award,
   Edit,
@@ -17,11 +14,13 @@ import {
   Eye,
   MoreVertical,
   Gauge,
-  MountainIcon
+  MountainIcon,
+  Play
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
 
+// Edit Hike Modal Component
 const EditHikeModal = ({
   showEditModal,
   setShowEditModal,
@@ -37,6 +36,10 @@ const EditHikeModal = ({
   setEditStatus,
   editDifficulty,
   setEditDifficulty,
+  editDistance,
+  setEditDistance,
+  editElevation,
+  setEditElevation,
   resetEditForm,
   handleSaveEdit,
   savingEdit
@@ -46,7 +49,6 @@ const EditHikeModal = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -64,9 +66,7 @@ const EditHikeModal = ({
           </div>
         </div>
 
-        {/* Form */}
         <div className="p-6 space-y-4">
-          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Hike Title
@@ -80,7 +80,6 @@ const EditHikeModal = ({
             />
           </div>
 
-          {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Location (Route Name)
@@ -90,11 +89,10 @@ const EditHikeModal = ({
               value={editLocation}
               onChange={(e) => setEditLocation(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Enter route name (e.g., Table Mountain Trail)"
+              placeholder="Enter route name"
             />
           </div>
 
-          {/* Date and Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -120,7 +118,37 @@ const EditHikeModal = ({
             </div>
           </div>
 
-          {/* Status and Difficulty */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Distance (km)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                value={editDistance}
+                onChange={(e) => setEditDistance(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter distance"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Elevation Gain (m)
+              </label>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                value={editElevation}
+                onChange={(e) => setEditElevation(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter elevation gain"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -132,7 +160,8 @@ const EditHikeModal = ({
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="planned">Planned</option>
-                <option value="in progress">Confirmed</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="in progress">In Progress</option>
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
@@ -153,7 +182,6 @@ const EditHikeModal = ({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex gap-3 justify-end">
           <button
             onClick={() => {
@@ -187,13 +215,23 @@ const EditHikeModal = ({
   );
 };
 
-const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handleEditHike, formatDate, formatTime, getDaysUntil }) => {
+// Hike Details Modal Component
+const HikeDetailsModal = ({ 
+  showHikeModal, 
+  setShowHikeModal, 
+  selectedHike, 
+  handleEditHike, 
+  formatDate, 
+  formatTime, 
+  getDaysUntil,
+  formatDistance,
+  formatElevation
+}) => {
   if (!showHikeModal || !selectedHike) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="relative">
           <img 
             src={selectedHike.image || 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=400&fit=crop'} 
@@ -215,6 +253,8 @@ const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handl
                 ? 'bg-green-100 text-green-800'
                 : selectedHike.status === 'planned'
                 ? 'bg-yellow-100 text-yellow-800'
+                : selectedHike.status === 'in progress'
+                ? 'bg-orange-100 text-orange-800'
                 : 'bg-blue-100 text-blue-800'
             }`}>
               {selectedHike.status}
@@ -222,7 +262,6 @@ const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handl
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             {selectedHike.title}
@@ -245,6 +284,18 @@ const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handl
               <Users className="w-5 h-5" />
               <span>{selectedHike?.hikinggroup?.members?.length || 1} attendees</span>
             </div>
+            {selectedHike.distance && (
+              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                <Gauge className="w-5 h-5" />
+                <span>{formatDistance(selectedHike.distance)}</span>
+              </div>
+            )}
+            {selectedHike.elevation && (
+              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                <MountainIcon className="w-5 h-5" />
+                <span>{formatElevation(selectedHike.elevation)}</span>
+              </div>
+            )}
           </div>
 
           {selectedHike.description && (
@@ -286,7 +337,6 @@ const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handl
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3 justify-end">
             <button
               onClick={() => setShowHikeModal(false)}
@@ -311,7 +361,15 @@ const HikeDetailsModal = ({ showHikeModal, setShowHikeModal, selectedHike, handl
   );
 };
 
-const DeleteConfirmationModal = ({ showDeleteModal, setShowDeleteModal, hikeToDelete, setHikeToDelete, handleDeleteHike, deletingHikeId }) => {
+// Delete Confirmation Modal Component
+const DeleteConfirmationModal = ({ 
+  showDeleteModal, 
+  setShowDeleteModal, 
+  hikeToDelete, 
+  setHikeToDelete, 
+  handleDeleteHike, 
+  deletingHikeId 
+}) => {
   if (!showDeleteModal || !hikeToDelete) return null;
 
   return (
@@ -361,6 +419,7 @@ const DeleteConfirmationModal = ({ showDeleteModal, setShowDeleteModal, hikeToDe
   );
 };
 
+// Main Component
 const PlanHikeDefault = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [hikes, setHikes] = useState([]);
@@ -374,7 +433,6 @@ const PlanHikeDefault = () => {
   const [selectedHike, setSelectedHike] = useState(null);
   const [showHikeModal, setShowHikeModal] = useState(false);
   
-  // Edit modal states 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingHike, setEditingHike] = useState(null);
   const [editTitle, setEditTitle] = useState('');
@@ -383,15 +441,15 @@ const PlanHikeDefault = () => {
   const [editTime, setEditTime] = useState('');
   const [editDifficulty, setEditDifficulty] = useState('');
   const [editStatus, setEditStatus] = useState('planned');
+  const [editDistance, setEditDistance] = useState('');
+  const [editElevation, setEditElevation] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   
   const navigate = useNavigate();
   const { currentUser } = UserAuth();
 
-  // Default hike image
   const defaultHikeImage = 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop';
 
-  // Fetch hikes from your API
   useEffect(() => {
     const fetchHikes = async () => {
       try {
@@ -402,7 +460,7 @@ const PlanHikeDefault = () => {
           setError("Please log in to view your hikes.");
           return;
         }
-         // Updated API call to match your server endpoint  , run locally: http://localhost:8080/planned-hikes?userid=${currentUser.id}
+
         const response = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes?userid=${currentUser.id}`, {
           method: 'GET',
           credentials: 'include',
@@ -434,7 +492,6 @@ const PlanHikeDefault = () => {
     }
   }, [currentUser]);
 
-  // Utility functions
   const formatDate = (dateString) => {
     if (!dateString) return 'No date set';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -454,9 +511,18 @@ const PlanHikeDefault = () => {
         hour12: true
       });
     } catch (error) {
-      console.log('Time formatting error for:', dateTimeString, error);
       return 'Invalid time';
     }
+  };
+
+  const formatDistance = (distance) => {
+    if (!distance) return 'N/A';
+    return `${distance} km`;
+  };
+
+  const formatElevation = (elevation) => {
+    if (!elevation) return 'N/A';
+    return `${elevation} m`;
   };
 
   const getDaysUntil = (dateString) => {
@@ -477,7 +543,6 @@ const PlanHikeDefault = () => {
     return `${diffDays} days`;
   };
 
-  // Reset edit form
   const resetEditForm = () => {
     setEditTitle('');
     setEditLocation('');
@@ -485,10 +550,11 @@ const PlanHikeDefault = () => {
     setEditTime('');
     setEditDifficulty('easy');
     setEditStatus('planned');
+    setEditDistance('');
+    setEditElevation('');
     setEditingHike(null);
   };
 
-  // Extract date from timestamp
   const getDateFromTimestamp = (timestamp) => {
     if (!timestamp) return '';
     try {
@@ -498,7 +564,6 @@ const PlanHikeDefault = () => {
     }
   };
 
-  // Extract time from timestamp
   const getTimeFromTimestamp = (timestamp) => {
     if (!timestamp) return '';
     try {
@@ -511,7 +576,6 @@ const PlanHikeDefault = () => {
     }
   };
 
-  // Combine date and time into ISO string
   const combineDateAndTime = (dateStr, timeStr) => {
     if (!dateStr) return new Date().toISOString();
     
@@ -531,17 +595,60 @@ const PlanHikeDefault = () => {
 
   const handleEditHike = (hike) => {
     setEditingHike(hike);
-    
-    // Set all form values directly
     setEditTitle(hike.title || '');
     setEditLocation(hike.location || '');
     setEditDate(getDateFromTimestamp(hike.startdate));
     setEditTime(getTimeFromTimestamp(hike.startdate));
     setEditDifficulty(hike.difficulty || 'easy');
     setEditStatus(hike.status || 'planned');
-    
+    setEditDistance(hike.distance?.toString() || '');
+    setEditElevation(hike.elevation?.toString() || '');
     setShowEditModal(true);
     setActiveDropdown(null);
+  };
+
+  const handleStartHike = async (hike) => {
+    try {
+      const hikeId = hike.hikeid || hike.id;
+      
+      if (!hikeId) {
+        throw new Error('Hike ID not found');
+      }
+
+      const response = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes/${hikeId}/${currentUser.id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: hike.title,
+          location: hike.location,
+          startdate: hike.startdate,
+          difficulty: hike.difficulty,
+          distance: hike.distance,
+          elevation: hike.elevation,
+          status: 'in progress'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to start hike: ${response.status}`);
+      }
+
+      setHikes(prevHikes =>
+        prevHikes.map(h => {
+          const currentHikeId = h.hikeid || h.id;
+          return currentHikeId === hikeId ? { ...h, status: 'in progress' } : h;
+        })
+      );
+
+      setActiveDropdown(null);
+      
+    } catch (err) {
+      console.error("Error starting hike:", err);
+      setError("Failed to start hike. Please try again.");
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -555,7 +662,7 @@ const PlanHikeDefault = () => {
       }
 
       const newStartDate = combineDateAndTime(editDate, editTime);
-      // when running locally:  http://localhost:8080/planned-hikes/${editingHike.id}
+
       const response = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes/${hikeId}/${currentUser.id}`, {
         method: 'PUT',
         credentials: 'include',
@@ -567,17 +674,16 @@ const PlanHikeDefault = () => {
           location: editLocation,
           startdate: newStartDate,
           difficulty: editDifficulty,
+          distance: parseFloat(editDistance) || editingHike.distance,
+          elevation: parseFloat(editElevation) || editingHike.elevation,
           status: editStatus
         })
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server response:', response.status, errorText);
         throw new Error(`Failed to update hike: ${response.status}`);
       }
 
-      // Update the hikes list
       setHikes(prevHikes =>
         prevHikes.map(hike => {
           const currentHikeId = hike.hikeid || hike.id;
@@ -588,13 +694,14 @@ const PlanHikeDefault = () => {
                 location: editLocation,
                 startdate: newStartDate, 
                 difficulty: editDifficulty,
+                distance: parseFloat(editDistance) || hike.distance,
+                elevation: parseFloat(editElevation) || hike.elevation,
                 status: editStatus
               }
-            : hike
+            : hike;
         })
       );
 
-      // Close modal and reset
       setShowEditModal(false);
       resetEditForm();
       
@@ -609,7 +716,7 @@ const PlanHikeDefault = () => {
   const handleDeleteHike = async (hikeId) => {
     try {
       setDeletingHikeId(hikeId);
-       /// run locally http://localhost:8080/planned-hikes/${hikeId}
+
       const response = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes/${hikeId}/${currentUser.id}`, {
         method: 'DELETE',
         credentials: 'include',
@@ -650,7 +757,6 @@ const PlanHikeDefault = () => {
     setActiveDropdown(activeDropdown === hikeId ? null : hikeId);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
       setActiveDropdown(null);
@@ -691,7 +797,6 @@ const PlanHikeDefault = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Modals */}
       <EditHikeModal
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
@@ -707,6 +812,10 @@ const PlanHikeDefault = () => {
         setEditStatus={setEditStatus}
         editDifficulty={editDifficulty}
         setEditDifficulty={setEditDifficulty}
+        editDistance={editDistance}
+        setEditDistance={setEditDistance}
+        editElevation={editElevation}
+        setEditElevation={setEditElevation}
         resetEditForm={resetEditForm}
         handleSaveEdit={handleSaveEdit}
         savingEdit={savingEdit}
@@ -720,6 +829,8 @@ const PlanHikeDefault = () => {
         formatDate={formatDate}
         formatTime={formatTime}
         getDaysUntil={getDaysUntil}
+        formatDistance={formatDistance}
+        formatElevation={formatElevation}
       />
       
       <DeleteConfirmationModal
@@ -731,7 +842,6 @@ const PlanHikeDefault = () => {
         deletingHikeId={deletingHikeId}
       />
 
-      {/* Hero Section */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
@@ -754,7 +864,6 @@ const PlanHikeDefault = () => {
             </button>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, index) => (
               <div key={index} className="text-center bg-slate-50 dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
@@ -770,7 +879,6 @@ const PlanHikeDefault = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-6">
-        {/* Your Upcoming Hikes */}
         <div className="py-16 border-b border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center mb-8">
             <div>
@@ -833,7 +941,7 @@ const PlanHikeDefault = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {(showAllHikes ? hikes : hikes.slice(0, 4)).map((hike) => (
-                <div key={hike.hikeid || hike.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all">
+                <div key={hike.hikeid || hike.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700  hover:shadow-lg transition-all">
                   <div className="flex">
                     <div className="w-32 h-32 flex-shrink-0">
                       <img 
@@ -856,6 +964,8 @@ const PlanHikeDefault = () => {
                               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                               : hike.status === 'planned'
                               ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                              : hike.status === 'in progress'
+                              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
                               : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
                           }`}>
                             {hike.status}
@@ -876,6 +986,15 @@ const PlanHikeDefault = () => {
                                   <Eye className="w-4 h-4" />
                                   View
                                 </button>
+                                {(hike.status === 'planned' || hike.status === 'confirmed') && (
+                                  <button
+                                    onClick={() => handleStartHike(hike)}
+                                    className="w-full px-3 py-2 text-left text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 flex items-center gap-2"
+                                  >
+                                    <Play className="w-4 h-4" />
+                                    Start Hike
+                                  </button>
+                                )}
                                 <button
                                   onClick={() => handleEditHike(hike)}
                                   className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2"
@@ -956,7 +1075,6 @@ const PlanHikeDefault = () => {
           </div>
         </div>
 
-        {/* How It Works */}
         <div className="py-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
