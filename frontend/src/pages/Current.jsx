@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MapPinned, Clock, Activity, Map, X } from "lucide-react";
 import RouteTracker from "../components/map.jsx";
 import { GoalDataCollection } from "../context/GoalsContext";
@@ -8,8 +8,6 @@ import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { createClient } from "@supabase/supabase-js";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { UserAuth } from "../context/AuthContext.jsx";
-import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
-import format from "pretty-format";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -25,12 +23,12 @@ const Current = () => {
   const [error, setError] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
   const [pathCoords, setPathCoords] = useState([]);
-  const [mapData,setMapData]=useState(null);
 
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
 
   // Goals state
+  const [goal, setGoal] = useState("");
   const [goalsList, setGoalsList] = useState([]);
 
   // Notes state
@@ -38,44 +36,10 @@ const Current = () => {
   const [notesList, setNotesList] = useState([]);
 
   const { hikeid } = useParams();
-  const { getCoordinates,getHike } = hikeDataCollection();
-  const { getGoals, updateGoalStatus } = GoalDataCollection();
+  const { getCoordinates } = hikeDataCollection();
+  const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
-  const {getRouteJson}= RouteDataCollection();
   const { currentUser, authLoading } = UserAuth();
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
-
-
-const handleStartPause = () => {
-  setIsTimerRunning(prevState => !prevState);
-}
-
-    const handleMap= async(hike_id,user_id)=>{
-  let res = await getHike(hike_id,user_id);
-  const routeid=res[0]?.route || null
-
-  if(routeid){
-
-
-
-    let data= await getRouteJson(routeid)
-    if(data[0]){
-    setMapData(data[0]?.path || null)
-  }
-    
-
-  }
-
-
-  }
 
   // Fetch start coordinates and trail path
   const fetchStartCoordinates = async () => {
@@ -99,12 +63,24 @@ const handleStartPause = () => {
   };
 
   // Fetch goals
-  const fetchGoals = async () =>{
+  const fetchGoals = async () => {
     try {
       const data = await getGoals(hikeid, currentUser.id);
       setGoalsList(data);
     } catch (err) {
       console.error("Error fetching goals:", err);
+    }
+  };
+
+  // Add goal
+  const handleAddGoal = async () => {
+    if (!goal.trim()) return;
+    try {
+      await addGoal(hikeid, goal, currentUser.id);
+      setGoal("");
+      fetchGoals();
+    } catch (err) {
+      console.error("Error adding goal:", err);
     }
   };
 
@@ -166,7 +142,7 @@ const handleStartPause = () => {
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   };
 
-
+  // Track live position
   useEffect(() => {
     if (!coords || pathCoords.length === 0) return;
     const watchId = navigator.geolocation.watchPosition(
@@ -208,57 +184,12 @@ const handleStartPause = () => {
   // Fetch all initial data
   useEffect(() => {
     if (!authLoading) {
+      console.log(currentUser);
       fetchStartCoordinates();
       fetchGoals();
       fetchNotes();
-      if(!mapData){
-      handleMap(hikeid,currentUser.id);
-
-    }      
     }
-
-
-  }, [currentUser, authLoading,hikeid]);
-
-
-  // Timer and persist state
- useEffect(() => {
-  let timerId;
-
-  if (isTimerRunning) {
-    timerId = setInterval(() => {
-      setElapsedTime(prevTime => {
-        // Correct way to save time to local storage
-        const newTime = prevTime + 1;
-        localStorage.setItem('elapsedTime', newTime.toString());
-        return newTime;
-      });
-    }, 1000);
-  }
-
- 
-  localStorage.setItem('isTimerRunning', isTimerRunning.toString());
-
-  return () => {
-    if (timerId) {
-      clearInterval(timerId);
-    }
-  };
-}, [isTimerRunning]);
-
-//another useEffect to load the persisted state on mount
-useEffect(() =>{
-  const savedTime = localStorage.getItem('elapsedTime');
-  if(savedTime){
-    setElapsedTime(parseInt(savedTime,10));
-  }
-
-  const savedStatus = localStorage.getItem('isTimerRunning');
-  if(savedStatus){
-    setIsTimerRunning(savedStatus === 'true');
-  }
-}, []); // Empty dependency array means this runs only on mount
-
+  }, [currentUser, authLoading]);
 
   if (loading || authLoading) return <p className="text-center mt-10">Loading hike info...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
@@ -273,8 +204,15 @@ useEffect(() =>{
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Map */}
           <div className="lg:col-span-8 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden shadow-lg">
-            {mapData?(
-            <RouteTracker routeGeoJSON={mapData} className="w-full h-[420px]" />):(<p className="text-center text-gray-500">Loading map...</p>)}
+            {coords && pathCoords.length > 0 ? (
+              <RouteTracker
+                routeGeoJSON={pathCoords}
+                className="w-full h-[420px]"
+                currentPosition={currentCoords ? [currentCoords.lng, currentCoords.lat] : null}
+              />
+            ) : (
+              <p className="text-center text-gray-500">Loading map...</p>
+            )}
           </div>
 
           {/* Trail Info */}
@@ -292,12 +230,17 @@ useEffect(() =>{
                 <li className="flex items-center gap-3">
                   <Clock size={20} className="text-green-500" />
                   <span className="font-medium">Time:</span>
-                  <span className="ml-auto">{formatTime(elapsedTime)}</span>
+                  <span className="ml-auto">3 hrs</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Activity size={20} className="text-red-500" />
                   <span className="font-medium">Difficulty:</span>
                   <span className="ml-auto">{difficulty || "Loading..."}</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <MapPinned size={20} className="text-purple-500" />
+                  <span className="font-medium">Duration:</span>
+                  <span className="ml-auto">2 hrs left</span>
                 </li>
               </ul>
             </div>
@@ -315,13 +258,6 @@ useEffect(() =>{
                 className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold transition"
               >
                 Goals
-              </button>
-              {/* This button is newly added to control the timer */}
-              <button
-              onClick={handleStartPause}
-              className={`flex-1 ${isTimerRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'} text-white py-2 rounded-lg font-semibold transition`}
-              >
-              {isTimerRunning ? 'Pause Time' : 'Start Time'}
               </button>
             </div>
           </div>
@@ -403,7 +339,24 @@ useEffect(() =>{
               Goals
             </h3>
 
-            {/* Goals List - Only checkboxes, no add functionality */}
+            {/* Add Goal */}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                placeholder="Add a goal..."
+                className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+              />
+              <button
+                onClick={handleAddGoal}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+              >
+                Add
+              </button>
+            </div>
+
+            {/* Goals List */}
             <ul className="space-y-2">
               {goalsList.length === 0 && (
                 <li className="text-gray-500 dark:text-gray-400">No goals yet.</li>
