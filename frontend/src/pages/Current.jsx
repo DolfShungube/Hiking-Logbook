@@ -343,7 +343,7 @@ const Current = () => {
             <div className="flex gap-2 mb-4">
               <input
                 type="text"
-                placeholder="Add a goal..."
+                placeholder="e.g., Reach the summit by noon, Take photos at viewpoint, Stay hydrated..."
                 className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
