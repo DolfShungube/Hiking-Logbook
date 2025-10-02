@@ -5,9 +5,13 @@ import { GoalDataCollection } from "../context/GoalsContext";
 import { NotesDataCollection } from "../context/NotesContext";
 import { useParams } from "react-router-dom";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
+import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
 import { createClient } from "@supabase/supabase-js";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { UserAuth } from "../context/AuthContext.jsx";
+
+
+import ElevationProfile from "../components/ElevationMap.jsx";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -23,6 +27,7 @@ const Current = () => {
   const [error, setError] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
   const [pathCoords, setPathCoords] = useState([]);
+  const [mapData,setMapData]=useState(null);
 
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
@@ -36,10 +41,11 @@ const Current = () => {
   const [notesList, setNotesList] = useState([]);
 
   const { hikeid } = useParams();
-  const { getCoordinates } = hikeDataCollection();
+  const { getCoordinates,getHike} = hikeDataCollection();
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
   const { currentUser, authLoading } = UserAuth();
+  const {getRouteJson}= RouteDataCollection();
 
   // Fetch start coordinates and trail path
   const fetchStartCoordinates = async () => {
@@ -94,6 +100,23 @@ const Current = () => {
     }
   };
 
+
+      const handleMap= async(hike_id,user_id)=>{
+  let res = await getHike(hike_id,user_id);
+  const routeid=res[0]?.route || null
+
+  if(routeid){
+
+
+
+    let data= await getRouteJson(routeid)
+    if(data[0]){
+    setMapData(data[0]?.path || null)
+  }}}
+    
+
+
+
   // Add note
   const handleAddNote = async () => {
     if (!note.trim()) return;
@@ -129,7 +152,7 @@ const Current = () => {
     }
   };
 
-  // Haversine formula
+
   const getDistanceFromLatLonInMeters = (lat1, lon1, lat2, lon2) => {
     const R = 6371000;
     const phi1 = (lat1 * Math.PI) / 180;
@@ -188,6 +211,12 @@ const Current = () => {
       fetchStartCoordinates();
       fetchGoals();
       fetchNotes();
+
+      if(!mapData){
+      handleMap(hikeid,currentUser.id);
+
+      } 
+
     }
   }, [currentUser, authLoading]);
 
@@ -203,17 +232,15 @@ const Current = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Map */}
-          <div className="lg:col-span-8 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden shadow-lg">
-            {coords && pathCoords.length > 0 ? (
-              <RouteTracker
-                routeGeoJSON={pathCoords}
-                className="w-full h-[420px]"
-                currentPosition={currentCoords ? [currentCoords.lng, currentCoords.lat] : null}
-              />
-            ) : (
-              <p className="text-center text-gray-500">Loading map...</p>
-            )}
+         
+         <div className="lg:col-span-8 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden shadow-lg">
+                       {mapData?(
+            <RouteTracker routeGeoJSON={mapData} className="w-full h-[420px]" />):(<p className="text-center text-gray-500">Loading map...</p>)}
+           
+
+
           </div>
+
 
           {/* Trail Info */}
           <div className="lg:col-span-4 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg flex flex-col justify-between transition-all hover:shadow-xl">
@@ -381,6 +408,22 @@ const Current = () => {
           </div>
         </div>
       )}
+
+        <div className="max-w-6xl mx-auto px-6 py-8 lg:col-span-8 bg-slate-100 dark:bg-slate-1000 rounded-xl overflow-hidden shadow-lg">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+          Elavation profile
+        </h2>
+
+          <ElevationProfile
+            routeGeoJSON={mapData}   
+                   
+          />          
+
+      </div>
+
+
+
+
     </div>
   );
 };
