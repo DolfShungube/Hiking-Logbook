@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MapPinned, Clock, Activity, Map, X ,Thermometer} from "lucide-react";
 import RouteTracker from "../components/map.jsx";
+import ElevationProfile from "../components/ElevationMap.jsx";
 import { GoalDataCollection } from "../context/GoalsContext";
 import { NotesDataCollection } from "../context/NotesContext";
 import { useParams } from "react-router-dom";
@@ -9,9 +10,6 @@ import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
 import { createClient } from "@supabase/supabase-js";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { UserAuth } from "../context/AuthContext.jsx";
-
-
-import ElevationProfile from "../components/ElevationMap.jsx";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -28,15 +26,12 @@ const Current = () => {
   const [error, setError] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
   const [pathCoords, setPathCoords] = useState([]);
-  const [mapData,setMapData]=useState(null);
+  const [mapData, setMapData] = useState(null);
 
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0); // Time in seconds
-  const intervalRef = useRef(null); 
-  const timerDataRef = useRef(null);
+
 
   // Goals state
   const [goal, setGoal] = useState("");
@@ -51,7 +46,7 @@ const Current = () => {
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
   const { currentUser, authLoading } = UserAuth();
-  const {getRouteJson}= RouteDataCollection();
+  const { getRouteJson } = RouteDataCollection();
 
   // Fetch start coordinates and trail path
   const fetchStartCoordinates = async () => {
@@ -62,7 +57,6 @@ const Current = () => {
         setLoading(false);
         return;
       }
-
       setCoords({ lat: coordsData.start[1], lng: coordsData.start[0] });
       setDifficulty(coordsData.difficulty || "Unknown");
       setPathCoords(coordsData.path.map(([lat, lng]) => [lng, lat]));
@@ -123,28 +117,11 @@ const Current = () => {
   const fetchNotes = async () => {
     try {
       const data = await getNotes(hikeid, currentUser.id);
-      setNotesList(data); // data expected as [{date, text}, ...]
+      setNotesList(data);
     } catch (err) {
       console.error("Error fetching notes:", err);
     }
   };
-
-
-      const handleMap= async(hike_id,user_id)=>{
-  let res = await getHike(hike_id,user_id);
-  const routeid=res[0]?.route || null
-
-  if(routeid){
-
-
-
-    let data= await getRouteJson(routeid)
-    if(data[0]){
-    setMapData(data[0]?.path || null)
-  }}}
-    
-
-
 
   // Add note
   const handleAddNote = async () => {
@@ -168,10 +145,11 @@ const Current = () => {
     }
   };
 
-  // Toggle goal status (checkbox)
+  // Toggle goal status
   const handleToggleGoal = async (goalItem) => {
     try {
-      const newStatus = goalItem.status === "complete" ? "incomplete" : "complete";
+      const newStatus =
+        goalItem.status === "complete" ? "incomplete" : "complete";
       await updateGoalStatus(hikeid, goalItem.goal, newStatus, currentUser.id);
       setGoalsList((prev) =>
         prev.map((g) => (g.goal === goalItem.goal ? { ...g, status: newStatus } : g))
@@ -181,7 +159,16 @@ const Current = () => {
     }
   };
 
+  const handleMap = async (hike_id, user_id) => {
+    let res = await getHike(hike_id, user_id);
+    const routeid = res[0]?.route || null;
+    if (routeid) {
+      let data = await getRouteJson(routeid);
+      if (data[0]) setMapData(data[0]?.path || null);
+    }
+  };
 
+  // Calculate distance
   const getDistanceFromLatLonInMeters = (lat1, lon1, lat2, lon2) => {
     const R = 6371000;
     const phi1 = (lat1 * Math.PI) / 180;
@@ -205,7 +192,12 @@ const Current = () => {
         let closestIndex = 0;
         let minDist = Infinity;
         pathCoords.forEach(([lng, lat], idx) => {
-          const d = getDistanceFromLatLonInMeters(lat, lng, newCoords.lat, newCoords.lng);
+          const d = getDistanceFromLatLonInMeters(
+            lat,
+            lng,
+            newCoords.lat,
+            newCoords.lng
+          );
           if (d < minDist) {
             minDist = d;
             closestIndex = idx;
@@ -233,10 +225,34 @@ const Current = () => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [coords, pathCoords]);
 
-  // Fetch all initial data
+  // Timer effect
+  useEffect(() => {
+    let timerId;
+    if (isTimerRunning) {
+      timerId = setInterval(() => {
+        setElapsedTime((prevTime) => {
+          const newTime = prevTime + 1;
+          localStorage.setItem("elapsedTime", newTime.toString());
+          return newTime;
+        });
+      }, 1000);
+    }
+    localStorage.setItem("isTimerRunning", isTimerRunning.toString());
+    return () => {
+      if (timerId) clearInterval(timerId);
+    };
+  }, [isTimerRunning]);
+
+  useEffect(() => {
+    const savedTime = localStorage.getItem("elapsedTime");
+    if (savedTime) setElapsedTime(parseInt(savedTime, 10));
+    const savedStatus = localStorage.getItem("isTimerRunning");
+    if (savedStatus) setIsTimerRunning(savedStatus === "true");
+  }, []);
+
+  // Fetch initial data
   useEffect(() => {
     if (!authLoading) {
-      console.log(currentUser);
       fetchStartCoordinates();
       fetchGoals();
       fetchNotes();
@@ -247,10 +263,12 @@ const Current = () => {
 
       } 
 
+      if (!mapData) handleMap(hikeid, currentUser.id);
     }
   }, [currentUser, authLoading]);
 
-  if (loading || authLoading) return <p className="text-center mt-10">Loading hike info...</p>;
+  if (loading || authLoading)
+    return <p className="text-center mt-10">Loading hike info...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
@@ -262,15 +280,13 @@ const Current = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Map */}
-         
-         <div className="lg:col-span-8 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden shadow-lg">
-                       {mapData?(
-            <RouteTracker routeGeoJSON={mapData} className="w-full h-[420px]" />):(<p className="text-center text-gray-500">Loading map...</p>)}
-           
-
-
+          <div className="lg:col-span-8 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden shadow-lg">
+            {mapData ? (
+              <RouteTracker routeGeoJSON={mapData} className="w-full h-[420px]" />
+            ) : (
+              <p className="text-center text-gray-500">Loading map...</p>
+            )}
           </div>
-
 
           {/* Trail Info */}
           <div className="lg:col-span-4 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg flex flex-col justify-between transition-all hover:shadow-xl">
@@ -287,7 +303,7 @@ const Current = () => {
                 <li className="flex items-center gap-3">
                   <Clock size={20} className="text-green-500" />
                   <span className="font-medium">Time:</span>
-                  <span className="ml-auto">3 hrs</span>
+                  <span className="ml-auto">{formatTime(elapsedTime)}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Activity size={20} className="text-red-500" />
@@ -321,8 +337,26 @@ const Current = () => {
               >
                 Goals
               </button>
+              <button
+                onClick={handleStartPause}
+                className={`flex-1 ${
+                  isTimerRunning
+                    ? "bg-yellow-500 hover:bg-yellow-600"
+                    : "bg-green-500 hover:bg-green-600"
+                } text-white py-2 rounded-lg font-semibold transition`}
+              >
+                {isTimerRunning ? "Pause Time" : "Start Time"}
+              </button>
             </div>
           </div>
+        </div>
+
+        {/* Elevation Profile */}
+        <div className="max-w-6xl mx-auto px-6 py-8 lg:col-span-8 bg-slate-100 dark:bg-slate-1000 rounded-xl overflow-hidden shadow-lg">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+            Elevation Profile
+          </h2>
+          <ElevationProfile routeGeoJSON={mapData} />
         </div>
       </div>
 
@@ -339,12 +373,10 @@ const Current = () => {
             <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               Notes
             </h3>
-
-            {/* Add Note */}
             <div className="flex gap-2 mb-4">
               <input
                 type="text"
-                placeholder="Add a note..."
+                placeholder="e.g., Spotted fresh kudu tracks near the river."
                 className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
@@ -356,8 +388,6 @@ const Current = () => {
                 Add
               </button>
             </div>
-
-            {/* Notes List */}
             <ul className="space-y-2">
               {notesList.length === 0 && (
                 <li className="text-gray-500 dark:text-gray-400">No notes yet.</li>
@@ -400,12 +430,10 @@ const Current = () => {
             <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               Goals
             </h3>
-
-            {/* Add Goal */}
             <div className="flex gap-2 mb-4">
               <input
                 type="text"
-                placeholder="e.g., Reach the summit by noon, Take photos at viewpoint, Stay hydrated..."
+                placeholder="e.g., Reach the summit by noon, Take photos at viewpoint..."
                 className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
@@ -417,8 +445,6 @@ const Current = () => {
                 Add
               </button>
             </div>
-
-            {/* Goals List */}
             <ul className="space-y-2">
               {goalsList.length === 0 && (
                 <li className="text-gray-500 dark:text-gray-400">No goals yet.</li>
@@ -443,22 +469,6 @@ const Current = () => {
           </div>
         </div>
       )}
-
-        <div className="max-w-6xl mx-auto px-6 py-8 lg:col-span-8 bg-slate-100 dark:bg-slate-1000 rounded-xl overflow-hidden shadow-lg">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-          Elavation profile
-        </h2>
-
-          <ElevationProfile
-            routeGeoJSON={mapData}   
-                   
-          />          
-
-      </div>
-
-
-
-
     </div>
   );
 };
