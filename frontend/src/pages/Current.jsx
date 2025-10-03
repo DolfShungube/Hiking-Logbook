@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { MapPinned, Clock, Activity, Map, X } from "lucide-react";
+import { MapPinned, Clock, Activity, Map, X ,Thermometer} from "lucide-react";
 import RouteTracker from "../components/map.jsx";
 import ElevationProfile from "../components/ElevationMap.jsx";
 import { GoalDataCollection } from "../context/GoalsContext";
@@ -19,6 +19,7 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 
 const Current = () => {
   const [coords, setCoords] = useState(null);
+  const [weather,setWeather]= useState(null);
   const [currentCoords, setCurrentCoords] = useState(null);
   const [realTimeDistance, setRealTimeDistance] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -30,22 +31,7 @@ const Current = () => {
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
 
-  // Timer state
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, "0")}:${m
-      .toString()
-      .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
-
-  const handleStartPause = () => {
-    setIsTimerRunning((prev) => !prev);
-  };
 
   // Goals state
   const [goal, setGoal] = useState("");
@@ -56,7 +42,7 @@ const Current = () => {
   const [notesList, setNotesList] = useState([]);
 
   const { hikeid } = useParams();
-  const { getCoordinates, getHike } = hikeDataCollection();
+  const { getCoordinates,getHike,getCurrentHikeData} = hikeDataCollection();
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
   const { currentUser, authLoading } = UserAuth();
@@ -91,6 +77,29 @@ const Current = () => {
       console.error("Error fetching goals:", err);
     }
   };
+
+  const fetchWeather= async()=>{
+    try {
+      const response= await getCurrentHikeData(currentUser.id);
+      console.log("Response", response);
+      if(!response || !Array.isArray(response.data) || response.data.length === 0){
+        console.log("No current hike data found");
+      }
+
+      const weatherData = response.data[0]?.weather;
+      if (!weatherData) {
+        console.log("No weather data found");
+        return;
+      }
+      const {temperature,description} =weatherData;
+      setWeather({temperature,description}) 
+      console.log(data);
+      
+    } catch (err) {
+      console.error("Error fetching weather:", err);
+    }
+  }
+
 
   // Add goal
   const handleAddGoal = async () => {
@@ -247,6 +256,13 @@ const Current = () => {
       fetchStartCoordinates();
       fetchGoals();
       fetchNotes();
+      fetchWeather();
+
+      if(!mapData){
+      handleMap(hikeid,currentUser.id);
+
+      } 
+
       if (!mapData) handleMap(hikeid, currentUser.id);
     }
   }, [currentUser, authLoading]);
@@ -298,6 +314,11 @@ const Current = () => {
                   <MapPinned size={20} className="text-purple-500" />
                   <span className="font-medium">Duration:</span>
                   <span className="ml-auto">2 hrs left</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Thermometer size={20} className="text-purple-500" />
+                  <span className="font-medium">Weather:</span>
+                  <span className="ml-auto">{weather ? `${((weather.temperature - 32) * 5 / 9).toFixed(1)}°C - ${weather.description}` : "Loading..."}</span>
                 </li>
               </ul>
             </div>
