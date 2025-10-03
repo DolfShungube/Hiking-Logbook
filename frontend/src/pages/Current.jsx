@@ -105,8 +105,8 @@ const Current = () => {
         console.log("No weather data found");
         return;
       }
-      const {temperature,description} =weatherData;
-      setWeather({temperature,description}) 
+      const {temperature,discription} =weatherData;
+      setWeather({temperature,discription}) 
       
     } catch (err) {
       console.error("Error fetching weather:", err);
@@ -367,7 +367,7 @@ const Current = () => {
                 <li className="flex items-center gap-3">
                   <Thermometer size={20} className="text-purple-500" />
                   <span className="font-medium">Weather:</span>
-                  <span className="ml-auto">{weather ? `${((weather.temperature - 32) * 5 / 9).toFixed(1)}°C - ${weather.description}` : "Loading..."}</span>
+                  <span className="ml-auto">{weather ? `${weather.temperature }°C - ${weather.discription}` : "Loading..."}</span>
                 </li>
               </ul>
             </div>
