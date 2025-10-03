@@ -98,6 +98,7 @@ const Current = () => {
       console.log("Response", response);
       if(!response || !Array.isArray(response.data) || response.data.length === 0){
         console.log("No current hike data found");
+        return;
       }
 
       const weatherData = response.data[0]?.weather;
@@ -105,8 +106,11 @@ const Current = () => {
         console.log("No weather data found");
         return;
       }
-      const {temperature,description} =weatherData;
-      setWeather({temperature,description}) 
+      const {temperature,discription} =weatherData;
+      const numericTemp = parseFloat(temperature.replace('°C', ''));
+      setWeather({
+    temperature:numericTemp.toFixed(1),
+    description: discription}) 
       
     } catch (err) {
       console.error("Error fetching weather:", err);
@@ -194,11 +198,9 @@ const Current = () => {
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   };
 
-  // -------------------------------------------------------------------
-  // CORE EFFECTS WITH PERSISTENCE FIXES
-  // -------------------------------------------------------------------
 
-  // Effect 1: Timer interval and persistence save (FIX #1 part 1)
+
+ 
   useEffect(() => {
     let timerId;
 
@@ -367,7 +369,7 @@ const Current = () => {
                 <li className="flex items-center gap-3">
                   <Thermometer size={20} className="text-purple-500" />
                   <span className="font-medium">Weather:</span>
-                  <span className="ml-auto">{weather ? `${((weather.temperature - 32) * 5 / 9).toFixed(1)}°C - ${weather.description}` : "Loading..."}</span>
+                  <span className="ml-auto">{weather ? `${weather.temperature }°C - ${weather.description}` : "Loading..."}</span>
                 </li>
               </ul>
             </div>
