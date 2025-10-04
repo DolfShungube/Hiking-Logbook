@@ -14,6 +14,8 @@ import HikeLogbookPage from "../pages/logBook.jsx";
 import Current from "../pages/current.jsx";//Make sure the filename matches exactly
 import SettingsPage  from "../pages/Settings.jsx";  
 import ChatFriendsPage  from  "../pages/Chats.jsx";
+import ProfilePage from "../pages/Profile.jsx";
+import FriendsProfilePage from "../pages/FriendsProfile.jsx";
 
 
 const router = createBrowserRouter([
@@ -25,6 +27,7 @@ const router = createBrowserRouter([
       { path: "/", element: <Welcome /> },
       { path: "/login", element: <SignIn /> },
       { path: "/signup", element: <SignUp /> },
+     
 
       // Private
       {
@@ -39,7 +42,16 @@ const router = createBrowserRouter([
         path: "/profile",
         element: (
           <PrivateRoute>
-            <h1>User Profile</h1>
+            <ProfilePage />
+          </PrivateRoute>
+        ),
+
+      },
+       {
+        path: "/profile/friend/:friendId", 
+        element: (
+          <PrivateRoute>
+            <FriendsProfilePage />
           </PrivateRoute>
         ),
       },

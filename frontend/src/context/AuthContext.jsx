@@ -196,6 +196,58 @@ const getHikeID = async (userId)=>{
       authListener.subscription.unsubscribe();
     };
   }, []);
+  useEffect(() => {
+  const getInitialSession = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    setSession(session);
+
+    if (session?.user) {
+      const meta = session.user.user_metadata;
+      const displayName = meta?.name ?? meta?.firstname ?? null;
+      const createdAt = session.user.created_at; // ADD THIS
+      
+      setCurrentUser({ 
+        ...session.user, 
+        displayName,
+        createdAt // ADD THIS
+      });
+    } else {
+      setCurrentUser(null);
+    }
+
+    setLoading(false);
+  };
+
+  getInitialSession();
+
+  const { data: authListener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setSession(session);
+
+      if (session?.user) {
+        const meta = session.user.user_metadata;
+        const userName = meta?.name ?? meta?.firstName ?? null;
+        const createdAt = session.user.created_at; // ADD THIS
+        
+        setCurrentUser({ 
+          ...session.user, 
+          userName, 
+          id: session.user.id,
+          createdAt // ADD THIS
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    }
+  );
+
+  return () => {
+    authListener.subscription.unsubscribe();
+  };
+}, []);
 
     return (
         <AuthContext.Provider value={{session,signUpNewUser,signInUser,signOutUser,GooglesignInUser,currentUser,authLoading}}>
@@ -203,6 +255,9 @@ const getHikeID = async (userId)=>{
         </AuthContext.Provider>
     )
 
+
+  
+  
 
 }
 
