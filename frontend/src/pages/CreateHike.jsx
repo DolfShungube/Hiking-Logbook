@@ -279,6 +279,7 @@ const PlanHike = () => {
             duration: 'N/A', // You might want to calculate this based on distance and difficulty
             elevation: calculateElevationGain(trail.path),
             description: trail.description || 'No description available',
+            path:trail.path || "Couldn't get it",
             image: trail.image
           }));
           
@@ -304,13 +305,13 @@ const PlanHike = () => {
       let weatherCoords;
 
       // Fallback to user coordinates if trail coordinates not available
-      const userid = currentUser.id;
-      const coordsData = await getCoordinates(userid);
-      console.log("coordsData:", coordsData);
-      if (coordsData && coordsData.start && coordsData.start.length === 2) {
+      //const userid = currentUser.id;
+      const coordsData =  extractCoordinatesFromPath(trail.path);
+      console.log("Coorect coordsData using extracCoords:", coordsData);
+      if (coordsData && typeof coordsData.latitude === 'number' && typeof coordsData.longitude === 'number') {
         weatherCoords = {
-          latitude: coordsData.start[1],
-          longitude: coordsData.start[0]
+          latitude: coordsData.latitude,
+          longitude: coordsData.longitude
         };
       }
     
