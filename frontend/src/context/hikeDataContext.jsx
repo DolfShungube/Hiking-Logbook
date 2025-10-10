@@ -90,7 +90,7 @@ const HikeDataContext= createContext(null);
     const getCoordinates= async(userid)=>{
 
         try {
-            const res= await fetch(`http://hiking-logbook-api.onrender.com/coordinates/${userid}`);
+            const res= await fetch(`https://hiking-logbook-api.onrender.com/coordinates/${userid}`);
             const data = await res.json();
             if(!res.ok){
                 console.error("Error coordinates data:", data.error);
@@ -183,7 +183,7 @@ const saveHikeStats = async(userid, distance, locations, hours) =>{
     try{
         //https://hiking-logbook-api.onrender.com/saveStats
         const res = await fetch(
-            'http://hiking-logbook-api.onrender.com/saveStats',{
+            'https://hiking-logbook-api.onrender.com/saveStats',{
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -208,7 +208,7 @@ const saveHikeStats = async(userid, distance, locations, hours) =>{
 
 const updateHikeStatus= async(hikeId,userId,status) =>{
     try {
-        const res = await fetch('http://hiking-logbook-api.onrender.com/update-hike-status', {
+        const res = await fetch('https://hiking-logbook-api.onrender.com/update-hike-status', {
             method: "PUT",
             headers: {
                     "Content-Type": "application/json"
