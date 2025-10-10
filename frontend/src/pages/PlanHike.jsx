@@ -15,10 +15,13 @@ import {
   MoreVertical,
   Gauge,
   MountainIcon,
-  Play
+  Play,X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
+import RouteTracker from "../components/map.jsx";
+import ElevationProfile from "../components/ElevationMap.jsx";
+import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
 
 // Edit Hike Modal Component
 const EditHikeModal = ({
@@ -215,8 +218,11 @@ const EditHikeModal = ({
   );
 };
 
+
 // Hike Details Modal Component
 const HikeDetailsModal = ({ 
+
+
   showHikeModal, 
   setShowHikeModal, 
   selectedHike, 
@@ -228,6 +234,26 @@ const HikeDetailsModal = ({
   formatElevation
 }) => {
   if (!showHikeModal || !selectedHike) return null;
+    const [showMapModal, setShowMapModal] = useState(false);
+    const { getRouteJson } = RouteDataCollection();
+    const [mapData, setMapData] = useState(null);
+
+
+
+  const handleMap = async (routeid) => {
+    if (routeid) {
+      let data = await getRouteJson(routeid);
+      if (data[0]) setMapData(data[0]?.path || null);
+    }
+  }
+
+
+  useEffect(()=>{
+       if (!mapData) {
+        handleMap(selectedHike.route);
+      }
+   
+  },[selectedHike])
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -268,6 +294,8 @@ const HikeDetailsModal = ({
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+
             <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
               <MapPin className="w-5 h-5" />
               <span>{selectedHike.location}</span>
@@ -296,6 +324,52 @@ const HikeDetailsModal = ({
                 <span>{formatElevation(selectedHike.elevation)}</span>
               </div>
             )}
+
+          <div>
+
+          <button
+            onClick={() => setShowMapModal(true)}
+            className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition"
+          >
+            <MapPin className="w-4 h-4" />
+            View Path
+          </button>
+        </div>
+
+              {showMapModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-[90%] max-w-4xl h-[80vh] p-4">
+
+            <button
+              onClick={() => setShowMapModal(false)}
+              className="absolute top-4 right-4 text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+
+            <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">
+              Route Map Preview
+            </h2>
+           
+
+            <div className="w-full h-[90%] rounded-xl overflow-y-auto border border-gray-400">
+           
+              <div>
+              <div className="w-full h-[32rem] rounded-lg overflow-hidden border border-gray-400">
+                <RouteTracker preview routeGeoJSON={mapData} className="w-full h-full" />
+              </div>
+              <div>
+                <ElevationProfile routeGeoJSON={mapData} />
+              </div>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      )}
+
+
           </div>
 
           {selectedHike.description && (
