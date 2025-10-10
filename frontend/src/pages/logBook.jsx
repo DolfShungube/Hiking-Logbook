@@ -177,10 +177,10 @@ if (pageLoading || authLoading){
           <div className="grid grid-cols-2 gap-4">
             <LogItem icon={<Calendar />} label="Start Date" value={date[0] || "-"} />
             <LogItem icon={<Clock />} label="Time Taken" value={date[1]|| "-"} />
-            <LogItem icon={<Ruler />} label="Distance" value={hike?.distance+"m" || "-"} />
+            <LogItem icon={<Ruler />} label="Distance" value={hike?.distance+"km" || "-"} />
             <LogItem icon={<Mountain />} label="Highest Elevation" value={hike?.elevation+"m"|| "-"} />
             <LogItem icon={<Star />} label="Difficulty" value={hike?.difficulty|| "-"} />
-            <LogItem icon={<Sun />} label="Weather" value={weather+"*C"|| "-"} />
+            <LogItem icon={<Sun />} label="Weather" value={weather|| "-"} />
           </div>
 
           <div >
