@@ -7,7 +7,10 @@ import { hikeDataCollection } from "../context/hikeDataContext";
 import { NotesDataCollection } from "../context/NotesContext";
 import { GoalDataCollection } from "../context/GoalsContext";
 import { UserDataCollection } from "../context/UsersContext";
+import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
 import { UserAuth } from "../context/AuthContext";
+import RouteTracker from "../components/map.jsx";
+import ElevationProfile from "../components/ElevationMap.jsx";
 
 
 
@@ -27,6 +30,8 @@ export default function HikeLogbookPage() {
   const [coords, setCoords] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [currentCoords, setCurrentCoords] = useState(null);
+   const [showNotes, setShowNotes] = useState(true); 
+   const [mapData, setMapData] = useState(null);
   
 
   const {getHike} = hikeDataCollection()
@@ -34,6 +39,7 @@ export default function HikeLogbookPage() {
   const {getGoals}= GoalDataCollection()
   const {getUser}= UserDataCollection()
   const {currentUser,authLoading}= UserAuth()
+   const { getRouteJson } = RouteDataCollection();
   //const {getCoordinates}= hikeDataCollection()
 
 
@@ -63,7 +69,14 @@ export default function HikeLogbookPage() {
   }
 
   
-
+  const handleMap = async (hike_id, user_id) => {
+    let res = await getHike(hike_id, user_id);
+    const routeid = res[0]?.route || null;
+    if (routeid) {
+      let data = await getRouteJson(routeid);
+      if (data[0]) setMapData(data[0]?.path || null);
+    }
+  }
 
 
   const handleWeather=(weather)=>{
@@ -106,6 +119,9 @@ export default function HikeLogbookPage() {
   
   useEffect(()=>{
 if(!authLoading){
+       if (!mapData) {
+        handleMap(hikeid, currentUser.id);
+      }
     if(!hike && currentUser){    
       handleHike(hikeid,currentUser.id);
     }else{
@@ -198,15 +214,47 @@ if (pageLoading || authLoading){
 
 
         <div className="p-6 flex flex-col">
-          <h2 className="text-2xl font-bold text-black border-b border-gray-800 pb-2">Hike Notes</h2>
+
+          <div className="flex justify-between items-center border-b border-gray-800 pb-2">
+            <h2 className="text-2xl font-bold text-black">
+              {showNotes ? "Hike Notes" : "Route Map"}
+            </h2>
+            <button
+              onClick={() => setShowNotes(!showNotes)}
+              className="flex items-center gap-2 bg-gray-800 text-white px-3 py-1 rounded-lg shadow hover:bg-gray-700 transition"
+            >
+    
+              {showNotes ? "Show Map" : "Show Notes"}
+            </button>
+          </div>
+
+
           <div className="mt-4 space-y-4 overflow-y-auto max-h-[32rem] pr-2">
-            {notes.length > 0 ? (
-            notes.map((note, idx) => (
-              <div key={idx} className="bg-gray-100 border border-gray-400 rounded-lg p-4 shadow-sm">
-                <p className="text-sm text-gray-500">{note.date}</p>
-                <p className="mt-1 text-gray-800">{note.text}</p>
+
+
+            {showNotes ? (
+              notes.length > 0 ? (
+                notes.map((note, idx) => (
+                  <div key={idx} className="bg-gray-100 border border-gray-400 rounded-lg p-4 shadow-sm mb-3">
+                    <p className="text-sm text-gray-500">{note.date}</p>
+                    <p className="mt-1 text-gray-800">{note.text}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 italic">No notes recorded yet.</p>
+              )
+            ) : (
+              <div>
+              <div className="w-full h-[32rem] rounded-lg overflow-hidden border border-gray-400">
+                <RouteTracker preview routeGeoJSON={mapData} className="w-full h-full" />
               </div>
-            ))):(<p className="text-gray-500 italic">No notes recorded yet.</p>)}
+              <div>
+                <ElevationProfile routeGeoJSON={mapData} />
+              </div>
+              </div>
+            )}
+
+
           </div>
         </div>
       </div>
