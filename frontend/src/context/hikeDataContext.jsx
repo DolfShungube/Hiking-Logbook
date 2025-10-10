@@ -90,7 +90,7 @@ const HikeDataContext= createContext(null);
     const getCoordinates= async(userid)=>{
 
         try {
-            const res= await fetch(`https://hiking-logbook-api.onrender.com/coordinates/${userid}`);
+            const res= await fetch(`http://localhost:8080/coordinates/${userid}`);
             const data = await res.json();
             if(!res.ok){
                 console.error("Error coordinates data:", data.error);
@@ -179,6 +179,60 @@ const updateHike= async(hikeid,userid,myData) =>{
   }
 };    
 
+const saveHikeStats = async(userid, distance, locations, hours) =>{
+    try{
+        //https://hiking-logbook-api.onrender.com/saveStats
+        const res = await fetch(
+            'http://localhost:8080/saveStats',{
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userId: userid,
+                    distance: distance,
+                    locations: locations,
+                    hours: hours
+                })
+            }
+        );
+
+        const data = await res.json();
+        return data;
+    }catch(err){
+        console.error("error:", err);
+        throw err;        
+    }
+}
+
+
+const updateHikeStatus= async(hikeId,userId,status) =>{
+    try {
+        const res = await fetch('http://localhost:8080/update-hike-status', {
+            method: "PUT",
+            headers: {
+                    "Content-Type": "application/json"
+                }, body: JSON.stringify({
+                    hikeId,
+                    userId,
+                    status
+                })
+        });
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`HTTP error! Status: ${res.status}`, errorText);
+            throw new Error(`HTTP error! Status: ${res.status}. Server response: ${errorText}`);     
+        }
+        const data = await res.json();
+        return data;
+        //return { message: "Hike status updated successfully" };
+    }catch (err) {
+        console.error("Fetch failed or unexpected error:",err);
+        console.log("Failed to update hike status");
+        throw err;
+    }
+}
+
 
 
     
@@ -189,7 +243,7 @@ const updateHike= async(hikeid,userid,myData) =>{
 
 
     return (
-        <HikeDataContext.Provider value={{getCompletedHikesData,getCurrentHikeData,getHike,getCoordinates,createNewHike,updateHike}}>
+        <HikeDataContext.Provider value={{getCompletedHikesData,getCurrentHikeData,getHike,getCoordinates,createNewHike,updateHike,saveHikeStats,updateHikeStatus}}>
             {children}
         </HikeDataContext.Provider>
     )

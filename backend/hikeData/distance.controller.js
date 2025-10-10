@@ -14,7 +14,7 @@ const supabase = createClient(supabaseUrl, supabasekey, {
 const fetchUserRoutes = async (userid) => {
   const { data, error } = await supabase
     .from("HikeData")
-    .select("route")
+    .select("route,location")
     .eq("userid", userid)
     .eq("status", "in progress")
     .single();
@@ -57,6 +57,7 @@ const coordinates = async (req, res) => {
     }
 
     const routeId = routeData.route;
+    const userLocation = routeData.location || "Unknown";
 
     const { data: pathRow, error } = await supabase
       .from("routes")
@@ -86,6 +87,7 @@ const coordinates = async (req, res) => {
       end: EndCoordinates,
       difficulty: pathRow.difficulty || "Unknown",
       path: coordinates, // send all points along the route
+      location: userLocation,
     });
 
   } catch (err) {

@@ -232,6 +232,81 @@ const CreateNewHike = async (req,res)=>{
 
 };
 
+const saveHikeStats = async (req,res) =>{
+  console.log('Saving hike stats with:', req.body);
+  const { userId,distance,locations,hours } = req.body;
+
+  try{
+    const{ data: sentData,error:sentError} =  await supabase
+    .from("hikingStats")
+    .insert([{
+      "userid": userId,
+      "distance":distance,
+      "locations":locations,
+      "hours":hours
+    }])
+    .select();
+
+    if(sentError){
+      console.error("Error while saving hike stats:", sentError);
+      return res.status(500).json({ error: sentError.message });
+    }
+    
+     return res.status(200).json({
+      message: "Hike stats saved successfully",
+      data: sentData,
+    });
+
+  }catch(err){
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+
+}
+
+const updateHikeStatus = async (req, res) => {
+    
+    const { hikeId,userId, status } = req.body;
+
+    if (!hikeId && !status && !userId) {
+        return res.status(400).json({ error: "Missing hikeId and status in request body." });
+    }
+
+    try {
+       
+        const { data, error } = await supabase
+            .from("HikeData")
+            .update({ status: status })
+            .eq("userid", userId)  
+            .eq("hikeid", hikeId)      
+            .select();                 
+
+       
+        if (error) {
+            console.error("Supabase Error updating hike status:", error);
+            return res.status(500).json({ error: error.message });
+        }
+
+       
+        if (!data || data.length === 0) {
+            return res.status(404).json({ error: `Hike with ID ${hikeId} not found or no change made.` });
+        }
+
+        res.status(200).json({
+            message: "Hike status updated successfully",
+            hike: data[0]
+        });
+        
+    } catch (err) {
+  
+        console.error("Unexpected Server Error in updateHikeStatus:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
+
+
 
 
 
@@ -244,5 +319,8 @@ module.exports ={
   fetchHike,
   editPlannedHike,
   deletePlannedHike,
-  CreateNewHike
+  CreateNewHike,
+  saveHikeStats,
+  updateHikeStatus
+  
 };

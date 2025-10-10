@@ -11,7 +11,7 @@ const weatherRouter = require("./endpoints/weatherAPI.js");
 const { inviteFriend, acceptInvite, rejectInvite, getFriends, hikeInviteFriend, acceptHikeInvite, rejectHikeInvite} = require("./friends/friends.controller");
 const { signIn, signInWithGoogle, signUp } = require("./auth/auth.controller");
 //CreateNewHike,fetchHike, fetchPlannedHikes, editPlannedHike, deletePlannedHike
-const { fetchCompletedHikes, CreateNewHike, fetchCurrentHike,deletePlannedHike,editPlannedHike,fetchHike,fetchPlannedHikes} = require("./hikeData/hikes.controller");
+const { fetchCompletedHikes, CreateNewHike, fetchCurrentHike,deletePlannedHike,editPlannedHike,fetchHike,fetchPlannedHikes,saveHikeStats,updateHikeStatus} = require("./hikeData/hikes.controller");
 //const { CreateNewHike } = require("./hikeData/CreateNewHike");
 const { coordinates } = require("./hikeData/distance.controller.js");
 const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
@@ -21,6 +21,7 @@ const { fetchUser, getUserByName } = require("./users/users.controller");
 const { getNotes, addNotes, removeNotes } = require("./notes/notes.controller");
 const { getGoals, addGoal, updateGoalStatus, removeGoal } = require("./goals/goals.controller");
 const { getRoute ,  getAllRoutes } = require("./routes/routes.controller");
+
 
 app.use(cors({ origin: true, credentials: true }));
 app.get("/", (req, res) => {
@@ -68,6 +69,7 @@ app.get("/get-goals", getGoals);
 app.post("/add-goal",addGoal)
 app.post("/update-goal-status",updateGoalStatus)
 app.post("/delete-goal",removeGoal)
+app.post("/saveStats",saveHikeStats)
 
 
 app.get("/planned-hikes", fetchPlannedHikes);
@@ -76,13 +78,18 @@ app.delete("/planned-hikes/:hikeId/:userid", deletePlannedHike);
 
 app.get("/get-route",getRoute);
 app.get("/get-all-routes", getAllRoutes);
+app.get("/coordinates/:userid", coordinates);
+app.use("/api/weather",weatherRouter);
+app.put("/update-hike-status", updateHikeStatus);
+
+
 
 app.listen(port, "0.0.0.0", () => {
 });
 
 
 
-app.get("/coordinates/:userid", coordinates);
+
 
 app.get("/hikes", async (req, res) => {
   const { data, error } = await supabase
@@ -100,26 +107,9 @@ app.get("/hikes", async (req, res) => {
 });
 
 
-//API to handle hikesStatus update
-app.put("/HikeStatus", async (req, res) => {
-  const { hikeId, status } = req.body;
-  const { data, error } = await supabase
-    .from("HikeData")
-    .update({ status: status })
-    .eq("hikeid", hikeId)
-    .select();
+//API to handle hikesStatus update to completed
 
-    if (error) {
-    return res.status(400).json({ error: error.message });
-  }else{
-    res.status(200).json({
-      message: "Hike status updated",
-      hike: data[0]
-    });
-  }
-});
 
-app.use("/api/weather",weatherRouter);
 
 module.exports = app;
 

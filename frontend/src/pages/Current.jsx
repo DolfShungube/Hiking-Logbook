@@ -4,12 +4,14 @@ import RouteTracker from "../components/map.jsx";
 import ElevationProfile from "../components/ElevationMap.jsx";
 import { GoalDataCollection } from "../context/GoalsContext";
 import { NotesDataCollection } from "../context/NotesContext";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
 import { createClient } from "@supabase/supabase-js";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { UserAuth } from "../context/AuthContext.jsx";
+//import { distance } from "@turf/turf";
+//import { set } from "../../../backend/server.js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -29,6 +31,7 @@ const formatTime = (totalSeconds) => {
 
 const Current = () => {
   const [coords, setCoords] = useState(null);
+  const [location,setLocation]= useState(null);
   const [weather,setWeather]= useState(null);
   const [currentCoords, setCurrentCoords] = useState(null);
   const [realTimeDistance, setRealTimeDistance] = useState(0);
@@ -52,7 +55,8 @@ const Current = () => {
   const [notesList, setNotesList] = useState([]);
 
   const { hikeid } = useParams();
-  const { getCoordinates,getHike,getCurrentHikeData} = hikeDataCollection();
+  const navigate = useNavigate();
+  const { getCoordinates,getHike,getCurrentHikeData,saveHikeStats,updateHikeStatus} = hikeDataCollection();
   const { getGoals, addGoal, updateGoalStatus } = GoalDataCollection();
   const { getNotes, addNote, removeNote } = NotesDataCollection();
   const { currentUser, authLoading } = UserAuth();
@@ -74,6 +78,8 @@ const Current = () => {
       setCoords({ lat: coordsData.start[1], lng: coordsData.start[0] });
       setDifficulty(coordsData.difficulty || "Unknown");
       setPathCoords(coordsData.path.map(([lat, lng]) => [lng, lat]));
+      setLocation(coordsData.location || "Unknown");
+      console.log("Data is:", coordsData);
     } catch (err) {
       console.error("Error fetching coordinates:", err);
       setError("Error fetching start coordinates");
@@ -139,6 +145,8 @@ const Current = () => {
       console.error("Error fetching notes:", err);
     }
   };
+
+
 
   // Add note
   const handleAddNote = async () => {
@@ -304,12 +312,68 @@ const Current = () => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [coords, pathCoords]);
 
+
+
+// saveHikeStats also a function to update to completed for such hike
+      const SaveHike= async()=>{
+          setIsTimerRunning(false); 
+        try{
+            const rawDistance = parseFloat(localStorage.getItem("realTimeDistance") || 0);
+            const rawTime = parseInt(localStorage.getItem("elapsedTime") || "0", 10);
+
+            //const totalHours = (rawTime / 3600).toFixed(4); 
+            //const distanceMetersString = rawDistance.toFixed(2);
+
+            // 3. Prepare data for LOGGING (in km and hours)
+            const distanceInKm = (rawDistance / 1000).toFixed(2); // Convert meters to km
+            const timeInHours = (rawTime / 3600).toFixed(2);       
+
+            console.log(`Sending Data: Dist=${distanceInKm}Km, Time=${timeInHours}s, Loc=${location}`);
+            const response = await saveHikeStats( 
+                currentUser.id,
+                distanceInKm,
+                location,
+                timeInHours
+
+            )
+
+            console.log("Hike stats saved:", response);
+
+            if(response.message && response.message.includes("saved successfully")){
+
+                await updateHikeStatus(hikeid,currentUser.id,"completed");
+
+                localStorage.removeItem("elapsedTime");
+                localStorage.removeItem("isTimerRunning");
+                localStorage.removeItem("startTime");
+                localStorage.removeItem("realTimeDistance");
+            
+                // Reset component state
+                setRealTimeDistance(0);
+                setElapsedTime(0);
+                alert("Hike successfully completed and stats saved!");
+                //deleteUserCompletedHike();
+                
+                navigate(-1); // Go back to previous page
+
+
+            }else{
+                 alert("Hike saved, but something went wrong.");
+            }
+
+        }catch(err){
+            console.error("Error saving hike stats:", err);
+            alert("Failed to save hike stats. Check console for details.");
+        }
+    }
+
   // Effect 4: Fetch initial data (FIX #4: removed duplicate map call)
   useEffect(() => {
     if (!authLoading) {
       fetchStartCoordinates();
       fetchGoals();
       fetchNotes();
+console.log("The location is", location);
       fetchWeather();
 
       if (!mapData) {
@@ -346,6 +410,11 @@ const Current = () => {
                 Trail Info
               </h3>
               <ul className="space-y-3 text-gray-700 dark:text-gray-300">
+                 <li className="flex items-center gap-3">
+                  <Map size={20} className="text-blue-500" />
+                  <span className="font-medium">Location:</span>
+                  <span className="ml-auto">{location}</span>
+                </li>
                 <li className="flex items-center gap-3">
                   <Map size={20} className="text-blue-500" />
                   <span className="font-medium">Distance:</span>
@@ -397,6 +466,14 @@ const Current = () => {
                 } text-white py-2 rounded-lg font-semibold transition`}
               >
                 {isTimerRunning ? "Pause Time" : "Start Time"}
+              </button>
+                <button
+                    onClick={() => SaveHike()}
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2
+                        rounded-lg            
+                        font-semibold transition"
+                >
+                Complete
               </button>
             </div>
           </div>

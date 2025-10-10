@@ -306,6 +306,8 @@ const deletePlannedHike = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   fetchCompletedHikes,
   fetchCurrentHike,
@@ -314,4 +316,5 @@ module.exports = {
   fetchHike,
   editPlannedHike,
   deletePlannedHike
+  
 };
