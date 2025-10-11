@@ -15,7 +15,7 @@
   "main": "eslint.config.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && echo '/*    /index.html   200' > dist/_redirects",
     "lint": "eslint .",
     "test": "jest --coverage",
     "preview": "vite preview"
