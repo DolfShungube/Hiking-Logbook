@@ -11,7 +11,7 @@ import PlanHike from "../pages/PlanHike.jsx";
 import CreateHike from "../pages/CreateHike.jsx";
 import HikeCreatedPage from "../pages/HikeCreated.jsx";
 import HikeLogbookPage from "../pages/logBook.jsx";
-import Current from "../pages/current.jsx";//Make sure the filename matches exactly
+import Current from "../pages/Current.jsx";//Make sure the filename matches exactly
 import SettingsPage  from "../pages/Settings.jsx";  
 import ChatFriendsPage  from  "../pages/Chats.jsx";
 import ProfilePage from "../pages/Profile.jsx";
