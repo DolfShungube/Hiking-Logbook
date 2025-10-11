@@ -341,7 +341,7 @@ const Current = () => {
 
             if(response.message && response.message.includes("saved successfully")){
 
-                await updateHikeStatus(hikeid,currentUser.id,"completed");
+                await updateHikeStatus(hikeid,currentUser.id,"complete");
 
                 localStorage.removeItem("elapsedTime");
                 localStorage.removeItem("isTimerRunning");
