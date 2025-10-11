@@ -365,7 +365,7 @@ const filteredTrails = trails.filter(trail => {
 
   const handleTrailSelect = (trail) =>{
     setSelectedTrail(trail);
-    setLocation(trail.location);
+    setLocation(trail.name);
      setDifficulty(trail.difficulty?.toLowerCase() || ''); 
     
     if (!hikeTitle) {
