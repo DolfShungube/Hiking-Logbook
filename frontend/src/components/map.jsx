@@ -8,7 +8,7 @@ mapboxgl.accessToken = "pk.eyJ1IjoiZS0wMDEiLCJhIjoiY21ldTA1MjNvMDF2azJscjA3a293d
 // --- Helper: normalize route for Turf (handles MultiLineString + LineString, strips Z) ---
 import { normalizeRoute } from "../utils/mapUtils";
 import { addRouteLayers, addStartEndMarkers, addUserLayer,addDirectionLineLayer,addTrailLine } from "../utils/mapLayer";
-import { trackUserPosition } from "../utils/geolocation";
+import { trackUserPosition } from "../utils/geoLocation.js";
 
 export const lastUserCoordsRef = { current: null };
 
