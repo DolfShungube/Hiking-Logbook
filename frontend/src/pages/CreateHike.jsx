@@ -273,7 +273,7 @@ const PlanHike = () => {
           const processedTrails = result.data.map(trail => ({
             id: trail.routeid || trail.id,
             name: trail.name || 'Unknown Trail',
-            location: trail.location || 'Unknown Location',
+            location: trail.name || 'Unknown Location',
             difficulty: trail.difficulty || 'Easy',
             distance: calculateDistanceFromPath(trail.path),
             duration: 'N/A', // You might want to calculate this based on distance and difficulty
