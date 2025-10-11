@@ -553,7 +553,6 @@ const ProfilePage = () => {
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="achievements">Achievements</TabsTrigger>
-            <TabsTrigger value="photos">Photos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -623,22 +622,7 @@ const ProfilePage = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="photos">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {photos.map((photo, index) => (
-                <Card key={index} className="overflow-hidden group cursor-pointer">
-                  <div className="aspect-square relative overflow-hidden">
-                    <ImageWithFallback
-                      src={photo}
-                      alt={`Trail photo ${index + 1}`}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+         
         </Tabs>
       </div>
     </div>
