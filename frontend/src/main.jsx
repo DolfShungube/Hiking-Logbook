@@ -5,7 +5,7 @@ import { RouterProvider } from 'react-router-dom'
 import router from './routers/router.jsx'
 import { AuthContextProvider } from './context/AuthContext.jsx'
 import { ThemeProvider } from "/src/context/theme-context.jsx";
-
+import './i18n/config'
 import SignInPage from "./pages/SignIn.jsx";
 import App from "./App.jsx";
 import {HikeDataContextProvider} from './context/hikeDataContext.jsx'
@@ -14,12 +14,12 @@ import { NotesDataContextProvider } from './context/NotesContext.jsx'
 import { UserDataContextProvider } from './context/UsersContext.jsx'
 import { RouteDataContextProvider } from './context/MapRoutesContext.jsx'
 import { FriendDataContextProvider } from './context/FriendsContext.jsx'
-
+import { LanguageProvider } from './context/LanguageContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthContextProvider>
-      
+      <LanguageProvider>
       <UserDataContextProvider>
       <NotesDataContextProvider>
       <GoalDataContextProvider>
@@ -35,7 +35,7 @@ createRoot(document.getElementById('root')).render(
       </GoalDataContextProvider>
       </NotesDataContextProvider>
       </UserDataContextProvider>
-
+      </LanguageProvider>
     </AuthContextProvider>
   </StrictMode>,
 )
