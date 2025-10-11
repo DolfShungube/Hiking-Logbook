@@ -15,7 +15,7 @@ import {
   Clock,
   Award
 } from 'lucide-react';
-import HikeCollection from '../components/hikeCollection.jsx';
+import HikeCollection from '../components/HikeCollection.jsx';
 
 
 const HikeCollectionPage = () => {
