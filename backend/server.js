@@ -15,6 +15,7 @@ const { fetchCompletedHikes, CreateNewHike, fetchCurrentHike,deletePlannedHike,e
 //const { CreateNewHike } = require("./hikeData/CreateNewHike");
 const { coordinates } = require("./hikeData/distance.controller.js");
 const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
+const bookmarkController = require('./controllers/Bookmark.controller');
 
 //const { fetchHike, fetchPlannedHikes, editPlannedHike} = require("./hikeData/plannedHikes_details.js");
 const { fetchUser, getUserByName } = require("./users/users.controller");
@@ -82,6 +83,9 @@ app.get("/coordinates/:userid", coordinates);
 app.use("/api/weather",weatherRouter);
 app.put("/update-hike-status", updateHikeStatus);
 
+app.post("/bookmarks", bookmarkController.addBookmark);
+app.delete("/bookmarks/:hikeid/:userid", bookmarkController.removeBookmark);
+app.get("/bookmarks", bookmarkController.fetchBookmarkedHikes);
 
 
 app.listen(port, "0.0.0.0", () => {

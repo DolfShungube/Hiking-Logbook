@@ -17,9 +17,9 @@ export const navbarLinks = [
                 path: "/dashboard/Calendar",
             },
             {
-                label: "Bookings",
+                label: "Bookmarks",
                 icon: BookmarkMinus,
-                path: "/dashboard/Bookings",
+                path: "/dashboard/Bookmarks",
             },
             {
                 label: "Chats",
