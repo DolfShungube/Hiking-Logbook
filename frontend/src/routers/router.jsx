@@ -16,7 +16,7 @@ import SettingsPage  from "../pages/Settings.jsx";
 import ChatFriendsPage  from  "../pages/Chats.jsx";
 import ProfilePage from "../pages/Profile.jsx";
 import FriendsProfilePage from "../pages/FriendsProfile.jsx";
-
+import Bookmarks from "../pages/Bookmarks.jsx"; 
 
 const router = createBrowserRouter([
   {
@@ -79,6 +79,16 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+
+      {
+        path: "/hike/:hikeId",
+        element: (
+          <PrivateRoute>
+            {/* You'll need to create or use an existing hike detail component */}
+            <div>Hike Details Page - Replace with actual component</div>
+          </PrivateRoute>
+        ),
+      },
     ],
   },
   {
@@ -93,7 +103,7 @@ const router = createBrowserRouter([
       { path: "Calendar", element: <PlanHike /> },
       { path: "CreateHike", element: <CreateHike /> },
       { path: "HikeCreated", element: <HikeCreatedPage /> },
-      { path: "Bookings", element: <h1 className="title">Bookings</h1> },
+      { path: "Bookmarks", element: <Bookmarks /> },
       { path: "Chats", element: <ChatFriendsPage /> },
       { path: "View_Hike", element: <HikeCollectionPage /> },
       { path: "Settings", element: <SettingsPage /> },
