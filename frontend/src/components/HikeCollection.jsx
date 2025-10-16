@@ -67,7 +67,7 @@ useEffect(() => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {table.map((hike) => (
-        <HikeItem key={hike.hikeid} data={hike} onClick={() => handleClick(type, hike)} />
+        <HikeItem key={hike.hikeid} data={hike} onClick={() => handleClick(type, hike)} type={type} />
       ))}
     </div>
   );

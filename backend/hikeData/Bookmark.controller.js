@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabasekey, {
   }
 });
 
-// ADD BOOKMARK - Insert a hike into bookmarks
+// Add bookmark
 const addBookmark = async (req, res) => {
   const { hikeid, userid } = req.body;
 
@@ -20,15 +20,14 @@ const addBookmark = async (req, res) => {
   }
 
   try {
-    // Check if bookmark already exists
     const { data: existingBookmark, error: checkError } = await supabase
       .from("BookmarkedHikes")
       .select("*")
       .eq("hikeid", hikeid)
-      .eq("userid", userid)
-      .single();
+      .eq("userid", userid);
 
-    if (existingBookmark) {
+    // Check if any bookmarks exist
+    if (existingBookmark && existingBookmark.length > 0) {
       return res.status(409).json({ 
         error: "Hike is already bookmarked" 
       });
@@ -58,7 +57,7 @@ const addBookmark = async (req, res) => {
   }
 };
 
-// REMOVE BOOKMARK - Delete a hike from bookmarks
+// Remove bookmark
 const removeBookmark = async (req, res) => {
   const { hikeid, userid } = req.params;
 
@@ -105,7 +104,7 @@ const removeBookmark = async (req, res) => {
   }
 };
 
-// FETCH BOOKMARKED HIKES - Get all bookmarked hikes for a user with full hike details
+// Fetch Bookmarked hikes
 const fetchBookmarkedHikes = async (req, res) => {
   const { userid } = req.query;
 
@@ -132,7 +131,6 @@ const fetchBookmarkedHikes = async (req, res) => {
       return res.status(500).json({ error: bookmarkError.message });
     }
 
-    // Transform the data to match the format of fetchCompletedHikes
     const transformedData = bookmarkedData.map(bookmark => ({
       ...bookmark.HikeData,
       bookmarked_at: bookmark.created_at
