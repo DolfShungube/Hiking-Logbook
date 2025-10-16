@@ -14,7 +14,6 @@ const Bookmarks = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   
-  // Use the correct property from your auth context
   const { currentUser, authLoading } = UserAuth();
   
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -35,12 +34,10 @@ const Bookmarks = () => {
       return;
     }
 
-    // Handle no user after auth has loaded
     if (currentUser === null) {
       console.log(' No user - redirecting to login');
       setError('Please log in to view bookmarks');
       setLoading(false);
-      // Optional: redirect after short delay
       setTimeout(() => navigate('/login'), 2000);
       return;
     }
@@ -73,9 +70,8 @@ const Bookmarks = () => {
         return;
       }
   
-      // Extracthike IDs
       const hikeIds = bookmarks.map(bookmark => bookmark.hikeid);
-      console.log('🔍 Hike IDs to fetch:', hikeIds);
+      console.log(' Hike IDs to fetch:', hikeIds);
       
     
       const { data: hikesData, error: hikesError } = await supabase
@@ -89,22 +85,20 @@ const Bookmarks = () => {
   
       // Combine the data
       const transformedHikes = bookmarks.map(bookmark => {
-        // Find the matching hike data using hikeid
-        const hike = hikesData.find(h => h.hikeid === bookmark.hikeid);  // Changed from 'hiked1' to 'hikeid'
-        
+        const hike = hikesData.find(h => h.hikeid === bookmark.hikeid);
+
         console.log(' Matching hike for', bookmark.hikeid, ':', hike);
         
         if (hike) {
-          // We found hike data - use it with the correct column names
           return {
-            hikeid: bookmark.hikeid,  // Changed from 'hiked1' to 'hikeid'
+            hikeid: bookmark.hikeid,
             title: hike.title || 'Bookmarked Hike',
             location: hike.location || 'Unknown Location',
             distance: hike.distance || 0,
             elevation: hike.elevation || 0,
             difficulty: hike.difficulty || 'moderate',
             startdate: hike.startdate || bookmark.created_at,
-            status: hike.status || 'complete',
+            //status: hike.status || 'complete',
             hikinggroup: hike.hikinggroup ? JSON.stringify(hike.hikinggroup) : 'Solo',
             bookmarked_at: bookmark.created_at,
             weather: hike.weather,
@@ -114,10 +108,9 @@ const Bookmarks = () => {
             friendlist: hike.friendlist
           };
         } else {
-          // No matching hike data found - use fallback
           console.log(' No matching hike data found for:', bookmark.hikeid);
           return {
-            hikeid: bookmark.hikeid,  // Changed from 'hiked1' to 'hikeid'
+            hikeid: bookmark.hikeid,
             title: `Hike ${bookmark.hikeid.substring(0, 8)}...`,
             location: 'Location not available',
             distance: 0,
@@ -342,18 +335,6 @@ const Bookmarks = () => {
       background: '#f8d7da',
       color: '#721c24'
     },
-    statusPlanned: {
-      background: '#cfe2ff',
-      color: '#084298'
-    },
-    statusInProgress: {
-      background: '#fff3cd',
-      color: '#856404'
-    },
-    statusComplete: {
-      background: '#d1e7dd',
-      color: '#0f5132'
-    },
     bookmarkedDate: {
       background: '#f8f9fa',
       padding: '0.75rem',
@@ -387,13 +368,6 @@ const Bookmarks = () => {
     return styles.badge;
   };
 
-  const getStatusBadgeStyle = (status) => {
-    const lower = status?.toLowerCase().replace(' ', '-');
-    if (lower === 'planned') return { ...styles.badge, ...styles.statusPlanned };
-    if (lower === 'in-progress') return { ...styles.badge, ...styles.statusInProgress };
-    if (lower === 'complete') return { ...styles.badge, ...styles.statusComplete };
-    return styles.badge;
-  };
 
   // Handle loading state
   if (authLoading || loading) {
@@ -481,14 +455,14 @@ const Bookmarks = () => {
                   <div style={styles.infoItem}>
                     <span style={styles.label}>Distance:</span>
                     <span style={styles.value}>
-                      {hike.distance ? `${hike.distance} miles` : 'N/A'}
+                      {hike.distance ? `${hike.distance} km` : 'N/A'}
                     </span>
                   </div>
 
                   <div style={styles.infoItem}>
                     <span style={styles.label}> Elevation:</span>
                     <span style={styles.value}>
-                      {hike.elevation ? `${hike.elevation} ft` : 'N/A'}
+                      {hike.elevation ? `${hike.elevation} m` : 'N/A'}
                     </span>
                   </div>
 
@@ -504,12 +478,6 @@ const Bookmarks = () => {
                     <span style={styles.value}>{formatDate(hike.startdate)}</span>
                   </div>
 
-                  <div style={styles.infoItem}>
-                    <span style={styles.label}> Status:</span>
-                    <span style={getStatusBadgeStyle(hike.status)}>
-                      {hike.status || 'N/A'}
-                    </span>
-                  </div>
 
                   {hike.hikinggroup && (
   <div style={styles.infoItem}>
