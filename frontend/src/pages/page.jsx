@@ -427,37 +427,6 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* NOTIFICATIONS */}
-        <div className="card lg:col-span-12 shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
-          <div className="card-header flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              {totalNotifications > 0 && (
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              )}
-              <p className="card-title">Activity & Notifications</p>
-              {totalNotifications > 0 && (
-                <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-medium">
-                  {totalNotifications} new
-                </span>
-              )}
-            </div>
-            <button
-              className="text-xs text-blue-500 dark:text-blue-400 flex items-center gap-1 hover:gap-2 font-medium transition-all"
-              onClick={() => setShowAllRecs(!showAllRecs)}
-            >
-              {showAllRecs ? "Show Less" : "View All"}
-              <ChevronRight size={14} className={`transition-transform ${showAllRecs ? "rotate-90" : ""}`} />
-            </button>
-          </div>
-
-          <Notification
-            friendInvites={invitesRecieved} 
-            HikeInvites={hikeInvites} 
-            friends={friends}
-            onFriendHandled={(id) => setInvitesRecieved(prev => prev.filter(u => u.id !== id))}
-            onHikeHandled={(id) => sethikeInvites(prev => prev.filter(h => h.hikeid !== id))}
-          />
-        </div>
       </div>
     </div>
   );
