@@ -32,11 +32,24 @@ const handleSignUp= async (e)=>{
         setHeading("ERROR !")
         setError(result.error) // function to show successs          
         }else{
+
+          if (result?.user && result?.user?.identities?.length === 0) {
+        setShowModal(true)
+        setHeading("ERROR !")
+        setError("An account with the given email already exists") 
+
+              }else{
         setShowModal(true)
         setHeading("SUCCESS !")
         setError("your account has been created") 
+      
 
-        navigate('/login')
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+          }
+            
         }// function to show successs
         
        //  //.................
