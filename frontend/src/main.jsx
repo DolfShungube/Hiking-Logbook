@@ -15,6 +15,7 @@ import { UserDataContextProvider } from './context/UsersContext.jsx'
 import { RouteDataContextProvider } from './context/MapRoutesContext.jsx'
 import { FriendDataContextProvider } from './context/FriendsContext.jsx'
 import { LanguageProvider } from './context/LanguageContext';
+import { NotificationsProvider } from './context/NotificationsContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -25,11 +26,19 @@ createRoot(document.getElementById('root')).render(
       <GoalDataContextProvider>
       <HikeDataContextProvider>
       <RouteDataContextProvider>
-       <FriendDataContextProvider>
+
+
+
+      <FriendDataContextProvider>
+      <NotificationsProvider>
       <ThemeProvider storageKey="theme">
         <RouterProvider router={router} />
       </ThemeProvider>
+            </NotificationsProvider>
       </FriendDataContextProvider>
+
+
+
       </RouteDataContextProvider>
       </HikeDataContextProvider>
       </GoalDataContextProvider>

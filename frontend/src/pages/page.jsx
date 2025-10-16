@@ -12,6 +12,7 @@ import { UserPlus} from 'lucide-react';
 
 import Notification from "../components/Notification.jsx";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
+import { NotificationDataCollection } from "../context/NotificationsContext.jsx";
 
 let mydata=null
 
@@ -19,10 +20,12 @@ const DashboardPage = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [showAllFriends, setShowAllFriends] = useState(false);
-  const [friends,setUsersFriends]=useState([]);
-  const[invitesRecieved,setInvitesRecieved]=useState([])
-  const[hikeInvites,sethikeInvites]=useState([])
   const[invitesSent,setInvitesSent]=useState([])
+      const {
+      invitesRecieved,
+      hikeInvites,
+      friends
+    } = NotificationDataCollection();
 
   const [showAllRecs, setShowAllRecs] = useState(false);
   const {session,currentUser}= UserAuth()
@@ -98,69 +101,6 @@ const DashboardPage = () => {
       handleSearch(query);
     }, 300);
   };
-
-  const handleFriends = async (userId) => {
-    try {
-      let friendIDCollection = await getUsersFriends(userId);
-      let friendsData = friendIDCollection?.friend_list?.friends || [];
-      let MyinvitesReceived = (friendIDCollection?.friend_list?.invitesreceived || []).map(item => item.userid);
-      let MyinvitesSent=(friendIDCollection?.friend_list?.invitessent||[]).map(item => item.userid);
-      let myHikeInvites=(friendIDCollection?.friend_list?.hikeInvites||[]);
-      setInvitesSent(MyinvitesSent)
-
-      let friendsList = await Promise.all(
-        friendsData.map(async (friendid) => {
-          let userData = await getUser(friendid);
-          let user = userData;
-
-          if (!user) return null;
-
-          return {
-            id: friendid,
-            name: user.full_name || user.firstname,
-            avatar: user.picture || defaultUserProfile,
-          };
-        })
-      );
-
-      let friendsInviteList = await Promise.all(
-        MyinvitesReceived.map(async (friendid) => {
-          let user = await getUser(friendid);
-
-          if (!user) return null;
-
-          return {
-            id: friendid,
-            name: user.full_name || user.firstname,
-            avatar: user.picture || defaultUserProfile,
-          };
-        })
-      );
-    
-      let hikeInviteList = await Promise.all(
-        myHikeInvites.map(async (item)=>{
-          let hikeItemTmp= await getHike(item.hikeid,item.user);
-          
-          if(!hikeItemTmp){return}
-          let data=hikeItemTmp[0]
-          return data
-        })
-      )
-
-      setUsersFriends(friendsList.filter(Boolean));
-      setInvitesRecieved(friendsInviteList.filter(Boolean))
-      sethikeInvites(hikeInviteList.filter(Boolean))
-
-    } catch (err) {
-      console.error("Error fetching friends:", err);
-    }
-  };
-
-  useEffect(() => {
-    if (currentUser?.id) {
-      handleFriends(currentUser.id);
-    }
-  }, [currentUser?.id]);
 
   // Calculate stats
   const totalNotifications = invitesRecieved.length + hikeInvites.length;
