@@ -15,7 +15,7 @@ const { fetchCompletedHikes, CreateNewHike, fetchCurrentHike,deletePlannedHike,e
 //const { CreateNewHike } = require("./hikeData/CreateNewHike");
 const { coordinates } = require("./hikeData/distance.controller.js");
 const { fetchUserRoutes } = require("./hikeData/distance.controller.js");
-const bookmarkController = require('./controllers/Bookmark.controller');
+const bookmarkController = require('./hikeData/Bookmark.controller');
 
 //const { fetchHike, fetchPlannedHikes, editPlannedHike} = require("./hikeData/plannedHikes_details.js");
 const { fetchUser, getUserByName } = require("./users/users.controller");
