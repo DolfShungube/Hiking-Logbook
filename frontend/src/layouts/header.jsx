@@ -11,9 +11,12 @@ import { UserDataCollection } from "../context/UsersContext.jsx";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 
 // Notification Bell Component
-const NotificationBell = ({ friendInvites = [], hikeInvites = [], onFriendHandled, onHikeHandled }) => {
+const NotificationBell = ({ friendInvites = [], hikeInvites = [],friends=[], onFriendHandled, onHikeHandled }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { currentUser } = UserAuth();
+  const { acceptFriendInvite, rejectFriendInvite, acceptHikeInvite, rejectHikeInvite} = friendDataCollection();
+  const { createNewHike,updateHike } = hikeDataCollection();
 
   const totalNotifications = friendInvites.length + hikeInvites.length;
 
@@ -92,6 +95,8 @@ const NotificationBell = ({ friendInvites = [], hikeInvites = [], onFriendHandle
                         <div className="flex gap-2 mt-3">
                           <button
                             onClick={() => {
+
+                              acceptFriendInvite(currentUser.id, friend.id);
                               onFriendHandled(friend.id, 'accept');
                             }}
                             className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition"
@@ -100,6 +105,7 @@ const NotificationBell = ({ friendInvites = [], hikeInvites = [], onFriendHandle
                           </button>
                           <button
                             onClick={() => {
+                              rejectFriendInvite(currentUser.id, friend.id);
                               onFriendHandled(friend.id, 'decline');
                             }}
                             className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 transition"
@@ -126,7 +132,8 @@ const NotificationBell = ({ friendInvites = [], hikeInvites = [], onFriendHandle
                           Hike Invitation
                         </p>
                         <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                          You've been invited to <span className="font-medium">{hike.title || 'a hike'}</span>
+                          You've been invited to <span className="font-medium">{hike.title+" " || 'a hike '}</span>
+                           by {friends.find(obj => obj.id ===hike.userid)?.name|| "[unknown]"}
                         </p>
                         {hike.date && (
                           <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
@@ -135,7 +142,30 @@ const NotificationBell = ({ friendInvites = [], hikeInvites = [], onFriendHandle
                         )}
                         <div className="flex gap-2 mt-3">
                           <button
-                            onClick={() => {
+                            onClick={async () => {
+                                acceptHikeInvite(currentUser.id, hike.hikeid);
+
+                                //check hiking group;
+
+                                let group=hike.hikinggroup.members
+                                group.push( currentUser.id)
+                                hike.hikinggroup.members=group
+
+                                const res= await createNewHike(
+                                  currentUser.id,
+                                  hike.startdate,
+                                  hike.location,
+                                  hike.weather,
+                                  hike.elevation,
+                                  hike.route,
+                                  hike.status.trim(),
+                                  hike.distance,
+                                  hike.hikinggroup,
+                                  hike.difficulty,
+                                  hike.title
+                                );
+
+                              updateHike(res.hike.hikeid,currentUser.id,{hikeid:hike.hikeid})
                               onHikeHandled(hike.hikeid, 'accept');
                             }}
                             className="px-3 py-1.5 bg-blue-500  text-white text-sm rounded-md  hover:bg-blue-600 transition"
@@ -144,6 +174,7 @@ const NotificationBell = ({ friendInvites = [], hikeInvites = [], onFriendHandle
                           </button>
                           <button
                             onClick={() => {
+                              rejectHikeInvite(currentUser.id, hike.hikeid);
                               onHikeHandled(hike.hikeid, 'decline');
                             }}
                             className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 transition"
@@ -164,7 +195,7 @@ const NotificationBell = ({ friendInvites = [], hikeInvites = [], onFriendHandle
   );
 };
 
-NotificationBell.propTypes = {
+NotificationBell.propTypes ={
   friendInvites: PropTypes.array,
   hikeInvites: PropTypes.array,
   onFriendHandled: PropTypes.func.isRequired,
@@ -300,12 +331,31 @@ const Header = ({ collapsed, setCollapsed }) => {
 
   const [invitesRecieved, setInvitesRecieved] = useState([]);
   const [hikeInvites, setHikeInvites] = useState([]);
+  const [friends,setUsersFriends]=useState([]);
 
   const handleFriends = async (userId) => {
     try {
       let friendIDCollection = await getUsersFriends(userId);
+      let friendsData = friendIDCollection?.friend_list?.friends || [];
       let MyinvitesReceived = (friendIDCollection?.friend_list?.invitesreceived || []).map(item => item.userid);
       let myHikeInvites = (friendIDCollection?.friend_list?.hikeInvites || []);
+
+
+      let friendsList = await Promise.all(
+        friendsData.map(async (friendid) => {
+          let userData = await getUser(friendid);
+          let user = userData;
+
+          if (!user) return null;
+
+          return {
+            id: friendid,
+            name: user.full_name || user.firstname,
+            avatar: user.picture || defaultUserProfile,
+          };
+        })
+      );
+
 
       let friendsInviteList = await Promise.all(
         MyinvitesReceived.map(async (friendid) => {
@@ -329,6 +379,8 @@ const Header = ({ collapsed, setCollapsed }) => {
         })
       );
 
+
+      setUsersFriends(friendsList.filter(Boolean));
       setInvitesRecieved(friendsInviteList.filter(Boolean));
       setHikeInvites(hikeInviteList.filter(Boolean));
 
@@ -411,6 +463,7 @@ const Header = ({ collapsed, setCollapsed }) => {
         <NotificationBell
           friendInvites={invitesRecieved}
           hikeInvites={hikeInvites}
+          friends={friends}
           onFriendHandled={handleFriendAction}
           onHikeHandled={handleHikeAction}
         />
