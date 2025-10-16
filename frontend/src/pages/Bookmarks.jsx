@@ -150,7 +150,7 @@ const Bookmarks = () => {
       const { error } = await supabase
         .from('BookmarkedHikes')
         .delete()
-        .eq('hiked1', hikeId)
+        .eq('hikeid', hikeId)
         .eq('userid', userId);
 
       if (error) throw error;
