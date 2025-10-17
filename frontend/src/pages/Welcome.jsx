@@ -389,37 +389,7 @@ const Welcome = () => {
           </section>
         </div>
       </section>
-      <section id="contact" className="bg-gray-600 mt-20 h-full rounded-t-4xl px-6 py-16">
-        
-        < h2 className="text-5xl font-bold text-center text-balck mb-6">
-        Contact Us
-        </h2>
-
-    
-        <p className="text-xl text-center text-black mb-12 max-w-2xl mx-auto">
-          For any inquiries, feedback, or support, feel free to reach out to us by writing a message below.
-        </p>
-
-    
-        <div className="max-w-3xl mx-auto">
-        <label htmlFor="message" className="block mb-2 text-lg font-medium text-black">
-           Your Message
-        </label>
-            <textarea
-              id="message"
-              name="message"
-              rows="8"
-              placeholder="Write your message here..."
-              className="w-full p-4 border border-balck rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            />
-          <button
-            type="submit"
-            className="mt-6 bg-black hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded transition duration-200"
-            >
-            Send Message
-          </button>
-      </div>
-    </section>
+      
 
     </div>
   );
