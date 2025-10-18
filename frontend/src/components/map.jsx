@@ -79,7 +79,7 @@ function RouteTracker({
             map.fitBounds(bounds, { padding: 50 });
             setInitialCentered(true);
           }
-        }, 60000);
+        }, 600000);
       }
 
       // Start tracking user
