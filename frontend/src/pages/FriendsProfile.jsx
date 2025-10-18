@@ -437,12 +437,7 @@ const FriendsProfilePage = () => {
       subtitle: stats.totalElevation > 0 ? "Total ascent" : "No data yet",
       icon: <Mountain className="h-5 w-5" />,
     },
-    {
-      title: "Hours on Trail",
-      value: stats.totalHours > 0 ? stats.totalHours : "N/A",
-      subtitle: stats.totalHours > 0 ? "Time hiking" : "No data yet",
-      icon: <Clock className="h-5 w-5" />,
-    },
+    
   ];
 
   // Update achievements to use real stats
@@ -541,12 +536,7 @@ const FriendsProfilePage = () => {
                 </div>
               </div>
             </div>
-            {isOwnProfile && (
-              <Button className="gap-2 flex items-center">
-                <Settings className="h-4 w-4" />
-                Edit Profile
-              </Button>
-            )}
+            {isOwnProfile}
           </div>
         </div>
       </div>
@@ -569,7 +559,7 @@ const FriendsProfilePage = () => {
                 loading={loading}
               />
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {statsCards.map((stat, index) => (
                   <HikingStatsCard key={index} {...stat} loading={loading} />
                 ))}

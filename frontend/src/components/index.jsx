@@ -22,11 +22,6 @@ export const navbarLinks = [
                 path: "/dashboard/Bookmarks",
             },
             {
-                label: "Chats",
-                icon: MessagesSquare,
-                path: "/dashboard/Chats",
-            },
-            {
                 label: "View Current Hike",
                 icon:MapPin,
                 path: "/dashboard/View_Hike",

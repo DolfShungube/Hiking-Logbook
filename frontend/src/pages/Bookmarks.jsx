@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
 import { createClient } from "@supabase/supabase-js";
+import { Bookmark, Mountain, MapPin, Calendar, Users, TrendingUp, Gauge, X, ArrowRight } from 'lucide-react';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -15,8 +16,6 @@ const Bookmarks = () => {
   const navigate = useNavigate();
   
   const { currentUser, authLoading } = UserAuth();
-  
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const userId = currentUser?.id;
 
   useEffect(() => {
@@ -28,14 +27,13 @@ const Bookmarks = () => {
       userIsNull: currentUser === null
     });
 
-    // Handle auth loading state
     if (authLoading) {
       console.log('⏳ Auth context still loading...');
       return;
     }
 
     if (currentUser === null) {
-      console.log(' No user - redirecting to login');
+      console.log('❌ No user - redirecting to login');
       setError('Please log in to view bookmarks');
       setLoading(false);
       setTimeout(() => navigate('/login'), 2000);
@@ -43,7 +41,7 @@ const Bookmarks = () => {
     }
 
     if (userId) {
-      console.log(' User authenticated, fetching bookmarks for:', userId);
+      console.log('✅ User authenticated, fetching bookmarks for:', userId);
       fetchBookmarkedHikes(userId);
     }
   }, [currentUser, authLoading, userId, navigate]);
@@ -71,9 +69,8 @@ const Bookmarks = () => {
       }
   
       const hikeIds = bookmarks.map(bookmark => bookmark.hikeid);
-      console.log(' Hike IDs to fetch:', hikeIds);
+      console.log('🏔️ Hike IDs to fetch:', hikeIds);
       
-    
       const { data: hikesData, error: hikesError } = await supabase
         .from('HikeData')
         .select('*')
@@ -81,13 +78,12 @@ const Bookmarks = () => {
   
       if (hikesError) throw hikesError;
   
-      console.log(' HikeData results:', hikesData);
+      console.log('🏔️ HikeData results:', hikesData);
   
-      // Combine the data
       const transformedHikes = bookmarks.map(bookmark => {
         const hike = hikesData.find(h => h.hikeid === bookmark.hikeid);
 
-        console.log(' Matching hike for', bookmark.hikeid, ':', hike);
+        console.log('🔗 Matching hike for', bookmark.hikeid, ':', hike);
         
         if (hike) {
           return {
@@ -98,7 +94,6 @@ const Bookmarks = () => {
             elevation: hike.elevation || 0,
             difficulty: hike.difficulty || 'moderate',
             startdate: hike.startdate || bookmark.created_at,
-            //status: hike.status || 'complete',
             hikinggroup: hike.hikinggroup ? JSON.stringify(hike.hikinggroup) : 'Solo',
             bookmarked_at: bookmark.created_at,
             weather: hike.weather,
@@ -108,7 +103,7 @@ const Bookmarks = () => {
             friendlist: hike.friendlist
           };
         } else {
-          console.log(' No matching hike data found for:', bookmark.hikeid);
+          console.log('⚠️ No matching hike data found for:', bookmark.hikeid);
           return {
             hikeid: bookmark.hikeid,
             title: `Hike ${bookmark.hikeid.substring(0, 8)}...`,
@@ -124,18 +119,17 @@ const Bookmarks = () => {
         }
       });
   
-      console.log('Final transformed hikes:', transformedHikes);
+      console.log('✅ Final transformed hikes:', transformedHikes);
       setBookmarkedHikes(transformedHikes);
       
     } catch (err) {
-      console.error('Error fetching bookmarks:', err);
+      console.error('❌ Error fetching bookmarks:', err);
       setError(err.message || 'Failed to fetch bookmarks');
     } finally {
       setLoading(false);
     }
   };
 
-  // Remove a bookmark 
   const handleRemoveBookmark = async (hikeId) => {
     if (!userId) {
       alert('Please log in to remove bookmarks');
@@ -172,7 +166,7 @@ const Bookmarks = () => {
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
+        weekday: 'short',
         month: 'short', 
         day: 'numeric' 
       });
@@ -181,200 +175,28 @@ const Bookmarks = () => {
     }
   };
 
-  const styles = {
-    container: {
-      maxWidth: '1400px',
-      margin: '0 auto',
-      padding: '2rem',
-      minHeight: '100vh'
-    },
-    header: {
-      marginBottom: '2rem',
-      textAlign: 'center'
-    },
-    title: {
-      fontSize: '2.5rem',
-      color: '#2c3e50',
-      marginBottom: '0.5rem'
-    },
-    subtitle: {
-      color: '#7f8c8d',
-      fontSize: '1.1rem'
-    },
-    loading: {
-      textAlign: 'center',
-      padding: '3rem',
-      fontSize: '1.2rem',
-      color: '#7f8c8d'
-    },
-    errorContainer: {
-      textAlign: 'center',
-      padding: '3rem',
-      color: '#e74c3c'
-    },
-    errorButton: {
-      marginTop: '1rem',
-      padding: '0.75rem 1.5rem',
-      background: '#3498db',
-      color: 'white',
-      border: 'none',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      fontSize: '1rem'
-    },
-    emptyState: {
-      textAlign: 'center',
-      padding: '4rem 2rem',
-      background: '#f8f9fa',
-      borderRadius: '12px',
-      marginTop: '2rem'
-    },
-    emptyIcon: {
-      fontSize: '5rem',
-      marginBottom: '1rem'
-    },
-    emptyTitle: {
-      color: '#2c3e50',
-      marginBottom: '1rem'
-    },
-    emptyText: {
-      color: '#7f8c8d',
-      fontSize: '1.1rem',
-      marginBottom: '2rem'
-    },
-    primaryButton: {
-      padding: '1rem 2rem',
-      background: '#27ae60',
-      color: 'white',
-      border: 'none',
-      borderRadius: '8px',
-      fontSize: '1rem',
-      cursor: 'pointer'
-    },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-      gap: '1.5rem',
-      marginTop: '2rem'
-    },
-    card: {
-      background: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-      overflow: 'hidden',
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    cardHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      padding: '1.5rem',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: 'white'
-    },
-    cardTitle: {
-      fontSize: '1.3rem',
-      margin: 0,
-      flex: 1,
-      wordBreak: 'break-word'
-    },
-    removeButton: {
-      background: 'rgba(255, 255, 255, 0.2)',
-      border: 'none',
-      padding: '0.5rem',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontSize: '1rem',
-      flexShrink: 0,
-      marginLeft: '1rem'
-    },
-    cardBody: {
-      padding: '1.5rem',
-      flex: 1
-    },
-    infoContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0.75rem'
-    },
-    infoItem: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '0.5rem 0',
-      borderBottom: '1px solid #ecf0f1'
-    },
-    label: {
-      fontWeight: 600,
-      color: '#34495e',
-      fontSize: '0.9rem'
-    },
-    value: {
-      color: '#2c3e50',
-      fontSize: '0.95rem',
-      textAlign: 'right'
-    },
-    badge: {
-      padding: '0.4rem 0.8rem',
-      borderRadius: '20px',
-      fontSize: '0.85rem',
-      fontWeight: 600,
-      textTransform: 'capitalize'
-    },
-    difficultyEasy: {
-      background: '#d4edda',
-      color: '#155724'
-    },
-    difficultyModerate: {
-      background: '#fff3cd',
-      color: '#856404'
-    },
-    difficultyHard: {
-      background: '#f8d7da',
-      color: '#721c24'
-    },
-    bookmarkedDate: {
-      background: '#f8f9fa',
-      padding: '0.75rem',
-      borderRadius: '6px',
-      marginTop: '0.5rem',
-      borderBottom: 'none'
-    },
-    cardFooter: {
-      padding: '1rem 1.5rem',
-      background: '#f8f9fa',
-      borderTop: '1px solid #ecf0f1'
-    },
-    viewButton: {
-      width: '100%',
-      padding: '0.75rem',
-      background: '#3498db',
-      color: 'white',
-      border: 'none',
-      borderRadius: '8px',
-      fontSize: '1rem',
-      cursor: 'pointer',
-      fontWeight: 600
-    }
-  };
-
-  const getBadgeStyle = (difficulty) => {
+  const getDifficultyStyle = (difficulty) => {
     const lower = difficulty?.toLowerCase();
-    if (lower === 'easy') return { ...styles.badge, ...styles.difficultyEasy };
-    if (lower === 'moderate') return { ...styles.badge, ...styles.difficultyModerate };
-    if (lower === 'hard') return { ...styles.badge, ...styles.difficultyHard };
-    return styles.badge;
+    if (lower === 'easy') {
+      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+    }
+    if (lower === 'moderate') {
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+    }
+    if (lower === 'hard') {
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+    }
+    return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   };
 
-
-  // Handle loading state
   if (authLoading || loading) {
     return (
-      <div style={styles.container}>
-        <div style={styles.loading}>
-          {authLoading ? 'Checking authentication...' : 'Loading your bookmarked hikes...'}
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">
+            {authLoading ? 'Checking authentication...' : 'Loading your bookmarked hikes...'}
+          </p>
         </div>
       </div>
     );
@@ -382,11 +204,17 @@ const Bookmarks = () => {
 
   if (error) {
     return (
-      <div style={styles.container}>
-        <div style={styles.errorContainer}>
-          <h2>Error</h2>
-          <p>{error}</p>
-          <button style={styles.errorButton} onClick={() => window.location.reload()}>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-center bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+          <div className="text-red-500 mb-4">
+            <Mountain className="w-12 h-12 mx-auto" />
+          </div>
+          <h2 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">Error</h2>
+          <p className="text-red-600 dark:text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+          >
             Retry
           </button>
         </div>
@@ -395,116 +223,138 @@ const Bookmarks = () => {
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>My Bookmarked Hikes</h1>
-        <p style={styles.subtitle}>
-          {bookmarkedHikes.length} {bookmarkedHikes.length === 1 ? 'hike' : 'hikes'} bookmarked
-        </p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header Section */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500/20 dark:bg-blue-600/20 rounded-full mb-4">
+              <Bookmark className="w-8 h-8 text-blue-500 dark:text-blue-600" />
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+              My Bookmarked Hikes
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              {bookmarkedHikes.length} {bookmarkedHikes.length === 1 ? 'Bookmarked Hike' : 'Bookmarked Hikes'}  
+            </p>
+          </div>
+        </div>
       </div>
 
-      {bookmarkedHikes.length === 0 ? (
-        <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>🔖</div>
-          <h2 style={styles.emptyTitle}>No bookmarks yet</h2>
-          <p style={styles.emptyText}>Start exploring and bookmark your favorite hikes!</p>
-          <button 
-            style={styles.primaryButton}
-            onClick={() => navigate('/dashboard')}
-            onMouseOver={(e) => e.target.style.background = '#229954'}
-            onMouseOut={(e) => e.target.style.background = '#27ae60'}
-          >
-            Explore Hikes
-          </button>
-        </div>
-      ) : (
-        <div style={styles.grid}>
-          {bookmarkedHikes.map((hike) => (
-            <div 
-              key={hike.hikeid} 
-              style={styles.card}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-              }}
-            >
-              <div style={styles.cardHeader}>
-                <h3 style={styles.cardTitle}>{hike.title || hike.location || 'Unnamed Hike'}</h3>
-                <button
-                  style={styles.removeButton}
-                  onClick={() => handleRemoveBookmark(hike.hikeid)}
-                  title="Remove bookmark"
-                  onMouseOver={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
-                  onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-                >
-                  ❌
-                </button>
-              </div>
-
-              <div style={styles.cardBody}>
-                <div style={styles.infoContainer}>
-                  <div style={styles.infoItem}>
-                    <span style={styles.label}>Location:</span>
-                    <span style={styles.value}>{hike.location || 'N/A'}</span>
-                  </div>
-
-                  <div style={styles.infoItem}>
-                    <span style={styles.label}>Distance:</span>
-                    <span style={styles.value}>
-                      {hike.distance ? `${hike.distance} km` : 'N/A'}
-                    </span>
-                  </div>
-
-                  <div style={styles.infoItem}>
-                    <span style={styles.label}> Elevation:</span>
-                    <span style={styles.value}>
-                      {hike.elevation ? `${hike.elevation} m` : 'N/A'}
-                    </span>
-                  </div>
-
-                  <div style={styles.infoItem}>
-                    <span style={styles.label}> Difficulty:</span>
-                    <span style={getBadgeStyle(hike.difficulty)}>
-                      {hike.difficulty || 'N/A'}
-                    </span>
-                  </div>
-
-                  <div style={styles.infoItem}>
-                    <span style={styles.label}> Start Date:</span>
-                    <span style={styles.value}>{formatDate(hike.startdate)}</span>
-                  </div>
-
-
-                  {hike.hikinggroup && (
-  <div style={styles.infoItem}>
-    <span style={styles.label}>👥 Group:</span>
-    <span style={styles.value}>
-      {console.log('Hiking group data:', hike.hikinggroup, 'Type:', typeof hike.hikinggroup)}
-      {Array.isArray(hike.hikinggroup) 
-        ? (hike.hikinggroup.length === 1 ? '1 person' : `${hike.hikinggroup.length} people`)
-        : '1 person'
-      }
-    </span>
-  </div>
-)}
-
-                  {hike.bookmarked_at && (
-                    <div style={{ ...styles.infoItem, ...styles.bookmarkedDate }}>
-                      <span style={styles.label}> Bookmarked:</span>
-                      <span style={styles.value}>{formatDate(hike.bookmarked_at)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        {bookmarkedHikes.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+              <Bookmark className="w-12 h-12 text-gray-400" />
             </div>
-          ))}
-        </div>
-      )}
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+              No bookmarks yet
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
+              Start exploring and bookmark your favorite hikes!
+            </p>
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-flex items-center gap-2"
+            >
+              Explore Hikes
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {bookmarkedHikes.map((hike) => (
+              <div 
+                key={hike.hikeid}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all overflow-hidden group"
+              >
+                {/* Card Header with gradient */}
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 relative">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-white font-semibold text-lg line-clamp-2 pr-8">
+                      {hike.title || hike.location || 'Unnamed Hike'}
+                    </h3>
+                    <button
+                      onClick={() => handleRemoveBookmark(hike.hikeid)}
+                      className="absolute top-3 right-3 p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm"
+                      title="Remove bookmark"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Card Body */}
+                <div className="p-5">
+                  <div className="space-y-3">
+                    {/* Location */}
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-sm line-clamp-1">{hike.location || 'N/A'}</span>
+                    </div>
+
+                    {/* Distance & Elevation */}
+                    <div className="flex items-center gap-4 text-sm">
+                      {hike.distance > 0 && (
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                          <Gauge className="w-4 h-4" />
+                          <span>{hike.distance} km</span>
+                        </div>
+                      )}
+                      {hike.elevation > 0 && (
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                          <TrendingUp className="w-4 h-4" />
+                          <span>{hike.elevation} m</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Difficulty */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Difficulty:</span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyStyle(hike.difficulty)}`}>
+                        {hike.difficulty || 'N/A'}
+                      </span>
+                    </div>
+
+                    {/* Date */}
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-sm">{formatDate(hike.startdate)}</span>
+                    </div>
+
+                    {/* Group Size */}
+                    {hike.hikinggroup && (
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <Users className="w-4 h-4" />
+                        <span className="text-sm">
+                          {Array.isArray(hike.hikinggroup) 
+                            ? (hike.hikinggroup.length === 1 ? '1 person' : `${hike.hikinggroup.length} people`)
+                            : '1 person'
+                          }
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Bookmarked Date */}
+                    {hike.bookmarked_at && (
+                      <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                          <span>Bookmarked:</span>
+                          <span>{formatDate(hike.bookmarked_at)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

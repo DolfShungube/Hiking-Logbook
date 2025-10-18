@@ -13,7 +13,6 @@ import HikeCreatedPage from "../pages/HikeCreated.jsx";
 import HikeLogbookPage from "../pages/logBook.jsx";
 import Current from "../pages/Current.jsx";//Make sure the filename matches exactly
 import SettingsPage  from "../pages/Settings.jsx";  
-import ChatFriendsPage  from  "../pages/Chats.jsx";
 import ProfilePage from "../pages/Profile.jsx";
 import FriendsProfilePage from "../pages/FriendsProfile.jsx";
 import Bookmarks from "../pages/Bookmarks.jsx"; 
@@ -104,7 +103,6 @@ const router = createBrowserRouter([
       { path: "CreateHike", element: <CreateHike /> },
       { path: "HikeCreated", element: <HikeCreatedPage /> },
       { path: "Bookmarks", element: <Bookmarks /> },
-      { path: "Chats", element: <ChatFriendsPage /> },
       { path: "View_Hike", element: <HikeCollectionPage /> },
       { path: "Settings", element: <SettingsPage /> },
     ],
