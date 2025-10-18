@@ -142,11 +142,6 @@ const Welcome = () => {
                   About
                 </a>
               </li>
-              <li>
-                <a href="#contact" className="hover:text-yellow-400">
-                  Contact
-                </a>
-              </li>
             </ul>
           </div>
         </nav>
