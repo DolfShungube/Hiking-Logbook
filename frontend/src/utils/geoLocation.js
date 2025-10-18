@@ -63,14 +63,14 @@ export function trackUserPosition(
 
   navigator.geolocation.getCurrentPosition(handlePosition, console.error, {
     enableHighAccuracy: true,
-    maximumAge: 60000,
-    timeout: 65000,
+    maximumAge: 600000,
+    timeout: 900000,
   });
 
   const watchId = navigator.geolocation.watchPosition(
     handlePosition,
     console.error,
-    { enableHighAccuracy: true, maximumAge: 10000 }
+    { enableHighAccuracy: true, maximumAge: 600000 }
   );
 
   return () => navigator.geolocation.clearWatch(watchId);
