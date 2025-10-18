@@ -15,13 +15,161 @@ import {
   MoreVertical,
   Gauge,
   MountainIcon,
-  Play,X
+  Play,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
 import RouteTracker from "../components/map.jsx";
 import ElevationProfile from "../components/ElevationMap.jsx";
 import { RouteDataCollection } from "../context/MapRoutesContext.jsx";
+import { GoalDataCollection } from "../context/GoalsContext.jsx";
+
+// Goals Modal Component
+const GoalsModal = ({ 
+  showGoalsModal, 
+  setShowGoalsModal, 
+  selectedHike, 
+  formatDate,
+  currentUser
+}) => {
+  const [goals, setGoals] = useState([]);
+  const [goal, setGoal] = useState('');
+  const { getGoals, addGoal, updateGoalStatus, deleteGoal } = GoalDataCollection();
+
+  const fetchGoals = async () => {
+    try {
+      const hikeId = selectedHike.hikeid || selectedHike.id;
+      const data = await getGoals(hikeId, currentUser.id);
+      setGoals(data || []);
+    } catch (err) {
+      console.error("Error fetching goals:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (showGoalsModal && selectedHike && currentUser?.id) {
+      fetchGoals();
+    }
+  }, [showGoalsModal, selectedHike, currentUser?.id]);
+
+  const handleAddGoal = async () => {
+    if (!goal.trim()) return;
+    try {
+      const hikeId = selectedHike.hikeid || selectedHike.id;
+      await addGoal(hikeId, goal, currentUser.id);
+      setGoal('');
+      fetchGoals();
+    } catch (err) {
+      console.error("Error adding goal:", err);
+    }
+  };
+
+  const handleToggleGoal = async (goalItem) => {
+    try {
+      const hikeId = selectedHike.hikeid || selectedHike.id;
+      const newStatus = goalItem.status === 'complete' ? 'incomplete' : 'complete';
+      await updateGoalStatus(hikeId, goalItem.goal, newStatus, currentUser.id);
+      fetchGoals();
+    } catch (err) {
+      console.error("Error updating goal status:", err);
+    }
+  };
+
+  const handleRemoveGoal = async (goalObj) => {
+    try {
+      const hikeId = selectedHike.hikeid || selectedHike.id;
+      await deleteGoal(hikeId, goalObj.goal, currentUser.id);
+      fetchGoals();
+    } catch (err) {
+      console.error("Error deleting goal:", err);
+    }
+  };
+
+  if (!showGoalsModal || !selectedHike) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Goals
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {selectedHike.title} • {formatDate(selectedHike.startdate)}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowGoalsModal(false)}
+              className="w-8 h-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors text-2xl"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="e.g., Reach the summit by noon, Take photos at viewpoint..."
+              className="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-gray-400"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddGoal()}
+            />
+            <button
+              onClick={handleAddGoal}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+            >
+              Add
+            </button>
+          </div>
+          <ul className="space-y-2">
+            {goals.length === 0 && (
+              <li className="text-gray-500 dark:text-gray-400">No goals yet.</li>
+            )}
+            {goals.map((g, idx) => (
+              <li
+                key={idx}
+                className="flex justify-between items-center p-2 rounded bg-gray-100 dark:bg-gray-900"
+              >
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={g.status === 'complete'}
+                    onChange={() => handleToggleGoal(g)}
+                    className="form-checkbox h-5 w-5 text-green-500"
+                  />
+                  <span className={`text-gray-800 dark:text-gray-200 ${g.status === 'complete' ? 'line-through' : ''}`}>
+                    {g.goal}
+                  </span>
+                </label>
+                <button
+                  onClick={() => handleRemoveGoal(g)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <X size={16} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+          <button
+            onClick={() => setShowGoalsModal(false)}
+            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Edit Hike Modal Component
 const EditHikeModal = ({
@@ -110,10 +258,6 @@ const EditHikeModal = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Status
@@ -188,18 +332,18 @@ const HikeDetailsModal = ({
 
 
 
-  const handleMap = async (routeid) => {
-    if (routeid) {
-      let data = await getRouteJson(routeid);
-      if (data[0]) setMapData(data[0]?.path || null);
-    }
-  }
+  const handleMap = async (routeid) => {
+    if (routeid) {
+      let data = await getRouteJson(routeid);
+      if (data[0]) setMapData(data[0]?.path || null);
+    }
+  }
 
 
   useEffect(()=>{
-       if (!mapData) {
-        handleMap(selectedHike.route);
-      }
+       if (!mapData) {
+        handleMap(selectedHike.route);
+      }
    
   },[selectedHike])
 
@@ -454,6 +598,7 @@ const PlanHikeDefault = () => {
   const [showAllHikes, setShowAllHikes] = useState(false);
   const [selectedHike, setSelectedHike] = useState(null);
   const [showHikeModal, setShowHikeModal] = useState(false);
+  const [showGoalsModal, setShowGoalsModal] = useState(false);
   
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingHike, setEditingHike] = useState(null);
@@ -854,6 +999,14 @@ const PlanHikeDefault = () => {
         formatDistance={formatDistance}
         formatElevation={formatElevation}
       />
+
+      <GoalsModal
+        showGoalsModal={showGoalsModal}
+        setShowGoalsModal={setShowGoalsModal}
+        selectedHike={selectedHike}
+        formatDate={formatDate}
+        currentUser={currentUser}
+      />
       
       <DeleteConfirmationModal
         showDeleteModal={showDeleteModal}
@@ -963,7 +1116,7 @@ const PlanHikeDefault = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {(showAllHikes ? hikes : hikes.slice(0, 4)).map((hike) => (
-                <div key={hike.hikeid || hike.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700  hover:shadow-lg transition-all">
+                <div key={hike.hikeid || hike.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
                   <div className="flex">
                     <div className="w-32 h-32 flex-shrink-0">
                       <img 
@@ -1000,13 +1153,24 @@ const PlanHikeDefault = () => {
                               <MoreVertical className="w-4 h-4 text-gray-500" />
                             </button>
                             {activeDropdown === (hike.hikeid || hike.id) && (
-                              <div className="absolute right-0 top-8 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-[120px]">
+                              <div className="absolute right-0 top-8 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-[140px]">
                                 <button
                                   onClick={() => handleViewHike(hike)}
                                   className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 first:rounded-t-lg"
                                 >
                                   <Eye className="w-4 h-4" />
                                   View
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedHike(hike);
+                                    setShowGoalsModal(true);
+                                    setActiveDropdown(null);
+                                  }}
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2"
+                                >
+                                  <Award className="w-4 h-4" />
+                                  Goals
                                 </button>
                                 {(hike.status === 'planned' || hike.status === 'confirmed') && (
                                   <button
