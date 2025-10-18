@@ -306,7 +306,7 @@ const Current = () => {
         console.error("Geolocation error:", err);
         setError("Could not get current location. Please allow location access.");
       },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 60000 }
+      { enableHighAccuracy: true, maximumAge: 900000, timeout:600000  }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
