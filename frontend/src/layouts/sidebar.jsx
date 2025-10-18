@@ -46,9 +46,11 @@ const Sidebar = forwardRef(({ collapsed }, ref) => {
             key={navbarLink.title}
             className={cn("sidebar-group", collapsed && "md:items-center")}
           >
-            <p className={cn("sidebar-group-title", collapsed && "md:w-[45px]")}>
-              {navbarLink.title}
+            {!collapsed && (
+                <p className={cn("sidebar-group-title", collapsed && "md:w-[45px]")}>
+                {navbarLink.title}
             </p>
+            )}
 
             {navbarLink.links.map((link) => {
               const makeExact = link.path === "/dashboard" || link.path === "/";

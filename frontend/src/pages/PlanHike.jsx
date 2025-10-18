@@ -587,6 +587,7 @@ const DeleteConfirmationModal = ({
 
 // Main Component
 const PlanHikeDefault = () => {
+  
   const [activeStep, setActiveStep] = useState(0);
   const [hikes, setHikes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -611,6 +612,7 @@ const PlanHikeDefault = () => {
   const [editDistance, setEditDistance] = useState('');
   const [editElevation, setEditElevation] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
   
   const navigate = useNavigate();
   const { currentUser } = UserAuth();
@@ -774,49 +776,100 @@ const PlanHikeDefault = () => {
     setActiveDropdown(null);
   };
 
-  const handleStartHike = async (hike) => {
-    try {
-      const hikeId = hike.hikeid || hike.id;
-      
-      if (!hikeId) {
-        throw new Error('Hike ID not found');
-      }
 
-      const response = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes/${hikeId}/${currentUser.id}`, {
-        method: 'PUT',
+
+ const handleStartHike = async (hike) => {
+  try {
+    console.log('=== START HIKE ATTEMPT ===');
+    console.log('Attempting to start hike:', hike.title);
+    
+    // Check if there's already a hike in progress using the /current-hike endpoint
+    try {
+      const checkResponse = await fetch(`https://hiking-logbook-api.onrender.com/current-hike?userid=${currentUser.id}`, {
+        method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: hike.title,
-          location: hike.location,
-          startdate: hike.startdate,
-          difficulty: hike.difficulty,
-          distance: hike.distance,
-          elevation: hike.elevation,
-          status: 'in progress'
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to start hike: ${response.status}`);
+      if (checkResponse.ok) {
+        const checkResult = await checkResponse.json();
+        
+        // If there's any hike in progress, block the request
+        if (checkResult.data && checkResult.data.length > 0) {
+          const hikeInProgress = checkResult.data[0];
+          const message = `You already have a hike in progress: "${hikeInProgress.title || 'Unnamed Hike'}". Please complete or cancel it before starting another.`;
+          console.log('BLOCKING: Hike in progress found:', hikeInProgress);
+          setSubmitMessage(message);
+          setActiveDropdown(null);
+          setTimeout(() => setSubmitMessage(null), 5000);
+          return; // STOP - don't allow starting another hike
+        }
       }
-
-      setHikes(prevHikes =>
-        prevHikes.map(h => {
-          const currentHikeId = h.hikeid || h.id;
-          return currentHikeId === hikeId ? { ...h, status: 'in progress' } : h;
-        })
-      );
-
+    } catch (checkErr) {
+      console.error('Error checking for hikes in progress:', checkErr);
+      setError("Unable to verify hike status. Please try again.");
+      setTimeout(() => setError(null), 5000);
       setActiveDropdown(null);
-      
-    } catch (err) {
-      console.error("Error starting hike:", err);
-      setError("Failed to start hike. Please try again.");
+      return;
     }
-  };
+
+    console.log('No hike in progress found, proceeding to start:', hike.title);
+
+    const hikeId = hike.hikeid || hike.id;
+    
+    if (!hikeId) {
+      throw new Error('Hike ID not found');
+    }
+
+    const response = await fetch(`https://hiking-logbook-api.onrender.com/planned-hikes/${hikeId}/${currentUser.id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: hike.title,
+        location: hike.location,
+        startdate: hike.startdate,
+        difficulty: hike.difficulty,
+        distance: hike.distance,
+        elevation: hike.elevation,
+        status: 'in progress'
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to start hike (Status: ${response.status})`);
+    }
+
+    const result = await response.json();
+    
+    console.log('API Response:', result);
+
+    // Update the UI to remove this hike from the planned list
+    setHikes(prevHikes => prevHikes.filter(h => (h.hikeid || h.id) !== hikeId));
+
+
+
+    setActiveDropdown(null);
+    setError(null); // Clear any existing errors
+    
+    // Show success message
+    const successMessage = `"${hike.title}" started successfully!`;
+    setSubmitMessage(successMessage);
+    setTimeout(() => setSubmitMessage(null), 3000);
+    
+  } catch (err) {
+    console.error("Error starting hike:", err);
+    const errorMessage = err.message || "Failed to start hike. Please try again.";
+    setError(errorMessage);
+    setTimeout(() => setError(null), 5000);
+    setActiveDropdown(null);
+  }
+};
 
   const handleSaveEdit = async () => {
     try {
@@ -1064,6 +1117,7 @@ const PlanHikeDefault = () => {
                 Adventures you've planned and organized
               </p>
             </div>
+              
             <button 
               onClick={handleViewAllHikes}
               className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-medium flex items-center gap-1 transition-colors"
@@ -1071,6 +1125,20 @@ const PlanHikeDefault = () => {
               {showAllHikes ? 'Show Less' : 'View All'} {showAllHikes ? '' : <ArrowRight className="w-4 h-4" />}
             </button>
           </div>
+            <div className="space-y-3">
+              {submitMessage && (
+                <div className={`p-3 rounded-md text-sm ${
+                  submitMessage.includes('Error') || submitMessage.includes('Please') || submitMessage.includes('Network')
+                    ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+                    : submitMessage.includes('Creating')
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
+                    : 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                }`}>
+                  {submitMessage}
+                  </div>
+                
+              )}
+              </div>
 
           {loading ? (
             <div className="text-center py-8">
@@ -1198,6 +1266,7 @@ const PlanHikeDefault = () => {
                               </div>
                             )}
                           </div>
+                      
                         </div>
                       </div>
                       
@@ -1238,6 +1307,7 @@ const PlanHikeDefault = () => {
               ))}
             </div>
           )}
+
 
           {hikes.length > 4 && !showAllHikes && (
             <div className="text-center mt-6">
