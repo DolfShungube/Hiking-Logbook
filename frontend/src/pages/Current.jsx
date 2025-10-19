@@ -430,11 +430,7 @@ console.log("The location is", location);
                   <span className="font-medium">Difficulty:</span>
                   <span className="ml-auto">{difficulty || "Loading..."}</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <MapPinned size={20} className="text-purple-500" />
-                  <span className="font-medium">Duration:</span>
-                  <span className="ml-auto">2 hrs left</span>
-                </li>
+
                 <li className="flex items-center gap-3">
                   <Thermometer size={20} className="text-purple-500" />
                   <span className="font-medium">Weather:</span>
