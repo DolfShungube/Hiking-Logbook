@@ -122,7 +122,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow">
           <div className="flex items-center justify-between">
             <div>
@@ -149,10 +149,7 @@ const DashboardPage = () => {
 
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm font-medium">This Week</p>
-              <p className="text-3xl font-bold mt-1">5</p>
-            </div>
+            
             <div className="bg-white/20 p-3 rounded-lg">
               <TrendingUp size={24} />
             </div>
