@@ -5,7 +5,7 @@ import * as turf from "@turf/turf";
 
 
 
-mapboxgl.accessToken = process.env.VITE_MAPBOX;
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX;
 
 // --- Helper: normalize route for Turf (handles MultiLineString + LineString, strips Z) ---
 import { normalizeRoute } from "../utils/mapUtils";
