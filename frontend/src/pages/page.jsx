@@ -146,15 +146,6 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
-
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow">
-          <div className="flex items-center justify-between">
-            
-            <div className="bg-white/20 p-3 rounded-lg">
-              <TrendingUp size={24} />
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 flex-grow">
