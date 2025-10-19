@@ -31,6 +31,7 @@ jobs:
             VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
             VITE_MAPBOX: ${{secrets.VITE_MAPBOX}}
+            VITE_WEATHER_API_KEY: ${{secrets.VITE_WEATHER_API_KEY}}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -64,6 +65,7 @@ jobs:
           app-name: 'hiking-logbook'
           slot-name: 'Production'
           package: .   
+
 
 
 
