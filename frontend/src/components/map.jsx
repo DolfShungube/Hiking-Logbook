@@ -3,7 +3,9 @@ import { Crosshair, X } from 'lucide-react';
 import mapboxgl from "mapbox-gl";
 import * as turf from "@turf/turf";
 
-mapboxgl.accessToken = "pk.eyJ1IjoiZS0wMDEiLCJhIjoiY21ldTA1MjNvMDF2azJscjA3a293dHJoNyJ9.CJN52YWxqsYFjz2K9sy3Zw";
+
+
+mapboxgl.accessToken = process.env.VITE_MAPBOX;
 
 // --- Helper: normalize route for Turf (handles MultiLineString + LineString, strips Z) ---
 import { normalizeRoute } from "../utils/mapUtils";
