@@ -3,7 +3,7 @@ import { useState } from "react";
 const mockData = {
   allTime: {
     distance: [
-      { name: "Alice", value: 268 }, // weekly + monthly example
+      { name: "Alice", value: 268 },
       { name: "Bob", value: 223 },
       { name: "Charlie", value: 240 },
     ],
@@ -12,7 +12,7 @@ const mockData = {
       { name: "Alice", value: 6100 },
       { name: "Charlie", value: 5000 },
     ],
-    hikes: [
+    hours: [
       { name: "Charlie", value: 25 },
       { name: "Alice", value: 19 },
       { name: "Bob", value: 21 },
@@ -42,7 +42,7 @@ export default function Leaderboard() {
           >
             <option value="distance">Distance (km)</option>
             <option value="elevation">Elevation (m)</option>
-            <option value="hikes">Hikes Completed</option>
+            <option value="hours">Hours Hiked</option>
           </select>
         </div>
 
@@ -80,9 +80,9 @@ function statLabel(stat) {
     case "distance":
       return "Distance (km)";
     case "elevation":
-      return "Elevation Gain (m)";
-    case "hikes":
-      return "Hikes Completed";
+      return "Highest Elevation (m)";
+    case "hours":
+      return "Hours Hiked";
     default:
       return "Value";
   }
