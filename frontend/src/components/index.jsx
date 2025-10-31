@@ -26,7 +26,11 @@ export const navbarLinks = [
                 icon:MapPin,
                 path: "/dashboard/View_Hike",
             },
-
+            {
+                label: "Leaderboard",
+                icon: CalendarDays,
+                path: "/dashboard/Leaderboard",
+            },
 
 
         ],
