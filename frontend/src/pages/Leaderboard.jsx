@@ -1,86 +1,40 @@
 import { useState } from "react";
-// import { useTheme } from "../hooks/use-theme.jsx";
-
 
 const mockData = {
-  weekly: {
+  allTime: {
     distance: [
-      { name: "Alice", value: 54 },
-      { name: "Bob", value: 47 },
-      { name: "Charlie", value: 42 },
+      { name: "Alice", value: 268 }, // weekly + monthly example
+      { name: "Bob", value: 223 },
+      { name: "Charlie", value: 240 },
     ],
     elevation: [
-      { name: "Bob", value: 1300 },
-      { name: "Alice", value: 1200 },
-      { name: "Charlie", value: 800 },
+      { name: "Bob", value: 6700 },
+      { name: "Alice", value: 6100 },
+      { name: "Charlie", value: 5000 },
     ],
     hikes: [
-      { name: "Charlie", value: 5 },
-      { name: "Alice", value: 4 },
-      { name: "Bob", value: 3 },
-    ],
-  },
-  monthly: {
-    distance: [
-      { name: "Alice", value: 214 },
-      { name: "Charlie", value: 198 },
-      { name: "Bob", value: 176 },
-    ],
-    elevation: [
-      { name: "Bob", value: 5400 },
-      { name: "Alice", value: 4900 },
-      { name: "Charlie", value: 4200 },
-    ],
-    hikes: [
-      { name: "Charlie", value: 20 },
-      { name: "Bob", value: 18 },
-      { name: "Alice", value: 15 },
+      { name: "Charlie", value: 25 },
+      { name: "Alice", value: 19 },
+      { name: "Bob", value: 21 },
     ],
   },
 };
 
 export default function Leaderboard() {
-//   const { theme } = useTheme();
-  const [period, setPeriod] = useState("weekly");
   const [stat, setStat] = useState("distance");
 
-  const leaderboard = mockData[period][stat];
+  const leaderboard = mockData.allTime[stat];
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 p-8">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <h1 className="text-3xl font-bold mb-6 text-center">
-          {period === "weekly" ? "🏆 Weekly" : "🌍 Monthly"} Leaderboard
+          🌍 All-Time Leaderboard
         </h1>
 
-        {/* Controls */}
+        {/* Stat Selector */}
         <div className="flex justify-center items-center gap-4 mb-8">
-          {/* Period Switch */}
-          <div className="flex bg-white shadow rounded-xl overflow-hidden">
-            <button
-              onClick={() => setPeriod("weekly")}
-              className={`px-4 py-2 text-sm font-medium ${
-                period === "weekly"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              Weekly
-            </button>
-            <button
-              onClick={() => setPeriod("monthly")}
-              className={`px-4 py-2 text-sm font-medium ${
-                period === "monthly"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              Monthly
-            </button>
-          </div>
-
-          {/* Stat Selector */}
           <select
             value={stat}
             onChange={(e) => setStat(e.target.value)}
@@ -108,9 +62,7 @@ export default function Leaderboard() {
                   key={entry.name}
                   className="border-t hover:bg-gray-50 transition-colors"
                 >
-                  <td className="p-4 font-semibold text-blue-600">
-                    #{i + 1}
-                  </td>
+                  <td className="p-4 font-semibold text-blue-600">#{i + 1}</td>
                   <td className="p-4">{entry.name}</td>
                   <td className="p-4 font-medium">{entry.value}</td>
                 </tr>
