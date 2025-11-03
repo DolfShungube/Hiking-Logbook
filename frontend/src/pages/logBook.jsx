@@ -121,9 +121,10 @@ export default function HikeLogbookPage() {
 if(!authLoading){
        if (!mapData) {
          let a= currentUser.id
-         if(localStorage.getItem("externalUser")){
-           a= localStorage.getItem("externalUser")
-           localStorage.removeItem("externalUser")
+         let b=localStorage.getItem("extenalUser")
+         if(b){
+           a= b
+           localStorage.removeItem("extenalUser")
            
            
          }
