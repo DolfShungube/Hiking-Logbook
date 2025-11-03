@@ -120,10 +120,17 @@ export default function HikeLogbookPage() {
   useEffect(()=>{
 if(!authLoading){
        if (!mapData) {
-        handleMap(hikeid, currentUser.id);
+         let a= currentUser.id
+         if(localStorage.getItem("externalUser")){
+           a= localStorage.getItem("externalUser")
+           localStorage.removeItem("externalUser")
+           
+           
+         }
+        handleMap(hikeid,a);
       }
     if(!hike && currentUser){    
-      handleHike(hikeid,currentUser.id);
+      handleHike(hikeid,a);
     }else{
       setPageLoading(false);
     }
