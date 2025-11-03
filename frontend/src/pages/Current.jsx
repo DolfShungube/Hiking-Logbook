@@ -328,18 +328,18 @@ const Current = () => {
             const distanceInKm = (rawDistance / 1000).toFixed(2); // Convert meters to km
             const timeInHours = (rawTime / 3600).toFixed(2);       
 
-            console.log(`Sending Data: Dist=${distanceInKm}Km, Time=${timeInHours}s, Loc=${location}`);
-            const response = await saveHikeStats( 
-                currentUser.id,
-                distanceInKm,
-                location,
-                timeInHours
+            //console.log(`Sending Data: Dist=${distanceInKm}Km, Time=${timeInHours}s, Loc=${location}`);
+            // const response = await saveHikeStats( 
+            //     currentUser.id,
+            //     distanceInKm,
+            //     location,
+            //     timeInHours
 
-            )
+            // )
 
-            console.log("Hike stats saved:", response);
+            // console.log("Hike stats saved:", response);
 
-            if(response.message && response.message.includes("saved successfully")){
+          //  if(response.message && response.message.includes("saved successfully")){
 
                 await updateHikeStatus(hikeid,currentUser.id,"complete");
 
@@ -357,9 +357,9 @@ const Current = () => {
                 navigate(-1); // Go back to previous page
 
 
-            }else{
-                 alert("Hike saved, but something went wrong.");
-            }
+            // }else{
+            //      alert("Hike saved, but something went wrong.");
+            // }
 
         }catch(err){
             console.error("Error saving hike stats:", err);
