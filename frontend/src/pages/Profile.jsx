@@ -443,7 +443,7 @@ const ProfilePage = () => {
     },
     {
       title: "Elevation Gained",
-      value: stats.totalElevation > 0 ? `${stats.totalElevation.toLocaleString()} ft` : "N/A",
+      value: stats.totalElevation > 0 ? `${stats.totalElevation.toLocaleString()} m` : "N/A",
       subtitle: stats.totalElevation > 0 ? "Total ascent" : "No data yet",
       icon: <Mountain className="h-5 w-5" />,
     },
