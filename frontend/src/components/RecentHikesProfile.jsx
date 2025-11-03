@@ -71,13 +71,15 @@ const RecentHikes = ({ type, userId }) => { // Accept userId prop
     // Only allow navigation if viewing own hikes
     const isOwnProfile = !userId || userId === currentUser?.id;
     
-    if (isOwnProfile) {
+   
       if (type === "current") {
+         if (isOwnProfile) {
         navigate(`/current/${hike.hikeid}`);
+         }   
       } else if (type === "complete") {
         navigate(`/logentry/${hike.hikeid}`);
       }
-    }
+   
     // If viewing friend's hikes, don't navigate (or show a message)
   };
 
