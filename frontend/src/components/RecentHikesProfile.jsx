@@ -77,6 +77,7 @@ const RecentHikes = ({ type, userId }) => { // Accept userId prop
         navigate(`/current/${hike.hikeid}`);
          }   
       } else if (type === "complete") {
+         localStorage.setItem("ExtenalUser", hike.userid);
         navigate(`/logentry/${hike.hikeid}`);
       }
    
