@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { UserAuth } from "../context/AuthContext.jsx";
+import { hikeDataCollection } from "../context/hikeDataContext.jsx";
+import React, { useEffect } from "react";
 
 const mockData = {
   allTime: {
@@ -22,6 +25,21 @@ const mockData = {
 
 export default function Leaderboard() {
   const [stat, setStat] = useState("distance");
+  const {session, currentUser }= UserAuth();
+  const { getCompletedHikesData } = hikeDataCollection();
+
+  const fetchData = async () => {
+    try {
+      const data = await getCompletedHikesData(currentUser.id);
+      console.log("Completed hikes:", data);
+    } catch (err) {
+      console.error("Error fetching hikes:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const leaderboard = mockData.allTime[stat];
 
