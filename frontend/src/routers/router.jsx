@@ -15,7 +15,8 @@ import Current from "../pages/Current.jsx";//Make sure the filename matches exac
 import SettingsPage  from "../pages/Settings.jsx";  
 import ProfilePage from "../pages/Profile.jsx";
 import FriendsProfilePage from "../pages/FriendsProfile.jsx";
-import Bookmarks from "../pages/Bookmarks.jsx"; 
+import Bookmarks from "../pages/Bookmarks.jsx";
+import Leaderboard from "../pages/Leaderboard.jsx";
 
 const router = createBrowserRouter([
   {
@@ -105,6 +106,7 @@ const router = createBrowserRouter([
       { path: "Bookmarks", element: <Bookmarks /> },
       { path: "View_Hike", element: <HikeCollectionPage /> },
       { path: "Settings", element: <SettingsPage /> },
+      { path: "Leaderboard", element: <Leaderboard />},
     ],
   },
 ]);
