@@ -53,9 +53,12 @@ export default function Leaderboard() {
   }, [leaderboardStatsByUser])
 
   // Convert object to array and sort by hikes descending
-  const leaderboard = Object.values(mockData).sort(
+  const leaderboard = Object.values(leaderboardStatsByUser).sort(
     (a, b) => b.hikes - a.hikes
   );
+  // const leaderboard = Object.values(mockData).sort(
+  //   (a, b) => b.hikes - a.hikes
+  // );
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 p-8">
