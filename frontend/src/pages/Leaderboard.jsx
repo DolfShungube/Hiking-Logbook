@@ -28,18 +28,34 @@ export default function Leaderboard() {
   const {session, currentUser }= UserAuth();
   const { getCompletedHikesData } = hikeDataCollection();
 
-  const fetchData = async () => {
-    try {
-      const data = await getCompletedHikesData(currentUser.id);
-      console.log("Completed hikes:", data);
-    } catch (err) {
-      console.error("Error fetching hikes:", err);
-    }
-  };
+  // const fetchData = async () => {
+  //   try {
+  //     const data = await getCompletedHikesData(currentUser.id);
+  //     console.log("Completed hikes:", data);
+  //   } catch (err) {
+  //     console.error("Error fetching hikes:", err);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
+
+  const [completedHikes, setCompletedHikes] = useState(null);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getCompletedHikesData(currentUser.id);
+        setCompletedHikes(data); // store result in state
+        console.log("Completed hikes:", data);
+      } catch (err) {
+        console.error("Error fetching hikes:", err);
+      }
+    };
+
     fetchData();
-  }, []);
+  }, [currentUser.id]);
 
   const leaderboard = mockData.allTime[stat];
 
