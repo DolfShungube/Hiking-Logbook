@@ -16,15 +16,21 @@ export default function Leaderboard() {
   
   const fetchData = async (userId) => {
     try {
-      const data = await getCompletedHikesData(userId);
+      const { data, error } = await getCompletedHikesData(userId);
+      if (error) throw error;
 
-      // store data under that userId key
+      const numCompletedHikes = Array.isArray(data) ? data.length : 0;
+
       setCompletedHikesByUser((prev) => ({
         ...prev,
-        [userId]: data,
+        [userId]: {
+          hikes: data,
+          count: numCompletedHikes,
+        },
       }));
 
       console.log(`Completed hikes for ${userId}:`, data);
+      console.log(`Number of completed hikes for ${userId}:`, numCompletedHikes);
     } catch (err) {
       console.error(`Error fetching hikes for ${userId}:`, err);
     }
@@ -74,15 +80,15 @@ export default function Leaderboard() {
   );
 }
 
-function statLabel(stat) {
-  switch (stat) {
-    case "distance":
-      return "Distance (km)";
-    case "elevation":
-      return "Highest Elevation (m)";
-    case "hours":
-      return "Hours Hiked";
-    default:
-      return "Value";
-  }
-}
+// function statLabel(stat) {
+//   switch (stat) {
+//     case "distance":
+//       return "Distance (km)";
+//     case "elevation":
+//       return "Highest Elevation (m)";
+//     case "hours":
+//       return "Hours Hiked";
+//     default:
+//       return "Value";
+//   }
+// }
