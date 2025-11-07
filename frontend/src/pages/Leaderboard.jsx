@@ -3,12 +3,12 @@ import { UserAuth } from "../context/AuthContext.jsx";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { UserDataCollection } from "../context/UsersContext.jsx";
 
-const mockData = [
-  { name: "Alice", hikes: 42 },
-  { name: "Bob", hikes: 37 },
-  { name: "Charlie", hikes: 33 },
-  { name: "Dana", hikes: 29 },
-];
+const mockData = {
+  user1: { name: "Alice", hikes: 42 },
+  user2: { name: "Bob", hikes: 37 },
+  user3: { name: "Charlie", hikes: 33 },
+  user4: { name: "Dana", hikes: 29 },
+};
 
 export default function Leaderboard() {
   const [leaderboardStatsByUser, setLeaderboardStatsByUser] = useState({});
@@ -23,21 +23,18 @@ export default function Leaderboard() {
 
       const numCompletedHikes = Array.isArray(data) ? data.length : 0;
 
-      // const data2 = await getUser(userId);
-      // const username = data2.name;
+      const userData = await getUser(userId);
+      const username = userData.name;
 
       setLeaderboardStatsByUser((prev) => ({
         ...prev,
         [userId]: {
-          // name: username,
-          hikes: data,
-          count: numCompletedHikes,
+          name: username,
+          hikes: numCompletedHikes,
         },
       }));
 
       console.log(`Completed hikes for ${userId}:`, data);
-      // console.log(`Number of completed hikes for ${userId}:`, numCompletedHikes);
-      // console.log(`username for ${userId}:`, username);
     } catch (err) {
       console.error(`Error fetching data for ${userId}:`, err);
     }
@@ -50,6 +47,16 @@ export default function Leaderboard() {
     }
   }, [currentUser?.id]);
 
+  // Log Changes to leaderboardStatsByUser
+  useEffect(() => {
+    console.log("leaderboardStatsByUser updated:", leaderboardStatsByUser);
+  }, [leaderboardStatsByUser])
+
+  // Convert object to array and sort by hikes descending
+  const leaderboard = Object.values(mockData).sort(
+    (a, b) => b.hikes - a.hikes
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 p-8">
       <div className="max-w-2xl mx-auto">
@@ -58,7 +65,7 @@ export default function Leaderboard() {
           🥾 All-Time Hikes Completed
         </h1>
 
-        {/* Leaderboard */}
+        {/* Leaderboard Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <table className="w-full border-collapse">
             <thead>
@@ -69,7 +76,7 @@ export default function Leaderboard() {
               </tr>
             </thead>
             <tbody>
-              {mockData.map((entry, i) => (
+              {leaderboard.map((entry, i) => (
                 <tr
                   key={entry.name}
                   className="border-t hover:bg-gray-50 transition-colors"
