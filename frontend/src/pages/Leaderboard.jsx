@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { UserAuth } from "../context/AuthContext.jsx";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
+import { UserDataCollection } from "../context/UsersContext.jsx";
 
 const mockData = [
   { name: "Alice", hikes: 42 },
@@ -10,9 +11,10 @@ const mockData = [
 ];
 
 export default function Leaderboard() {
-  const [completedHikesByUser, setCompletedHikesByUser] = useState({});
+  const [leaderboardStatsByUser, setLeaderboardStatsByUser] = useState({});
   const {session, currentUser }= UserAuth();
   const { getCompletedHikesData } = hikeDataCollection();
+  const { getUser } = UserDataCollection();
   
   const fetchData = async (userId) => {
     try {
@@ -21,18 +23,23 @@ export default function Leaderboard() {
 
       const numCompletedHikes = Array.isArray(data) ? data.length : 0;
 
-      setCompletedHikesByUser((prev) => ({
+      // const data2 = await getUser(userId);
+      // const username = data2.name;
+
+      setLeaderboardStatsByUser((prev) => ({
         ...prev,
         [userId]: {
+          // name: username,
           hikes: data,
           count: numCompletedHikes,
         },
       }));
 
       console.log(`Completed hikes for ${userId}:`, data);
-      console.log(`Number of completed hikes for ${userId}:`, numCompletedHikes);
+      // console.log(`Number of completed hikes for ${userId}:`, numCompletedHikes);
+      // console.log(`username for ${userId}:`, username);
     } catch (err) {
-      console.error(`Error fetching hikes for ${userId}:`, err);
+      console.error(`Error fetching data for ${userId}:`, err);
     }
   };
 
@@ -79,16 +86,3 @@ export default function Leaderboard() {
     </div>
   );
 }
-
-// function statLabel(stat) {
-//   switch (stat) {
-//     case "distance":
-//       return "Distance (km)";
-//     case "elevation":
-//       return "Highest Elevation (m)";
-//     case "hours":
-//       return "Hours Hiked";
-//     default:
-//       return "Value";
-//   }
-// }
