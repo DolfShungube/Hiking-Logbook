@@ -13,21 +13,21 @@ const mockData = {
 
 export default function Leaderboard() {
   const [leaderboardStatsByUser, setLeaderboardStatsByUser] = useState({});
-  const {session, currentUser }= UserAuth();
+  const [friendList, setFriendList] = useState([]);
   const { getCompletedHikesData } = hikeDataCollection();
-  const { getUser } = UserDataCollection();
-
   const { getUsersFriends } = friendDataCollection();
-  const [friends, setFriends] = useState([]);
+  const { session, currentUser }= UserAuth();
+  const { getUser } = UserDataCollection();
 
   const fetchFriends = async (userId) => {
     try {
-      const data = await getUsersFriends(userId);
+      const friendsData = await getUsersFriends(userId);
+      const friends = friendsData.friend_list.friends;
       
-      const friend_list = data.friend_list.friends;
-      setFriends(friend_list);
+      setFriendList(friends);
       
-      console.log(`Friends for ${userId}:`, friend_list);
+      // console.log(`Friends for ${userId}:`, friendsData);
+      console.log(`Friends for ${userId}:`, friends);
     } catch (err) {
       console.error("Failed to load friends:", err);
     }
@@ -70,9 +70,9 @@ export default function Leaderboard() {
   }, [currentUser?.id]);
 
   // Log Changes to leaderboardStatsByUser
-  useEffect(() => {
-    console.log("leaderboardStatsByUser updated:", leaderboardStatsByUser);
-  }, [leaderboardStatsByUser])
+  // useEffect(() => {
+  //   console.log("leaderboardStatsByUser updated:", leaderboardStatsByUser);
+  // }, [leaderboardStatsByUser])
 
   // Convert object to array and sort by hikes descending
   const leaderboard = Object.values(leaderboardStatsByUser).sort(
