@@ -51,12 +51,10 @@ export default function Leaderboard() {
     }
   };
 
-  // Fetch Friends List
   useEffect(() => {
     if (currentUser?.id) fetchFriends(currentUser?.id);
   }, [currentUser?.id, getUsersFriends]);
 
-  // Example: automatically fetch for current user
   useEffect(() => {
     if (currentUser?.id) {
       fetchData(currentUser.id);
