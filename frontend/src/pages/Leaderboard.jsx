@@ -4,13 +4,6 @@ import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { UserDataCollection } from "../context/UsersContext.jsx";
 import { friendDataCollection } from "../context/FriendsContext.jsx";
 
-const mockData = {
-  user1: { name: "Alice", hikes: 42 },
-  user2: { name: "Bob", hikes: 37 },
-  user3: { name: "Charlie", hikes: 33 },
-  user4: { name: "Dana", hikes: 29 },
-};
-
 export default function Leaderboard() {
   const [leaderboardStatsByUser, setLeaderboardStatsByUser] = useState({});
   const [friendList, setFriendList] = useState([]);
@@ -26,8 +19,9 @@ export default function Leaderboard() {
       
       setFriendList(friends);
       
-      // console.log(`Friends for ${userId}:`, friendsData);
       console.log(`Friends for ${userId}:`, friends);
+
+      await Promise.all(friends.map((friendId) => fetchData(friendId)));
     } catch (err) {
       console.error("Failed to load friends:", err);
     }
@@ -69,18 +63,10 @@ export default function Leaderboard() {
     }
   }, [currentUser?.id]);
 
-  // Log Changes to leaderboardStatsByUser
-  // useEffect(() => {
-  //   console.log("leaderboardStatsByUser updated:", leaderboardStatsByUser);
-  // }, [leaderboardStatsByUser])
-
   // Convert object to array and sort by hikes descending
   const leaderboard = Object.values(leaderboardStatsByUser).sort(
     (a, b) => b.hikes - a.hikes
   );
-  // const leaderboard = Object.values(mockData).sort(
-  //   (a, b) => b.hikes - a.hikes
-  // );
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 p-8">
