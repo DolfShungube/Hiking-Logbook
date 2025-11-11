@@ -23,8 +23,11 @@ export default function Leaderboard() {
   const fetchFriends = async (userId) => {
     try {
       const data = await getUsersFriends(userId);
-      setFriends(data);
-      console.log(`Friends for ${userId}:`, data);
+      
+      const friend_list = data.friend_list.friends;
+      setFriends(friend_list);
+      
+      console.log(`Friends for ${userId}:`, friend_list);
     } catch (err) {
       console.error("Failed to load friends:", err);
     }
