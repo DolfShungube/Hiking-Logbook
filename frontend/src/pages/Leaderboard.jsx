@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { UserAuth } from "../context/AuthContext.jsx";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { UserDataCollection } from "../context/UsersContext.jsx";
+import { friendDataCollection } from "../context/FriendsContext.jsx";
 
 const mockData = {
   user1: { name: "Alice", hikes: 42 },
@@ -15,6 +16,19 @@ export default function Leaderboard() {
   const {session, currentUser }= UserAuth();
   const { getCompletedHikesData } = hikeDataCollection();
   const { getUser } = UserDataCollection();
+
+  const { getUsersFriends } = friendDataCollection();
+  const [friends, setFriends] = useState([]);
+
+  const fetchFriends = async (userId) => {
+    try {
+      const data = await getUsersFriends(userId);
+      setFriends(data);
+      console.log(`Friends for ${userId}:`, data);
+    } catch (err) {
+      console.error("Failed to load friends:", err);
+    }
+  };
   
   const fetchData = async (userId) => {
     try {
@@ -39,6 +53,11 @@ export default function Leaderboard() {
       console.error(`Error fetching data for ${userId}:`, err);
     }
   };
+
+  // Fetch Friends List
+  useEffect(() => {
+    if (currentUser?.id) fetchFriends(currentUser?.id);
+  }, [currentUser?.id, getUsersFriends]);
 
   // Example: automatically fetch for current user
   useEffect(() => {
