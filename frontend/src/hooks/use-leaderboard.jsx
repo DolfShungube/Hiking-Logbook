@@ -36,53 +36,71 @@ export function useLeaderboard(currentUserId) {
 
       const user = await getUser(userId);
 
-      const allTimeHikes = data;
-      const pastWeekHikes = data.filter(item => new Date(item.enddate) >= oneWeekAgo);
-      const pastMonthHikes = data.filter(item => new Date(item.enddate) >= oneMonthAgo);
+      // Pre-parse dates once
+      const hikes = data.map((h) => ({
+        ...h,
+        start: new Date(h.startdate),
+        end: new Date(h.enddate),
+      }));
 
-      const totalHours = allTimeHikes.reduce((sum, hike) => sum + calculateHours(hike.startdate, hike.enddate), 0);
-      const totalWeekHours = pastWeekHikes.reduce((sum, hike) => sum + calculateHours(hike.startdate, hike.enddate), 0);
-      const totalMonthHours = pastMonthHikes.reduce((sum, hike) => sum + calculateHours(hike.startdate, hike.enddate), 0);
+      // Unified stats object
+      const stats = {
+        all: { count: 0, hours: 0, dist: 0, elev: 0 },
+        week: { count: 0, hours: 0, dist: 0, elev: 0 },
+        month: { count: 0, hours: 0, dist: 0, elev: 0 },
+      };
 
-      const totalDistance = allTimeHikes.reduce((sum, hike) => sum + hike.distance, 0);
-      const totalWeekDistance = pastWeekHikes.reduce((sum, hike) => sum + hike.distance, 0);
-      const totalMonthDistance = pastMonthHikes.reduce((sum, hike) => sum + hike.distance, 0);
+      for (const h of hikes) {
+        const dur = calculateHours(h.start, h.end);
 
-      const totalElevation = allTimeHikes.reduce((sum, hike) => sum + hike.elevation, 0);
-      const totalWeekElevation = pastWeekHikes.reduce((sum, hike) => sum + hike.elevation, 0);
-      const totalMonthElevation = pastMonthHikes.reduce((sum, hike) => sum + hike.elevation, 0);
+        // All time
+        stats.all.count++;
+        stats.all.hours += dur;
+        stats.all.dist += h.distance;
+        stats.all.elev += h.elevation;
+
+        // Last Week
+        if (h.end >= oneWeekAgo) {
+          stats.week.count++;
+          stats.week.hours += dur;
+          stats.week.dist += h.distance;
+          stats.week.elev += h.elevation;
+        }
+
+        // Last Month
+        if (h.end >= oneMonthAgo) {
+          stats.month.count++;
+          stats.month.hours += dur;
+          stats.month.dist += h.distance;
+          stats.month.elev += h.elevation;
+        }
+      }
 
       console.log("User:", userId);
       console.log("Username:", user.name);
+
       console.log("Data:", data);
-      console.log("All time hikes:", allTimeHikes.length);
-      console.log("Total hours all time:", totalHours);
-      console.log("Total distance all time:", totalDistance);
-      console.log("Total elevation all time:", totalElevation);
-      console.log("Past week hikes:", pastWeekHikes.length);
-      console.log("Total hours past week:", totalWeekHours);
-      console.log("Total distance past week:", totalWeekDistance);
-      console.log("Total elevation past week:", totalWeekElevation);
-      console.log("Past month hikes:", pastMonthHikes.length);
-      console.log("Total hours past month:", totalMonthHours);
-      console.log("Total distance past month:", totalMonthDistance);
-      console.log("Total elevation past month:", totalMonthElevation);
+      console.log("Stats:", stats);
 
       return {
         id: userId,
         name: user.name,
-        hikes: allTimeHikes.length,
-        totalHours: totalHours,
-        totalDistance: totalDistance,
-        totalElevation: totalElevation,
-        hikesPastWeek: pastWeekHikes.length,
-        totalHoursPastWeek: totalWeekHours,
-        totalDistancePastWeek: totalWeekDistance,
-        totalElevationPastWeek: totalWeekElevation,
-        hikesPastMonth: pastMonthHikes.length,
-        totalHoursPastMonth: totalMonthHours,
-        totalDistancePastMonth: totalMonthDistance,
-        totalElevationPastMonth: totalMonthElevation,
+        stats: stats,
+
+        hikes: stats.all.count,
+        totalHours: stats.all.hours,
+        totalDistance: stats.all.dist,
+        totalElevation: stats.all.elev,
+
+        hikesPastWeek: stats.week.count,
+        totalHoursPastWeek: stats.week.hours,
+        totalDistancePastWeek: stats.week.dist,
+        totalElevationPastWeek: stats.week.elev,
+
+        hikesPastMonth: stats.month.count,
+        totalHoursPastMonth: stats.month.hours,
+        totalDistancePastMonth: stats.month.dist,
+        totalElevationPastMonth: stats.month.elev,
       };
     } catch (err) {
       console.error(`Failed fetching stats for ${userId}:`, err);
