@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { UserDataCollection } from "../context/UsersContext.jsx";
 import { friendDataCollection } from "../context/FriendsContext.jsx";
@@ -12,31 +12,37 @@ export function useLeaderboard(currentUserId) {
   const { getUsersFriends } = friendDataCollection();
   const { getUser } = UserDataCollection();
 
+  /** Pre-compute date thresholds (memoized) */
+  const { oneWeekAgo, oneMonthAgo } = useMemo(() => {
+    const month = new Date();
+    month.setMonth(month.getMonth() - 1);
+
+    const week = new Date();
+    week.setDate(week.getDate() - 7);
+
+    return { oneWeekAgo: week, oneMonthAgo: month };
+  }, []);
+
+  /** Shared helper for calculating duration */
+  const calculateHours = useCallback((start, end) => {
+    return (new Date(end) - new Date(start)) / 36e5;
+  }, []);
+
   /** Fetch ONE user’s stats */
   const fetchUserStats = useCallback(async (userId) => {
     try {
       const { data, error } = await getCompletedHikesData(userId);
       if (error) throw error;
 
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const user = await getUser(userId);
 
       const allTimeHikes = data;
       const pastWeekHikes = data.filter(item => new Date(item.enddate) >= oneWeekAgo);
       const pastMonthHikes = data.filter(item => new Date(item.enddate) >= oneMonthAgo);
 
-      function calculateDuration(hike) {
-        const start = new Date(hike.startdate);
-        const end = new Date(hike.enddate);
-        return (end - start) / (1000 * 60 * 60); // hours
-      }
-
-      const totalHours = allTimeHikes.reduce((sum, hike) => sum + calculateDuration(hike), 0);
-      const totalWeekHours = pastWeekHikes.reduce((sum, hike) => sum + calculateDuration(hike), 0);
-      const totalMonthHours = pastMonthHikes.reduce((sum, hike) => sum + calculateDuration(hike), 0);
+      const totalHours = allTimeHikes.reduce((sum, hike) => sum + calculateHours(hike.startdate, hike.enddate), 0);
+      const totalWeekHours = pastWeekHikes.reduce((sum, hike) => sum + calculateHours(hike.startdate, hike.enddate), 0);
+      const totalMonthHours = pastMonthHikes.reduce((sum, hike) => sum + calculateHours(hike.startdate, hike.enddate), 0);
 
       const totalDistance = allTimeHikes.reduce((sum, hike) => sum + hike.distance, 0);
       const totalWeekDistance = pastWeekHikes.reduce((sum, hike) => sum + hike.distance, 0);
@@ -45,8 +51,6 @@ export function useLeaderboard(currentUserId) {
       const totalElevation = allTimeHikes.reduce((sum, hike) => sum + hike.elevation, 0);
       const totalWeekElevation = pastWeekHikes.reduce((sum, hike) => sum + hike.elevation, 0);
       const totalMonthElevation = pastMonthHikes.reduce((sum, hike) => sum + hike.elevation, 0);
-
-      const user = await getUser(userId);
 
       console.log("User:", userId);
       console.log("Username:", user.name);
