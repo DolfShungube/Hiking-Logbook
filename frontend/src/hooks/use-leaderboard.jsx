@@ -88,7 +88,7 @@ export function useLeaderboard(currentUserId) {
       console.error(`Failed fetching stats for ${userId}:`, err);
       return null;
     }
-  }, [getCompletedHikesData, getUser]);
+  }, [getCompletedHikesData, getUser, calculateHours, oneWeekAgo, oneMonthAgo]);
 
   /** Fetch the current user + all friends */
   const fetchLeaderboard = useCallback(async () => {
