@@ -78,29 +78,12 @@ export function useLeaderboard(currentUserId) {
 
       console.log("User:", userId);
       console.log("Username:", user.name);
-
-      console.log("Data:", data);
       console.log("Stats:", stats);
 
       return {
         id: userId,
         name: user.name,
         stats: stats,
-
-        hikes: stats.all.count,
-        totalHours: stats.all.hours,
-        totalDistance: stats.all.dist,
-        totalElevation: stats.all.elev,
-
-        hikesPastWeek: stats.week.count,
-        totalHoursPastWeek: stats.week.hours,
-        totalDistancePastWeek: stats.week.dist,
-        totalElevationPastWeek: stats.week.elev,
-
-        hikesPastMonth: stats.month.count,
-        totalHoursPastMonth: stats.month.hours,
-        totalDistancePastMonth: stats.month.dist,
-        totalElevationPastMonth: stats.month.elev,
       };
     } catch (err) {
       console.error(`Failed fetching stats for ${userId}:`, err);

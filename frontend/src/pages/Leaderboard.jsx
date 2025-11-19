@@ -8,7 +8,7 @@ export default function Leaderboard() {
 
   const leaderboard = useMemo(() => {
     return Object.values(leaderboardData).sort(
-      (a, b) => b.hikes - a.hikes
+      (a, b) => b.stats.all.count - a.stats.all.count
     );
   }, [leaderboardData]);
 
@@ -37,7 +37,7 @@ export default function Leaderboard() {
                   <tr key={entry.id} className="border-t hover:bg-gray-50">
                     <td className="p-4 font-semibold text-blue-600">#{i + 1}</td>
                     <td className="p-4">{entry.name}</td>
-                    <td className="p-4 font-medium">{entry.hikes}</td>
+                    <td className="p-4 font-medium">{entry.stats.all.count}</td>
                   </tr>
                 ))}
               </tbody>
