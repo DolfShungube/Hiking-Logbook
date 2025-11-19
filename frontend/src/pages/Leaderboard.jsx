@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { UserAuth } from "../context/AuthContext.jsx";
 import { hikeDataCollection } from "../context/hikeDataContext.jsx";
 import { UserDataCollection } from "../context/UsersContext.jsx";
@@ -6,28 +6,16 @@ import { friendDataCollection } from "../context/FriendsContext.jsx";
 
 export default function Leaderboard() {
   const [leaderboardStatsByUser, setLeaderboardStatsByUser] = useState({});
-  const [friendList, setFriendList] = useState([]);
+
   const { getCompletedHikesData } = hikeDataCollection();
   const { getUsersFriends } = friendDataCollection();
-  const { session, currentUser }= UserAuth();
+  const { session, currentUser } = UserAuth();
   const { getUser } = UserDataCollection();
 
-  const fetchFriends = async (userId) => {
-    try {
-      const friendsData = await getUsersFriends(userId);
-      const friends = friendsData.friend_list.friends;
-      
-      setFriendList(friends);
-      
-      console.log(`Friends for ${userId}:`, friends);
-
-      await Promise.all(friends.map((friendId) => fetchData(friendId)));
-    } catch (err) {
-      console.error("Failed to load friends:", err);
-    }
-  };
-  
-  const fetchData = async (userId) => {
+  /** ---------------------------------------------
+   * Fetch stats for ONE user
+   * --------------------------------------------- */
+  const fetchData = useCallback(async (userId) => {
     try {
       const { data, error } = await getCompletedHikesData(userId);
       if (error) throw error;
@@ -35,46 +23,70 @@ export default function Leaderboard() {
       const numCompletedHikes = Array.isArray(data) ? data.length : 0;
 
       const userData = await getUser(userId);
-      const username = userData.name;
 
-      setLeaderboardStatsByUser((prev) => ({
-        ...prev,
-        [userId]: {
-          name: username,
-          hikes: numCompletedHikes,
-        },
-      }));
-
-      console.log(`Completed hikes for ${userId}:`, data);
+      return {
+        id: userId,
+        name: userData.name,
+        hikes: numCompletedHikes,
+      };
     } catch (err) {
       console.error(`Error fetching data for ${userId}:`, err);
+      return null;
     }
-  };
+  }, [getCompletedHikesData, getUser]);
 
-  useEffect(() => {
-    if (currentUser?.id) fetchFriends(currentUser?.id);
-  }, [currentUser?.id, getUsersFriends]);
+  /** ---------------------------------------------
+   * Fetch the current user + their friends in one go
+   * --------------------------------------------- */
+  const fetchAllLeaderboardData = useCallback(async (userId) => {
+    try {
+      const friendsData = await getUsersFriends(userId);
+      const friends = friendsData?.friend_list?.friends ?? [];
 
+      // Include the user themselves
+      const allIds = [userId, ...friends];
+
+      const results = await Promise.all(allIds.map((id) => fetchData(id)));
+
+      const newStats = {};
+      results.forEach((entry) => {
+        if (entry) newStats[entry.id] = entry;
+      });
+
+      setLeaderboardStatsByUser(newStats);
+    } catch (err) {
+      console.error("Failed to load leaderboard data:", err);
+    }
+  }, [fetchData, getUsersFriends]);
+
+  /** ---------------------------------------------
+   * Load leaderboard when the logged-in user is ready
+   * --------------------------------------------- */
   useEffect(() => {
     if (currentUser?.id) {
-      fetchData(currentUser.id);
+      fetchAllLeaderboardData(currentUser.id);
     }
-  }, [currentUser?.id]);
+  }, [currentUser?.id, fetchAllLeaderboardData]);
 
-  // Convert object to array and sort by hikes descending
-  const leaderboard = Object.values(leaderboardStatsByUser).sort(
-    (a, b) => b.hikes - a.hikes
-  );
+  /** ---------------------------------------------
+   * Memoize sorted leaderboard
+   * --------------------------------------------- */
+  const leaderboard = useMemo(() => {
+    return Object.values(leaderboardStatsByUser).sort(
+      (a, b) => b.hikes - a.hikes
+    );
+  }, [leaderboardStatsByUser]);
 
+  /** ---------------------------------------------
+   * UI
+   * --------------------------------------------- */
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 p-8">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <h1 className="text-3xl font-bold mb-8 text-center">
           🥾 All-Time Hikes Completed
         </h1>
 
-        {/* Leaderboard Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <table className="w-full border-collapse">
             <thead>
@@ -87,7 +99,7 @@ export default function Leaderboard() {
             <tbody>
               {leaderboard.map((entry, i) => (
                 <tr
-                  key={entry.name}
+                  key={entry.id}
                   className="border-t hover:bg-gray-50 transition-colors"
                 >
                   <td className="p-4 font-semibold text-blue-600">#{i + 1}</td>
