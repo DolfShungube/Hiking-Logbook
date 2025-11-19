@@ -18,13 +18,34 @@ export function useLeaderboard(currentUserId) {
       const { data, error } = await getCompletedHikesData(userId);
       if (error) throw error;
 
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const hikesLastMonth = Array.isArray(data)
+      ? data.filter(hike => new Date(hike.enddate) >= oneMonthAgo)
+      : [];
+
+      const hikesLastWeek = Array.isArray(data)
+      ? data.filter(hike => new Date(hike.enddate) >= oneWeekAgo)
+      : [];
+
       const numHikes = Array.isArray(data) ? data.length : 0;
+      const numHikesLastMonth = hikesLastMonth.length;
+      const numHikesLastWeek = hikesLastWeek.length;
+      
       const user = await getUser(userId);
+
+      // console.log("Fetched hikes data for", userId, hikesLastMonth);
 
       return {
         id: userId,
         name: user.name,
         hikes: numHikes,
+        hikesLastMonth: numHikesLastMonth,
+        hikesLastWeek: numHikesLastWeek,
       };
     } catch (err) {
       console.error(`Failed fetching stats for ${userId}:`, err);
