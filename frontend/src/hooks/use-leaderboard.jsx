@@ -24,28 +24,61 @@ export function useLeaderboard(currentUserId) {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-      const hikesLastMonth = Array.isArray(data)
-      ? data.filter(hike => new Date(hike.enddate) >= oneMonthAgo)
-      : [];
+      const allTimeHikes = data;
+      const pastWeekHikes = data.filter(item => new Date(item.enddate) >= oneWeekAgo);
+      const pastMonthHikes = data.filter(item => new Date(item.enddate) >= oneMonthAgo);
 
-      const hikesLastWeek = Array.isArray(data)
-      ? data.filter(hike => new Date(hike.enddate) >= oneWeekAgo)
-      : [];
+      function calculateDuration(hike) {
+        const start = new Date(hike.startdate);
+        const end = new Date(hike.enddate);
+        return (end - start) / (1000 * 60 * 60); // hours
+      }
 
-      const numHikes = Array.isArray(data) ? data.length : 0;
-      const numHikesLastMonth = hikesLastMonth.length;
-      const numHikesLastWeek = hikesLastWeek.length;
-      
+      const totalHours = allTimeHikes.reduce((sum, hike) => sum + calculateDuration(hike), 0);
+      const totalWeekHours = pastWeekHikes.reduce((sum, hike) => sum + calculateDuration(hike), 0);
+      const totalMonthHours = pastMonthHikes.reduce((sum, hike) => sum + calculateDuration(hike), 0);
+
+      const totalDistance = allTimeHikes.reduce((sum, hike) => sum + hike.distance, 0);
+      const totalWeekDistance = pastWeekHikes.reduce((sum, hike) => sum + hike.distance, 0);
+      const totalMonthDistance = pastMonthHikes.reduce((sum, hike) => sum + hike.distance, 0);
+
+      const totalElevation = allTimeHikes.reduce((sum, hike) => sum + hike.elevation, 0);
+      const totalWeekElevation = pastWeekHikes.reduce((sum, hike) => sum + hike.elevation, 0);
+      const totalMonthElevation = pastMonthHikes.reduce((sum, hike) => sum + hike.elevation, 0);
+
       const user = await getUser(userId);
 
-      // console.log("Fetched hikes data for", userId, hikesLastMonth);
+      console.log("User:", userId);
+      console.log("Username:", user.name);
+      console.log("Data:", data);
+      console.log("All time hikes:", allTimeHikes.length);
+      console.log("Total hours all time:", totalHours);
+      console.log("Total distance all time:", totalDistance);
+      console.log("Total elevation all time:", totalElevation);
+      console.log("Past week hikes:", pastWeekHikes.length);
+      console.log("Total hours past week:", totalWeekHours);
+      console.log("Total distance past week:", totalWeekDistance);
+      console.log("Total elevation past week:", totalWeekElevation);
+      console.log("Past month hikes:", pastMonthHikes.length);
+      console.log("Total hours past month:", totalMonthHours);
+      console.log("Total distance past month:", totalMonthDistance);
+      console.log("Total elevation past month:", totalMonthElevation);
 
       return {
         id: userId,
         name: user.name,
-        hikes: numHikes,
-        hikesLastMonth: numHikesLastMonth,
-        hikesLastWeek: numHikesLastWeek,
+        hikes: allTimeHikes.length,
+        totalHours: totalHours,
+        totalDistance: totalDistance,
+        totalElevation: totalElevation,
+        hikesPastWeek: pastWeekHikes.length,
+        totalHoursPastWeek: totalWeekHours,
+        totalDistancePastWeek: totalWeekDistance,
+        totalElevationPastWeek: totalWeekElevation,
+        hikesPastMonth: pastMonthHikes.length,
+        totalHoursPastMonth: totalMonthHours,
+        totalDistancePastMonth: totalMonthDistance,
+        totalElevationPastMonth: totalMonthElevation,
       };
     } catch (err) {
       console.error(`Failed fetching stats for ${userId}:`, err);
