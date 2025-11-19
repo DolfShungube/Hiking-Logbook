@@ -104,10 +104,9 @@ export function useLeaderboard(currentUserId) {
       const allIds = [currentUserId, ...friendIds];
       const results = await Promise.all(allIds.map(fetchUserStats));
 
-      const mapped = {};
-      results.forEach((entry) => {
-        if (entry) mapped[entry.id] = entry;
-      });
+      setLeaderboardData(
+        Object.fromEntries(results.filter(Boolean).map((u) => [u.id, u]))
+      );
 
       setLeaderboardData(mapped);
       setError(null);
@@ -128,6 +127,6 @@ export function useLeaderboard(currentUserId) {
     leaderboardData,
     loading,
     error,
-    refresh: fetchLeaderboard, // expose manual refresh if needed
+    refresh: fetchLeaderboard,
   };
 }
