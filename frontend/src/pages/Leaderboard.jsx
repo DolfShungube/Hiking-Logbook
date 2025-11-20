@@ -9,9 +9,9 @@ export default function Leaderboard() {
   const [category, setCategory] = useState("all");
 
   const categoryLabels = {
-    all: "🥾 All-Time Hikes Completed",
-    week: "📅 Hikes Completed This Week",
-    month: "🗓️ Hikes Completed This Month",
+    all: "🥾All-Time",
+    week: "📅This Week",
+    month: "🗓️This Month",
   };
 
   const leaderboard = useMemo(() => {
