@@ -7,6 +7,7 @@ export default function Leaderboard() {
   const { leaderboardData, loading, error } = useLeaderboard(currentUser?.id);
 
   const [category, setCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("count");
 
   const categoryLabels = {
     all: "🥾All-Time",
@@ -16,9 +17,9 @@ export default function Leaderboard() {
 
   const leaderboard = useMemo(() => {
     return Object.values(leaderboardData).sort(
-      (a, b) => b.stats[category].count - a.stats[category].count
+      (a, b) => b.stats[category][sortBy] - a.stats[category][sortBy]
     );
-  }, [leaderboardData, category]);
+  }, [leaderboardData, category, sortBy]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 p-8">
@@ -42,6 +43,24 @@ export default function Leaderboard() {
               }`}
             >
               {cat.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-3 justify-center mb-6">
+          {[
+            { key: "count", label: "Hikes" },
+            { key: "dist", label: "Distance" },
+            { key: "hours", label: "Hours" },
+            { key: "elev", label: "Elevation" },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setSortBy(key)}
+              className={`px-3 py-1 rounded ${
+                sortBy === key ? "bg-blue-600 text-white" : "bg-gray-200"
+              }`}
+            >
+              {label}
             </button>
           ))}
         </div>
