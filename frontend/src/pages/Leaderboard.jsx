@@ -57,6 +57,9 @@ export default function Leaderboard() {
                   <th className="p-4">Rank</th>
                   <th className="p-4">Name</th>
                   <th className="p-4">Hikes</th>
+                  <th className="p-4">Distance (km)</th>
+                  <th className="p-4">Hours</th>
+                  <th className="p-4">Elevation (m)</th>
                 </tr>
               </thead>
               <tbody>
@@ -64,9 +67,10 @@ export default function Leaderboard() {
                   <tr key={entry.id} className="border-t hover:bg-gray-50">
                     <td className="p-4 font-semibold text-blue-600">#{i + 1}</td>
                     <td className="p-4">{entry.name}</td>
-                    <td className="p-4 font-medium">
-                      {entry.stats[category].count}
-                    </td>
+                    <td className="p-4">{entry.stats[category].count}</td>
+                    <td className="p-4">{entry.stats[category].dist.toFixed(1)}</td>
+                    <td className="p-4">{entry.stats[category].hours.toFixed(1)}</td>
+                    <td className="p-4">{entry.stats[category].elev}</td>
                   </tr>
                 ))}
               </tbody>
