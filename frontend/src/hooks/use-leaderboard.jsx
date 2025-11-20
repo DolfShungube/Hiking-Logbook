@@ -108,7 +108,6 @@ export function useLeaderboard(currentUserId) {
         Object.fromEntries(results.filter(Boolean).map((u) => [u.id, u]))
       );
 
-      setLeaderboardData(mapped);
       setError(null);
     } catch (err) {
       console.error("Leaderboard fetch failed:", err);
