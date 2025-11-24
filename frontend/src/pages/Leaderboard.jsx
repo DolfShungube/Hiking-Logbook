@@ -8,6 +8,7 @@ export default function Leaderboard() {
 
   const [category, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("count");
+  const [sortDir, setSortDir] = useState("desc");
 
   const categoryLabels = {
     all: "🥾All-Time",
@@ -15,22 +16,39 @@ export default function Leaderboard() {
     month: "🗓️This Month",
   };
 
+  const sortKeys = [
+    { key: "count", label: "Hikes" },
+    { key: "dist", label: "Distance (km)" },
+    { key: "hours", label: "Hours" },
+    { key: "elev", label: "Elevation (m)" },
+  ];
+
+  const handleSort = (key) => {
+    if (key === sortBy) {
+      // toggle direction
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(key);
+      setSortDir("desc");
+    }
+  };
+
   const leaderboard = useMemo(() => {
-    return Object.values(leaderboardData).sort(
-      (a, b) => b.stats[category][sortBy] - a.stats[category][sortBy]
-    );
-  }, [leaderboardData, category, sortBy]);
+    return Object.values(leaderboardData).sort((a, b) => {
+      const valA = a.stats[category][sortBy];
+      const valB = b.stats[category][sortBy];
+      return sortDir === "desc" ? valB - valA : valA - valB;
+    });
+  }, [leaderboardData, category, sortBy, sortDir]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 p-8">
       <div className="max-w-2xl mx-auto">
-
-        {/* Dynamic heading */}
         <h1 className="text-3xl font-bold mb-4 text-center">
           {categoryLabels[category]}
         </h1>
 
-        {/* Tabs */}
+        {/* Category Tabs */}
         <div className="flex gap-3 justify-center mb-6">
           {["all", "week", "month"].map((cat) => (
             <button
@@ -46,24 +64,6 @@ export default function Leaderboard() {
             </button>
           ))}
         </div>
-        <div className="flex gap-3 justify-center mb-6">
-          {[
-            { key: "count", label: "Hikes" },
-            { key: "dist", label: "Distance" },
-            { key: "hours", label: "Hours" },
-            { key: "elev", label: "Elevation" },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setSortBy(key)}
-              className={`px-3 py-1 rounded ${
-                sortBy === key ? "bg-blue-600 text-white" : "bg-gray-200"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
 
         {loading && <p className="text-center">Loading leaderboard...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
@@ -72,23 +72,42 @@ export default function Leaderboard() {
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-100 text-gray-700 text-left">
+                <tr className="bg-gray-100 text-gray-700 text-left select-none">
                   <th className="p-4">Rank</th>
                   <th className="p-4">Name</th>
-                  <th className="p-4">Hikes</th>
-                  <th className="p-4">Distance (km)</th>
-                  <th className="p-4">Hours</th>
-                  <th className="p-4">Elevation (m)</th>
+
+                  {sortKeys.map(({ key, label }) => (
+                    <th
+                      key={key}
+                      className="p-4 cursor-pointer hover:underline"
+                      onClick={() => handleSort(key)}
+                    >
+                      {label}
+                      {sortBy === key && (
+                        <span className="ml-1">
+                          {sortDir === "desc" ? "▼" : "▲"}
+                        </span>
+                      )}
+                    </th>
+                  ))}
                 </tr>
               </thead>
+
               <tbody>
                 {leaderboard.map((entry, i) => (
                   <tr key={entry.id} className="border-t hover:bg-gray-50">
-                    <td className="p-4 font-semibold text-blue-600">#{i + 1}</td>
+                    <td className="p-4 font-semibold text-blue-600">
+                      #{i + 1}
+                    </td>
                     <td className="p-4">{entry.name}</td>
+
                     <td className="p-4">{entry.stats[category].count}</td>
-                    <td className="p-4">{entry.stats[category].dist.toFixed(1)}</td>
-                    <td className="p-4">{entry.stats[category].hours.toFixed(1)}</td>
+                    <td className="p-4">
+                      {entry.stats[category].dist.toFixed(1)}
+                    </td>
+                    <td className="p-4">
+                      {entry.stats[category].hours.toFixed(1)}
+                    </td>
                     <td className="p-4">{entry.stats[category].elev}</td>
                   </tr>
                 ))}
